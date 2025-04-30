@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem, type SharedData } from '@/types';
+import type { NavItem, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,12 +11,17 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+    PawPrint,
+    Anvil,
     CreditCard,
     Keyboard,
     Plus,
     Settings,
     User,
     Users,
+    Heart,
+    Cross,
+    Utensils,
 } from 'lucide-vue-next';
 
 defineProps<{
@@ -39,35 +44,35 @@ const page = usePage<SharedData>();
                 <DropdownMenuContent class="w-56 ml-8">
                     <DropdownMenuGroup>
                         <DropdownMenuItem>
-                            <User class="mr-2 h-4 w-4" />
+                            <PawPrint class="mr-2 h-4 w-4" />
                             <span>Ternak</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                            <CreditCard class="mr-2 h-4 w-4" />
-                            <span>Data perah</span>
+                            <Utensils class="mr-2 h-4 w-4" />
+                            <span>Pakan</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                            <Settings class="mr-2 h-4 w-4" />
+                            <CreditCard class="mr-2 h-4 w-4" />
+                            <span>Perah</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Anvil class="mr-2 h-4 w-4" />
                             <span>Bobot ternak</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                            <Keyboard class="mr-2 h-4 w-4" />
+                            <Heart class="mr-2 h-4 w-4" />
                             <span>Breeding</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                            <Users class="mr-2 h-4 w-4" />
+                            <Cross class="mr-2 h-4 w-4" />
                             <span>Kesehatan</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Plus class="mr-2 h-4 w-4" />
-                            <span>Pakan</span>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
                 </DropdownMenuContent>
             </DropdownMenu>
 
             <SidebarMenuItem v-for="item in items" :key="item.title">
-                <SidebarMenuButton as-child :is-active="item.href === page.url">
+                <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title">
                     <Link :href="item.href">
                     <component :is="item.icon" />
                     <span>{{ item.title }}</span>
@@ -77,3 +82,10 @@ const page = usePage<SharedData>();
         </SidebarMenu>
     </SidebarGroup>
 </template>
+
+<style scoped>
+.text-xxs {
+    font-size: 0.60rem;
+    line-height: 1rem;
+}
+</style>

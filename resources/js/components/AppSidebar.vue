@@ -2,19 +2,49 @@
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, } from '@/components/ui/sidebar';
+import type { NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Home, PawPrint, ChartLine, ArrowLeftRight, Heart, Database } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSidebar } from '@/components/ui/sidebar/utils';
 
 const mainNavItems: NavItem[] = [
     {
+        title: 'Home',
+        href: '/home',
+        icon: Home,
+    },
+    {
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Populasi',
+        href: '/dashboard',
+        icon: PawPrint,
+    },
+    {
+        title: 'Produktivitas',
+        href: '/dashboard',
+        icon: ChartLine,
+    },
+    {
+        title: 'Transaksi',
+        href: '/dashboard',
+        icon: ArrowLeftRight,
+    },
+    {
+        title: 'Breeding',
+        href: '/dashboard',
+        icon: Heart,
+    },
+    {
+        title: 'Data',
+        href: '/dashboard',
+        icon: Database,
     },
 ];
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Folder, Search, Plus } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItemType, NavItem } from '@/types';
 import type { Auth } from '@/types';
+import { useAppearance } from '@/composables/useAppearance';
+import { Monitor, Moon, Sun, SunMoon } from 'lucide-vue-next';
 
 const props = defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
@@ -36,6 +38,43 @@ const rightNavItems: NavItem[] = [
         icon: BookOpen,
     },
 ];
+
+
+// Appearance
+type Appearance = 'light' | 'dark' | 'system';
+const { appearance, updateAppearance } = useAppearance();
+
+const getNextAppearance = (current: Appearance): Appearance => {
+    switch (current) {
+        case 'dark': return 'system';
+        case 'system': return 'light';
+        default: return 'dark';
+    }
+};
+
+const nextAppearance = computed(() => getNextAppearance(appearance.value));
+const appearanceIcon = computed(() => {
+    switch (appearance.value) {
+        case 'dark': return Monitor;
+        case 'system': return Sun;
+        default: return Moon;
+    }
+});
+
+function updateCurrentAppearance(newAppearance?: Appearance) {
+    updateAppearance(newAppearance ?? nextAppearance.value);
+}
+
+const appearanceMenu = ref();
+const appearanceItems = ref([
+    { label: 'System', value: 'system', icon: Monitor },
+    { label: 'Light', value: 'light', icon: Sun },
+    { label: 'Dark', value: 'dark', icon: Moon },
+]);
+const toggleAppearance = (event: Event) => {
+    appearanceMenu.value.toggle(event);
+};
+
 </script>
 
 <template>
@@ -75,11 +114,11 @@ const rightNavItems: NavItem[] = [
                     </div>
                 </div>
 
-                <Link :href="route('teams.create')">
+                <!-- <Link :href="route('teams.create')">
                 <Button variant="outline" size="sm" class="relative w-auto rounded-full">
                     <Plus class="size-4" /> Tambah peternakan
                 </Button>
-                </Link>
+                </Link> -->
 
                 <DropdownMenu>
                     <DropdownMenuTrigger :as-child="true">
@@ -92,6 +131,34 @@ const rightNavItems: NavItem[] = [
                         <UserMenuContent :user="auth.user" />
                     </DropdownMenuContent>
                 </DropdownMenu>
+
+                <TooltipProvider :delay-duration="0">
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Button @click="toggleAppearance" variant="ghost" size="icon" as-child
+                                class="group h-9 w-9 cursor-pointer">
+                                <span rel="noopener noreferrer">
+                                    <span class="sr-only">{{ nextAppearance }}</span>
+                                    <component :is="SunMoon" class="size-5 opacity-80 group-hover:opacity-100" />
+                                </span>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Tampilan</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+
+                <Menu ref="appearanceMenu" id="overlay_menu" :model="appearanceItems" :popup="true">
+                    <template #item="{ item, props }">
+                        <a v-ripple class="flex items-center" v-bind="props.action"
+                            @click="updateCurrentAppearance(item.value)">
+                            <component :is="item.icon" class="size-4 opacity-80 group-hover:opacity-100" />
+                            <span class="text-sm ms-2">{{ item.label }}</span>
+                            <span class="ml-auto">{{ appearance === item.value ? '✓' : '' }}</span>
+                        </a>
+                    </template>
+                </Menu>
 
                 <DropdownMenu>
                     <DropdownMenuTrigger :as-child="true">

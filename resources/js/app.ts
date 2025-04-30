@@ -7,6 +7,10 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { initializeTheme } from './composables/useAppearance';
 
+import PrimeVue from 'primevue/config';
+import Aura from '@primeuix/themes/aura';
+import Aifarm from './themes/aifarm';
+
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
     interface ImportMetaEnv {
@@ -22,6 +26,14 @@ declare module 'vite/client' {
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+const themeOptions: { darkModeSelector?: string } = {};
+
+// if (localStorage.getItem('appearance') !== 'system') {
+    themeOptions.darkModeSelector = '.dark';
+        // localStorage.getItem('appearance') === 'system' ? 'html' :
+        //     (localStorage.getItem('appearance') === 'dark' ? '.my-app-dark' : false || 'none');
+// }
+
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.vue`, import.meta.glob<DefineComponent>('./pages/**/*.vue')),
@@ -29,6 +41,13 @@ createInertiaApp({
         createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .use(PrimeVue, {
+                theme: {
+                    preset: Aifarm,
+                    options: themeOptions,
+                },
+                ripple: true,
+            })
             .mount(el);
     },
     progress: {

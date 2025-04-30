@@ -9,7 +9,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 })->name('home');
 
-Route::get('dashboard', function () {
+Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -18,6 +18,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resources([
         'teams' => TeamController::class,
     ]);
+
+    Route::get('/home', function () {
+        return Inertia::render('home/HomePage');
+    })->name('home-page');
 });
 
 require __DIR__.'/settings.php';

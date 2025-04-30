@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // import AppLogoIcon from '@/components/AppLogoIcon.vue';
-// import Logo from '@/assets/logo.png';
+import Logo from '@/assets/logo.png';
 // import { useSidebar } from '@/components/ui/sidebar/utils';
 
 interface Props {
@@ -16,7 +16,6 @@ defineProps<Props>();
         <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
     </div> -->
     <div class="ml-1 grid flex-1 text-left text-sm">
-        <!-- <img :src="Logo" alt="Logo"> -->
-        <p class="text-xl">Observia</p>
+        <img :src="Logo" alt="Logo">
     </div>
 </template>
