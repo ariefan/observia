@@ -48,7 +48,7 @@ const plugin = Autoplay({
 </script>
 
 <template>
-    <div class="h-dvh p-8">
+    <div class="h-dvh p-8 bg-white dark:bg-slate-900">
         <div
             class="relative grid h-full flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0 lg:border-2 border-primary-500 rounded-xl">
             <div class="relative hidden flex-col p-10 dark:text-white lg:flex">

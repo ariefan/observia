@@ -41,17 +41,22 @@ const submit = () => {
 
         <form @submit.prevent="submit" class="flex flex-col gap-2 border border-primary-500 rounded-xl p-4">
             <div class="grid gap-4">
-                <div class="grid gap-2">
-                    <FloatingInput label="Email/username" id="email" type="email" required autofocus :tabindex="1"
-                        autocomplete="email" v-model="form.email" placeholder="email@example.com" />
-                    <InputError :message="form.errors.email" />
-                </div>
 
-                <div class="grid gap-2">
-                    <FloatingInput label="Password" id="password" type="password" required :tabindex="2"
-                        autocomplete="current-password" v-model="form.password" placeholder="Password" />
+                <Fluid class="grid gap-2">
+                    <FloatLabel variant="on">
+                        <InputText id="email" type="email" required autofocus v-model="form.email" />
+                        <label for="on_label">Email</label>
+                    </FloatLabel>
+                    <InputError :message="form.errors.email" />
+                </Fluid>
+
+                <Fluid class="grid gap-2">
+                    <FloatLabel variant="on">
+                        <InputText id="password" type="password" required v-model="form.password" />
+                        <label for="on_label">Password</label>
+                    </FloatLabel>
                     <InputError :message="form.errors.password" />
-                </div>
+                </Fluid>
 
                 <div class="flex items-center justify-between" :tabindex="3">
                     <Label for="remember" class="flex items-center space-x-3">
@@ -78,12 +83,12 @@ const submit = () => {
         <Separator class="my-4" label="Atau login dengan" />
 
         <div class="flex justify-between">
-            <Button variant="outline" class="w-full mr-2">
+            <Button as="a" variant="outline" class="w-full mr-2" :href="route('google.redirect')">
                 <img :src="LogoGoogle" alt="Logo Google" class="size-4"> Google
             </Button>
-            <Button variant="outline" class="w-full ml-2">
+            <!-- <Button variant="outline" class="w-full ml-2">
                 <img :src="LogoFacebook" alt="Logo Facebook" class="size-4"> Facebook
-            </Button>
+            </Button> -->
         </div>
     </AuthBase>
 </template>
