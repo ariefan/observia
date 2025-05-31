@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\GoogleLoginController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\LivestockController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -20,6 +21,7 @@ Route::get('/google/callback', [GoogleLoginController::class, 'handleGoogleCallb
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resources([
         'teams' => TeamController::class,
+        'livestocks' => LivestockController::class,
     ]);
 
     Route::get('/home', function () {

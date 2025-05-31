@@ -23,7 +23,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Populasi',
-        href: '/dashboard',
+        href: '/livestocks',
         icon: PawPrint,
     },
     {

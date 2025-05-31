@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { FloatingInput } from '@/components/ui/floating-input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
-import { type BreadcrumbItem, type SharedData, type User } from '@/types';
+import type { BreadcrumbItem, SharedData, User } from '@/types';
 
 interface Props {
     mustVerifyEmail: boolean;

@@ -4,10 +4,10 @@ import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
-import { FloatingInput } from '@/components/ui/floating-input';
 import { Separator } from '@/components/ui/separator';
 import LogoGoogle from '@/assets/google.png';
 import LogoFacebook from '@/assets/facebook.png';
@@ -42,21 +42,17 @@ const submit = () => {
         <form @submit.prevent="submit" class="flex flex-col gap-2 border border-primary-500 rounded-xl p-4">
             <div class="grid gap-4">
 
-                <Fluid class="grid gap-2">
-                    <FloatLabel variant="on">
-                        <InputText id="email" type="email" required autofocus v-model="form.email" />
-                        <label for="on_label">Email</label>
-                    </FloatLabel>
+                <div class="grid w-full max-w-sm items-center gap-1.5">
+                    <Label for="email">Email</Label>
+                    <Input id="email" type="email" required autofocus v-model="form.email" />
                     <InputError :message="form.errors.email" />
-                </Fluid>
+                </div>
 
-                <Fluid class="grid gap-2">
-                    <FloatLabel variant="on">
-                        <InputText id="password" type="password" required v-model="form.password" />
-                        <label for="on_label">Password</label>
-                    </FloatLabel>
+                <div class="grid w-full max-w-sm items-center gap-1.5">
+                    <Label for="password">Password</Label>
+                    <Input id="password" type="password" required v-model="form.password" />
                     <InputError :message="form.errors.password" />
-                </Fluid>
+                </div>
 
                 <div class="flex items-center justify-between" :tabindex="3">
                     <Label for="remember" class="flex items-center space-x-3">

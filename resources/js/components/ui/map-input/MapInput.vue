@@ -77,7 +77,7 @@
             <div v-if="address" class="p-3 border border-x border-b rounded-b-md bg-muted/30">
                 <h3 class="text-xs font-medium text-muted-foreground">Lokasi</h3>
                 <p class="text-sm">Latitude: {{ latitude }} &nbsp;&nbsp;&nbsp; Longitude: {{ longitude }}</p>
-                <h3 class="text-xs font-medium text-muted-foreground mt-2">Address</h3>
+                <h3 class="text-xs font-medium text-muted-foreground mt-2">Alamat</h3>
                 <p class="text-sm">{{ address }}</p>
             </div>
         </div>

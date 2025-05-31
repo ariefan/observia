@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/compon
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-// import { SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItemType, NavItem } from '@/types';
 import type { Auth } from '@/types';
@@ -114,23 +114,23 @@ const toggleAppearance = (event: Event) => {
                     </div>
                 </div>
 
-                <!-- <Link :href="route('teams.create')">
+                <Link :href="route('teams.create')">
                 <Button variant="outline" size="sm" class="relative w-auto rounded-full">
-                    <Plus class="size-4" /> Tambah peternakan
+                    <Plus class="size-4" /> Daftar peternakan
                 </Button>
-                </Link> -->
+                </Link>
 
-                <DropdownMenu>
+                <!-- <DropdownMenu>
                     <DropdownMenuTrigger :as-child="true">
                         <Button variant="outline" size="sm"
                             class="relative w-auto rounded-full focus-within:ring-2 focus-within:ring-primary">
-                            <Plus class="size-4" /> Tambah peternakan
+                            <Plus class="size-4" /> Daftar peternakan
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-56">
                         <UserMenuContent :user="auth.user" />
                     </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu> -->
 
                 <TooltipProvider :delay-duration="0">
                     <Tooltip>
