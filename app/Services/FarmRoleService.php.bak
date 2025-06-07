@@ -1,0 +1,66 @@
+<?php
+namespace App\Services;
+
+use App\Models\Farm;
+use App\Models\User;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+
+class FarmRoleService
+{
+    public function getFarm(User $user): ?Farm
+    {
+        return $user->currentFarm;
+    }
+
+    public function getScopedRoleName(string $baseRole, Farm $farm): string
+    {
+        return "{$baseRole}@farm-{$farm->id}";
+    }
+
+    public function assignFarmRole(User $user, string $baseRole)
+    {
+        $farm = $this->getFarm($user);
+        if (!$farm) {
+            throw new \Exception("No active farm for user");
+        }
+
+        $roleName = $this->getScopedRoleName($baseRole, $farm);
+        $role = Role::findOrCreate($roleName, 'web');
+
+        $user->assignRole($role);
+    }
+
+    public function hasFarmRole(User $user, string $baseRole): bool
+    {
+        $farm = $this->getFarm($user);
+        if (!$farm) return false;
+
+        $roleName = $this->getScopedRoleName($baseRole, $farm);
+        return $user->hasRole($roleName);
+    }
+
+    public function createFarmPermission(string $basePermission, Farm $farm): Permission
+    {
+        $permissionName = "{$basePermission}@farm-{$farm->id}";
+        return Permission::findOrCreate($permissionName, 'web');
+    }
+
+    public function assignPermissionToRole(string $basePermission, string $baseRole, Farm $farm)
+    {
+        $permission = $this->createFarmPermission($basePermission, $farm);
+        $roleName = $this->getScopedRoleName($baseRole, $farm);
+        $role = Role::findOrCreate($roleName, 'web');
+
+        $role->givePermissionTo($permission);
+    }
+
+    public function userHasFarmPermission(User $user, string $basePermission): bool
+    {
+        $farm = $this->getFarm($user);
+        if (!$farm) return false;
+
+        $permissionName = "{$basePermission}@farm-{$farm->id}";
+        return $user->can($permissionName);
+    }
+}

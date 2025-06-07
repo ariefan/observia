@@ -22,6 +22,8 @@ class GoogleLoginController extends Controller
         $user = User::where('email', $googleUser->email)->first();
         if (! $user) {
             $user = User::create(['name' => $googleUser->name, 'email' => $googleUser->email, 'password' => Hash::make(rand(100000, 999999))]);
+            $user->assignFarmRole('user');
+            // Role::create(['name' => 'user', 'farm_id' => null]);
             // $team = new Team();
             // $team->user_id = $user->id;
             // $team->personal_team = 1;
@@ -32,6 +34,6 @@ class GoogleLoginController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('home');
     }
 }

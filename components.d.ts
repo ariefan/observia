@@ -21,7 +21,7 @@ declare module 'vue' {
     Tabs: typeof import('primevue/tabs')['default']
     Tag: typeof import('primevue/tag')['default']
   }
-  export interface ComponentCustomProperties {
+  export interface GlobalDirectives {
     Ripple: typeof import('primevue/ripple')['default']
   }
 }

@@ -3,14 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Traits\HasFarmRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasFarmRoles, HasUuids;
 
     /**
      * The attributes that are mass assignable.
@@ -22,6 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'profile_photo_url',
+        'current_farm_id',
     ];
 
     /**
@@ -47,8 +50,13 @@ class User extends Authenticatable
         ];
     }
     
-    public function teams()
+    public function farms()
     {
-        return $this->belongsToMany(Team::class);
+        return $this->belongsToMany(Farm::class);
+    }
+
+    public function currentFarm()
+    {
+        return $this->belongsTo(Farm::class, 'current_farm_id');
     }
 }

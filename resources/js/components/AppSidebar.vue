@@ -4,11 +4,15 @@ import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Folder, LayoutGrid, Home, PawPrint, ChartLine, ArrowLeftRight, Heart, Database } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSidebar } from '@/components/ui/sidebar/utils';
+import type { SharedData, User } from '@/types';
+
+const page = usePage<SharedData>();
+const user = page.props.auth.user as User;
 
 const mainNavItems: NavItem[] = [
     {
@@ -16,36 +20,38 @@ const mainNavItems: NavItem[] = [
         href: '/home',
         icon: Home,
     },
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Populasi',
-        href: '/livestocks',
-        icon: PawPrint,
-    },
-    {
-        title: 'Produktivitas',
-        href: '/dashboard',
-        icon: ChartLine,
-    },
-    {
-        title: 'Transaksi',
-        href: '/dashboard',
-        icon: ArrowLeftRight,
-    },
-    {
-        title: 'Breeding',
-        href: '/dashboard',
-        icon: Heart,
-    },
-    {
-        title: 'Data',
-        href: '/dashboard',
-        icon: Database,
-    },
+    ...(page.props.auth.farms && page.props.auth.farms.length > 0
+        ? [{
+            title: 'Dashboard',
+            href: '/dashboard',
+            icon: LayoutGrid,
+        },
+        {
+            title: 'Populasi',
+            href: '/livestocks',
+            icon: PawPrint,
+        },
+        {
+            title: 'Produktivitas',
+            href: '/dashboard',
+            icon: ChartLine,
+        },
+        {
+            title: 'Transaksi',
+            href: '/dashboard',
+            icon: ArrowLeftRight,
+        },
+        {
+            title: 'Breeding',
+            href: '/dashboard',
+            icon: Heart,
+        },
+        {
+            title: 'Data',
+            href: '/dashboard',
+            icon: Database,
+        }]
+        : []),
 ];
 
 const footerNavItems: NavItem[] = [

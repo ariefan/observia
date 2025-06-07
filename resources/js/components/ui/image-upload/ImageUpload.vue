@@ -1,78 +1,62 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
 import { ImageIcon, UploadIcon, TrashIcon, XIcon } from 'lucide-vue-next';
 
-interface Props {
-    initialImage: string;
-    aspectRatio: number;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-    initialImage: '',
-    aspectRatio: 1,
-});
-
-const emit = defineEmits<{
-    (e: 'update:image', blob: Blob | null): void;
-    (e: 'upload', payload: { blob: Blob; url: string; dimensions: { width: number; height: number } }): void;
-    (e: 'remove'): void;
+const props = defineProps<{
+    imageUrl?: string;
+    imageBlob?: Blob | null;
+    aspectRatio?: number;
 }>();
 
-const previewUrl = ref<string>(props.initialImage);
-const cropperSrc = ref<string>('');
-const showCropper = ref<boolean>(false);
-const isDragging = ref<boolean>(false);
+const emit = defineEmits<{
+    'update:imageBlob': [value: Blob | null];
+    'update:imageUrl': [value: string];
+}>();
+
+const previewUrl = ref(props.imageUrl || '');
+const cropperSrc = ref('');
+const showCropper = ref(false);
+const isDragging = ref(false);
 const cropperInstance = ref<Cropper | null>(null);
 const cropperImage = ref<HTMLImageElement | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
-const triggerFileInput = (): void => {
-    fileInput.value?.click();
-};
+const triggerFileInput = () => fileInput.value?.click();
 
-const handleFileChange = (event: Event): void => {
+const handleFileChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    const file = target.files ? target.files[0] : null;
+    const file = target.files?.[0];
     if (file) processFile(file);
     target.value = '';
 };
 
-const handleDrop = (event: DragEvent): void => {
+const handleDrop = (event: DragEvent) => {
     isDragging.value = false;
     const file = event.dataTransfer?.files[0];
-    if (file && file.type.startsWith('image/')) {
-        processFile(file);
-    } else {
-        console.error("Oh for fuck's sake, that's not an image!");
-    }
+    if (file?.type.startsWith('image/')) processFile(file);
 };
 
-const processFile = (file: File): void => {
-    if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl.value);
-    }
+const processFile = (file: File) => {
+    if (previewUrl.value.startsWith('blob:')) URL.revokeObjectURL(previewUrl.value);
 
     const reader = new FileReader();
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-        if (e.target?.result && typeof e.target.result === 'string') {
+    reader.onload = (e) => {
+        if (typeof e.target?.result === 'string') {
             cropperSrc.value = e.target.result;
             showCropper.value = true;
             nextTick(initCropper);
         }
     };
-    reader.onerror = () => {
-        console.error("Well, shit. Failed to read the file.");
-    };
     reader.readAsDataURL(file);
 };
 
-const initCropper = (): void => {
-    if (cropperInstance.value) cropperInstance.value.destroy();
+const initCropper = () => {
+    cropperInstance.value?.destroy();
     if (cropperImage.value) {
         cropperInstance.value = new Cropper(cropperImage.value, {
-            aspectRatio: props.aspectRatio,
+            aspectRatio: props.aspectRatio || 1,
             viewMode: 1,
             dragMode: 'move',
             autoCropArea: 1,
@@ -88,7 +72,7 @@ const initCropper = (): void => {
     }
 };
 
-const cropImage = (): void => {
+const cropImage = () => {
     if (!cropperInstance.value) return;
 
     const canvas = cropperInstance.value.getCroppedCanvas({
@@ -99,77 +83,59 @@ const cropImage = (): void => {
     });
 
     canvas.toBlob((blob) => {
-        if (!blob) {
-            console.error("Holy shit, blob creation failed!");
-            return;
-        }
+        if (!blob) return;
         const url = URL.createObjectURL(blob);
         previewUrl.value = url;
-        emit('update:image', blob);
-        emit('upload', { blob, url, dimensions: { width: 256, height: 256 } });
+        emit('update:imageBlob', blob);
+        emit('update:imageUrl', url);
         closeCropper();
     }, 'image/jpeg', 0.9);
 };
 
-const removePhoto = (): void => {
-    if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl.value);
-    }
+const removePhoto = () => {
+    if (previewUrl.value.startsWith('blob:')) URL.revokeObjectURL(previewUrl.value);
     previewUrl.value = '';
-    emit('update:image', null);
-    emit('remove');
+    emit('update:imageBlob', null);
+    emit('update:imageUrl', '');
 };
 
-const closeCropper = (): void => {
+const closeCropper = () => {
     showCropper.value = false;
-    if (cropperInstance.value) {
-        cropperInstance.value.destroy();
-        cropperInstance.value = null;
-    }
+    cropperInstance.value?.destroy();
+    cropperInstance.value = null;
 };
 
-onUnmounted(() => {
-    if (cropperInstance.value) cropperInstance.value.destroy();
-    if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl.value);
-    }
+watch(() => props.imageUrl, (val) => {
+    if (val) previewUrl.value = val;
 });
 
-onMounted(() => {
-    if (props.initialImage) previewUrl.value = props.initialImage;
+onUnmounted(() => {
+    cropperInstance.value?.destroy();
+    if (previewUrl.value.startsWith('blob:')) URL.revokeObjectURL(previewUrl.value);
 });
 </script>
 
 <template>
     <div class="flex flex-col gap-4 max-w-md">
-        <!-- Avatar Preview with Integrated Upload Overlay -->
-        <div class="relative w-32 h-32 rounded-full overflow-hidden border-4 border-primary/10 dark:border-primary/90 bg-muted flex items-center justify-center"
+        <!-- Avatar -->
+        <div class="relative w-32 h-32 rounded-full overflow-hidden border-4 border-primary/10 bg-muted flex items-center justify-center group"
             :class="{ 'border-primary/30': isDragging }" @dragover.prevent="isDragging = true"
             @dragleave.prevent="isDragging = false" @drop.prevent="handleDrop">
             <img v-if="previewUrl" :src="previewUrl" alt="Profile photo" class="w-full h-full object-cover" />
             <ImageIcon v-else class="w-12 h-12 text-muted-foreground" />
 
-            <!-- Upload Button Overlay (fits the circle) -->
-            <label for="photo-upload"
-                class="absolute inset-0 flex items-center justify-center cursor-pointer bg-background/80 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity rounded-full">
-                <UploadIcon class="w-5 h-5 text-primary" />
-            </label>
-            <input ref="fileInput" type="file" id="photo-upload" class="hidden" accept="image/*"
-                @change="handleFileChange" />
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex gap-2">
-            <button @click="triggerFileInput"
-                class="inline-flex items-center justify-center rounded-md text-xs font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3">
-                <UploadIcon class="w-4 h-4 mr-1" />
-                Upload
-            </button>
-            <button v-if="previewUrl" @click="removePhoto"
-                class="inline-flex items-center justify-center rounded-md text-xs font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 px-3">
-                <TrashIcon class="w-4 h-4 mr-1" />
-                Remove
-            </button>
+            <!-- Hover Overlay -->
+            <div
+                class="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity rounded-full gap-2">
+                <button type="button" @click="triggerFileInput" class="text-primary hover:scale-110 transition">
+                    <UploadIcon class="w-5 h-5" />
+                </button>
+                <button type="button" v-if="previewUrl" @click="removePhoto"
+                    class="text-destructive hover:scale-110 transition">
+                    <TrashIcon class="w-5 h-5" />
+                </button>
+            </div>
+            <input ref="fileInput" type="file" class="hidden" accept="image/*" @change="handleFileChange" />
         </div>
 
         <!-- Cropper Modal -->
@@ -177,7 +143,7 @@ onMounted(() => {
             class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div class="bg-card rounded-lg shadow-lg max-w-md w-full p-6 space-y-4">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-lg font-medium">Crop Profile Photo</h3>
+                    <h3 class="text-lg font-medium">Crop Image</h3>
                     <button type="button" @click="closeCropper" class="text-muted-foreground hover:text-foreground">
                         <XIcon class="w-5 h-5" />
                     </button>
@@ -188,13 +154,9 @@ onMounted(() => {
                 </div>
                 <div class="flex justify-end gap-2">
                     <button type="button" @click="closeCropper"
-                        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                        Cancel
-                    </button>
+                        class="bg-muted px-4 py-2 rounded-md hover:bg-muted/50">Cancel</button>
                     <button type="button" @click="cropImage"
-                        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-                        Apply
-                    </button>
+                        class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90">Apply</button>
                 </div>
             </div>
         </div>

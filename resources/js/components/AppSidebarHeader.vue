@@ -5,6 +5,7 @@ import { BookOpen, Folder, Search, Plus } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import UserMenuContent from '@/components/UserMenuContent.vue';
+import FarmMenuContent from '@/components/FarmMenuContent.vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,7 +15,8 @@ import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItemType, NavItem } from '@/types';
 import type { Auth } from '@/types';
 import { useAppearance } from '@/composables/useAppearance';
-import { Monitor, Moon, Sun, SunMoon } from 'lucide-vue-next';
+import { Monitor, Moon, Sun, SunMoon, Building2 } from 'lucide-vue-next';
+import type { SharedData, User } from '@/types';
 
 const props = defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
@@ -23,20 +25,21 @@ const props = defineProps<{
 
 const breadcrumbs = props.breadcrumbs ?? [];
 const description = props.description ?? '';
-const page = usePage();
+const page = usePage<SharedData>();
 const auth = computed<Auth>(() => page.props.auth as Auth);
+const user = page.props.auth.user as User;
 
 const rightNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Repository',
+    //     href: 'https://github.com/laravel/vue-starter-kit',
+    //     icon: Folder,
+    // },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://laravel.com/docs/starter-kits',
+    //     icon: BookOpen,
+    // },
 ];
 
 
@@ -87,7 +90,7 @@ const toggleAppearance = (event: Event) => {
 
             <div class="ml-auto flex items-center space-x-2">
                 <div class="relative flex items-center space-x-1">
-                    <Button variant="ghost" size="icon" class="group h-9 w-9 cursor-pointer">
+                    <Button variant="ghost" size="icon" class="group h-9 w-9 cursor-pointer hidden">
                         <Search class="size-5 opacity-80 group-hover:opacity-100" />
                     </Button>
 
@@ -114,23 +117,17 @@ const toggleAppearance = (event: Event) => {
                     </div>
                 </div>
 
-                <Link :href="route('teams.create')">
-                <Button variant="outline" size="sm" class="relative w-auto rounded-full">
-                    <Plus class="size-4" /> Daftar peternakan
-                </Button>
-                </Link>
-
-                <!-- <DropdownMenu>
+                <DropdownMenu v-if="$page.props.auth.farms && $page.props.auth.farms.length > 0">
                     <DropdownMenuTrigger :as-child="true">
                         <Button variant="outline" size="sm"
                             class="relative w-auto rounded-full focus-within:ring-2 focus-within:ring-primary">
-                            <Plus class="size-4" /> Daftar peternakan
+                            <Building2 class="size-4" /> {{ $page.props.auth.user.current_farm.name }}
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" class="w-56">
-                        <UserMenuContent :user="auth.user" />
+                    <DropdownMenuContent align="end" class="w-80 p-0 bg-teal-950 text-white rounded-xl">
+                        <FarmMenuContent :user="auth.user" />
                     </DropdownMenuContent>
-                </DropdownMenu> -->
+                </DropdownMenu>
 
                 <TooltipProvider :delay-duration="0">
                     <Tooltip>
@@ -166,8 +163,7 @@ const toggleAppearance = (event: Event) => {
                             class="relative size-10 w-auto rounded-full p-1 focus-within:ring-2 focus-within:ring-primary">
                             <Avatar class="size-8 overflow-hidden rounded-full">
                                 <AvatarImage v-if="auth.user.avatar" :src="auth.user.avatar" :alt="auth.user.name" />
-                                <AvatarFallback
-                                    class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white">
+                                <AvatarFallback class="rounded-lg font-semibold text-black  dark:text-white">
                                     {{ getInitials(auth.user?.name) }}
                                 </AvatarFallback>
                             </Avatar>

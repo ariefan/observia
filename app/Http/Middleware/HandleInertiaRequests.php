@@ -38,12 +38,24 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $user = $request->user();
+
+        if ($user) {
+            $user->load(['currentFarm' => function ($query) {
+                $query->withCount('users');
+            }]);
+            $userFarms = $user->farms()->select('farms.id', 'farms.name')->get();
+        } else {
+            $userFarms = collect();
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
+                'farms' => $userFarms,
             ],
         ];
     }
