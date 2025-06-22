@@ -23,6 +23,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'is_super_user',
         'profile_photo_url',
         'current_farm_id',
     ];
@@ -50,9 +52,16 @@ class User extends Authenticatable
         ];
     }
     
+    // public function farms()
+    // {
+    //     return $this->belongsToMany(Farm::class);
+    // }
+
     public function farms()
     {
-        return $this->belongsToMany(Farm::class);
+        return $this->belongsToMany(Farm::class)
+                    ->withPivot('role')
+                    ->withTimestamps();
     }
 
     public function currentFarm()

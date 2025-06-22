@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('phone')->nullable();
+            $table->boolean('is_super_user')->default(false);
             $table->rememberToken();
             $table->foreignUuid('current_farm_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();

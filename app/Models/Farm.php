@@ -34,8 +34,16 @@ class Farm extends Model
     /**
      * The users that belong to the farm.
      */
+    // public function users()
+    // {
+    //     return $this->belongsToMany(User::class, 'farm_user', 'farm_id', 'user_id');
+    // }
+
     public function users()
     {
-        return $this->belongsToMany(User::class, 'farm_user', 'farm_id', 'user_id');
+        return $this->belongsToMany(User::class)
+                    ->withPivot('role')
+                    ->withTimestamps();
     }
+
 }

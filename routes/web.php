@@ -23,6 +23,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+    Route::put('/farms/{farm}/switch', [FarmController::class, 'switch'])->name('farm.switch');
+    Route::put('/farms/{farm}/users/{user}/role', [FarmController::class, 'updateRole'])->name('farm.user.role');
 
     // Route::get('/dashboard', function () {
     //     return Inertia::render('Dashboard');

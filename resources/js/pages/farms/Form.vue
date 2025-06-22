@@ -37,28 +37,40 @@ const breadcrumbs: BreadcrumbItem[] = [
 const props = defineProps<{
     provinces: { id: number; code: string; name: string }[];
     cities: { id: number; province_id: number; code: string; name: string }[];
-    farm?: object;
+    farm?: {
+        id: number;
+        name: string;
+        address: string;
+        owner: string;
+        phone: string;
+        email: string;
+        picture: string | null;
+        picture_blob: Blob | null;
+        province_id: number;
+        city_id: number;
+        latlong: { latitude: number; longitude: number };
+    }
 }>();
 
 const selectedCoordinates = ref<{ latitude: number; longitude: number } | null>(null);
 const profileImage = ref(null);
 
 const form = useForm({
-    name: '',
-    address: '',
-    owner: '',
-    phone: '',
-    email: '',
-    picture: '',
+    name: props.farm?.name || '',
+    address: props.farm?.address || '',
+    owner: props.farm?.owner || '',
+    phone: props.farm?.phone || '',
+    email: props.farm?.email || '',
+    picture: `/storage/${props.farm?.picture}` || '',
     picture_blob: null,
-    province_id: '',
-    city_id: '',
+    province_id: props.farm?.province_id || '',
+    city_id: props.farm?.city_id || '',
     latlong: { latitude: 0, longitude: 0 },
 });
 
 const filteredCities = computed(() => {
     if (!form.province_id) return [];
-    return props.cities.filter(city => city.province_id === parseInt(form.province_id));
+    return props.cities.filter(city => city.province_id === form.province_id);
 });
 
 function submit() {

@@ -23,10 +23,12 @@ class UpdateFarmRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
             'owner' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'required|email|max:255',
             'picture' => 'nullable|string',
+            'picture_blob' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'province_id' => 'required|integer',
             'city_id' => 'required|integer',
             'latlong' => 'required|array',
