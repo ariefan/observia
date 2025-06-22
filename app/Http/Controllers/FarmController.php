@@ -79,6 +79,7 @@ class FarmController extends Controller
      */
     public function edit(Farm $farm)
     {
+        $farm->load(['city.province']);
         return Inertia::render('farms/Form', [
             'provinces' => Province::all(),
             'cities' => City::all(),
@@ -92,7 +93,24 @@ class FarmController extends Controller
      */
     public function update(UpdateFarmRequest $request, Farm $farm)
     {
-        //
+        $data = $request->validated();
+
+        // Check if a new picture was uploaded
+        if ($request->hasFile('picture_blob')) {
+            $file = $request->file('picture_blob');
+            $path = $file->store('farm_pictures', 'public');
+            $data['picture'] = $path;
+
+            // Optional: delete the old picture from storage if it exists
+            if ($farm->picture && \Storage::disk('public')->exists($farm->picture)) {
+                \Storage::disk('public')->delete($farm->picture);
+            }
+        }
+
+        $farm->update($data);
+
+        return redirect()->route('farms.show', ['farm' => $farm->id])
+            ->with('success', 'Farm updated successfully.');
     }
     
     public function updateRole(Request $request, Farm $farm, User $user)

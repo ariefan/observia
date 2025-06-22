@@ -46,7 +46,12 @@ const props = defineProps<{
         email: string;
         picture: string | null;
         picture_blob: Blob | null;
-        province_id: number;
+        city: {
+            id: number;
+            name: string;
+            province_id: number;
+            code: string;
+        };
         city_id: number;
         latlong: { latitude: number; longitude: number };
     }
@@ -56,14 +61,15 @@ const selectedCoordinates = ref<{ latitude: number; longitude: number } | null>(
 const profileImage = ref(null);
 
 const form = useForm({
+    _method: props.farm?.id ? 'put' : 'post',
     name: props.farm?.name || '',
     address: props.farm?.address || '',
     owner: props.farm?.owner || '',
     phone: props.farm?.phone || '',
     email: props.farm?.email || '',
-    picture: `/storage/${props.farm?.picture}` || '',
+    picture: props.farm?.picture || '',
     picture_blob: null,
-    province_id: props.farm?.province_id || '',
+    province_id: props.farm?.city.province_id || '',
     city_id: props.farm?.city_id || '',
     latlong: { latitude: 0, longitude: 0 },
 });
@@ -75,14 +81,27 @@ const filteredCities = computed(() => {
 
 function submit() {
     console.log(form);
-    form.post(route('farms.store'), {
-        onSuccess: () => {
-            console.log('Form submitted successfully');
-        },
-        onError: () => {
-            console.error('Form submission failed', form.errors);
-        },
-    });
+    if (props.farm?.id) {
+        form.post(route('farms.update', { farm: props.farm.id }), {
+            preserveScroll: true,
+            onSuccess: () => {
+                console.log('Form updated successfully');
+            },
+            onError: () => {
+                console.error('Form update failed', form.errors);
+            },
+        });
+        return;
+    } else {
+        form.post(route('farms.store'), {
+            onSuccess: () => {
+                console.log('Form submitted successfully');
+            },
+            onError: () => {
+                console.error('Form submission failed', form.errors);
+            },
+        });
+    }
 }
 
 const back = () => window.history.back();
@@ -167,7 +186,7 @@ const back = () => window.history.back();
                                             </SelectGroup>
                                         </SelectContent>
                                     </Select>
-                                    <InputError :message="form.errors.province_id" />
+                                    <!-- <InputError :message="form.errors.province_id" /> -->
                                 </div>
 
                                 <div>

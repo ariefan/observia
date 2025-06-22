@@ -46,4 +46,9 @@ class Farm extends Model
                     ->withTimestamps();
     }
 
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
 }
