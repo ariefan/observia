@@ -29,6 +29,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Building2, Users, Trash2 } from 'lucide-vue-next';
+import 'vue-sonner/style.css';
+import { toast } from 'vue-sonner';
+
+const page = usePage();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Profil Peternakan', href: '/teams' },
@@ -80,15 +84,18 @@ const filteredCities = computed(() => {
 });
 
 function submit() {
-    console.log(form);
     if (props.farm?.id) {
         form.post(route('farms.update', { farm: props.farm.id }), {
             preserveScroll: true,
             onSuccess: () => {
-                console.log('Form updated successfully');
+                toast.success("Berhasil", {
+                    description: page.props.flash?.success,
+                })
             },
             onError: () => {
-                console.error('Form update failed', form.errors);
+                toast("Gagal", {
+                    description: page.props.flash?.error,
+                })
             },
         });
         return;

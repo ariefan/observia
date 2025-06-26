@@ -44,7 +44,7 @@ class HandleInertiaRequests extends Middleware
             $user->load(['currentFarm' => function ($query) {
                 $query->withCount('users');
             }]);
-            $userFarms = $user->farms()->select('farms.id', 'farms.name')->get();
+            $userFarms = $user->farms()->select('farms.id', 'farms.name', 'farms.picture')->get();
         } else {
             $userFarms = collect();
         }
@@ -56,6 +56,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user,
                 'farms' => $userFarms,
+            ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'errror' => fn () => $request->session()->get('error'),
+                
             ],
         ];
     }

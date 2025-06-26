@@ -71,12 +71,12 @@ const submit = () => {
         <Separator class="my-4" label="Atau login dengan" />
 
         <div class="flex justify-between">
-            <Button variant="outline" class="w-full mr-2">
+            <Button as="a" variant="outline" class="w-full mr-2" :href="route('google.redirect')">
                 <img :src="LogoGoogle" alt="Logo Google" class="size-4"> Google
             </Button>
-            <Button variant="outline" class="w-full ml-2">
+            <!-- <Button variant="outline" class="w-full ml-2">
                 <img :src="LogoFacebook" alt="Logo Facebook" class="size-4"> Facebook
-            </Button>
+            </Button> -->
         </div>
     </AuthBase>
 </template>

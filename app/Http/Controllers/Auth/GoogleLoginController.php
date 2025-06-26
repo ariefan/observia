@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\FarmInvite;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
@@ -30,6 +31,19 @@ class GoogleLoginController extends Controller
             // $team->name = $googleUser->name.' Farm';
             // $team->save();
             // $user->teams()->attach($team);
+        }
+
+        if(FarmInvite::where('email', $googleUser->email)->first()){
+            $invites = FarmInvite::where('email', $googleUser->email)->get();
+            foreach ($invites as $invite) {
+                $farm = $invite->farm;
+                if ($farm) {
+                    // Attach the user to the farm with the role from the invite
+                    $user->farms()->attach($farm->id, ['role' => $invite->role]);
+
+                }
+            }
+            FarmInvite::where('email', $googleUser->email)->delete();
         }
 
         Auth::login($user);

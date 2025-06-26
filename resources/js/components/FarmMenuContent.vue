@@ -17,39 +17,13 @@ interface Farm {
     members: number;
     avatar?: string;
 }
-
-const farms: Farm[] = [
-    {
-        name: 'Bantul Farming',
-        location: 'Tamantirto, Bantul, Yogyakarta, Indonesia',
-        members: 2,
-        avatar: 'https://picsum.photos/seed/bantul/200',
-    },
-    {
-        name: 'Sleman Farm',
-        location: '',
-        members: 0,
-        avatar: 'https://picsum.photos/seed/sleman/200',
-    },
-    {
-        name: 'Berkah Farm',
-        location: '',
-        members: 0,
-        avatar: 'https://picsum.photos/seed/berkah/200',
-    },
-    {
-        name: 'Bagus Farm',
-        location: '',
-        members: 0,
-        avatar: 'https://picsum.photos/seed/bagus/200',
-    },
-];
 </script>
 
 <template>
     <div class="overflow-hidden rounded-lg shadow-xl bg-white dark:bg-zinc-900 max-w-sm w-full">
         <!-- Top Info -->
-        <div class="bg-teal-700 text-white px-4 py-4 flex flex-col items-center text-center">
+        <div class="bg-teal-700 text-white px-4 py-4 flex flex-col items-center text-center"
+            v-if="$page.props.auth.user.current_farm">
             <Avatar class="size-20 overflow-hidden rounded-full flex items-center justify-center mb-2">
                 <AvatarImage v-if="$page.props.auth.user.current_farm.picture"
                     :src="$page.props.auth.user.current_farm.picture" :alt="$page.props.auth.user.current_farm.name" />
@@ -81,9 +55,10 @@ const farms: Farm[] = [
             <h3 class="mb-2 font-semibold">Peternakan lain</h3>
             <ul class="space-y-1">
                 <li v-for="(farm, i) in $page.props.auth.farms.filter(
-                    (farm) => farm.id !== $page.props.auth.user.current_farm.id
-                )" :key="i"
-                    class="flex items-center gap-2 cursor-pointer hover:bg-teal-800 rounded-full px-2 py-2 transition-all duration-150">
+                    (farm) => farm.id !== ($page.props.auth.user.current_farm?.id || '')
+                )" :key="i">
+                    <Link :href="route('farms.switch', farm.id)"
+                        class="flex items-center gap-2 cursor-pointer hover:bg-teal-800 rounded-full px-2 py-2 transition-all duration-150">
                     <Avatar class="size-8 overflow-hidden rounded-full">
                         <AvatarImage v-if="farm.picture" :src="farm.picture" :alt="farm.name" />
                         <AvatarFallback class="rounded-lg font-semibold text-black  dark:text-white">
@@ -91,6 +66,7 @@ const farms: Farm[] = [
                         </AvatarFallback>
                     </Avatar>
                     {{ farm?.name }}
+                    </Link>
                 </li>
             </ul>
 

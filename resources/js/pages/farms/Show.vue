@@ -31,6 +31,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogClose,
+} from '@/components/ui/dialog'
 import { getInitials } from '@/composables/useInitials';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Pencil, ChevronDown, Trash2, Building2, Users } from 'lucide-vue-next';
@@ -58,6 +68,12 @@ const props = defineProps({
         }>,
         required: true,
     },
+    invites: Array as PropType<Array<{
+        id: string
+        farm_id: string
+        email: string
+        role: string
+    }>>,
 })
 
 const forms = ref<{ [key: string]: ReturnType<typeof useForm<any>> }>({})
@@ -86,6 +102,102 @@ function updateRole(user: typeof props.farm.users[0], role: string) {
         },
         onError: (err: any) => {
             console.error('Failed to update role:', err)
+        },
+    })
+}
+
+function updateRoleInvite(email: string, role: string) {
+    console.log(`Updating role for invite: ${email} to ${role}`)
+    const forms = ref<{ [key: string]: ReturnType<typeof useForm<any>> }>({})
+
+    // init form per user
+    props.invites?.forEach((user) => {
+        forms.value[email] = useForm({
+            email: user.email ?? '',
+            role: user.role ?? '',
+        })
+    })
+    const form = forms.value[email]
+    if (!form) return
+
+    if (form.role === role) return // No change, no cry
+    console.log(form)
+
+    form.role = role
+    form.put(`/farms/${props.farm.id}/email/${email}/role-invite`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            console.log(`Role updated for ${email} to ${role}`)
+            toast.success(`Hak akses diubah menjadi ${role}`, {
+                description: `Untuk email: ${email}`,
+            })
+        },
+        onError: (err: any) => {
+            console.error('Failed to update role:', err)
+        },
+    })
+}
+
+function removeUser(user: typeof props.farm.users[0]) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus anggota ${user.name}?`)) return;
+
+    useForm({}).delete(`/farms/${props.farm.id}/users/${user.id}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            console.log(`User ${user.name} removed successfully`)
+            toast.success(`Anggota ${user.name} berhasil dihapus`, {
+                description: 'Anggota telah dihapus dari peternakan.',
+            });
+        },
+        onError: (err: any) => {
+            console.error('Failed to remove user:', err);
+            toast.error('Gagal menghapus anggota', {
+                description: err.message || 'Terjadi kesalahan saat menghapus anggota.',
+            });
+        },
+    })
+}
+
+function removeUserInvite(email: string) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus anggota ${email}?`)) return;
+
+    useForm({}).delete(`/farms/${props.farm.id}/email/${email}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            console.log(`Email ${email} removed successfully`)
+            toast.success(`Email ${email} berhasil dihapus`, {
+                description: 'Email telah dihapus dari peternakan.',
+            });
+        },
+        onError: (err: any) => {
+            console.error('Failed to remove email:', err);
+            toast.error('Gagal menghapus email', {
+                description: err.message || 'Terjadi kesalahan saat menghapus email.',
+            });
+        },
+    })
+}
+
+const formInvite = useForm({
+    email: '',
+    role: 'abk',
+})
+
+function invite() {
+    console.log('Inviting member with form:', formInvite)
+    formInvite.post(`/farms/${props.farm.id}/invite`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            formInvite.reset();
+            toast.success('Anggota berhasil diundang', {
+                description: 'Email undangan telah dikirim.',
+            });
+        },
+        onError: (err: any) => {
+            console.error('Failed to invite member:', err);
+            toast.error('Gagal mengundang anggota', {
+                description: err.message || 'Terjadi kesalahan. Pastikan email belum terdaftar.',
+            });
         },
     })
 }
@@ -124,8 +236,8 @@ const back = () => window.history.back();
                     </h1>
                 </div>
                 <Card class="border-0">
-                    <form @submit.prevent="submit">
-                        <CardContent class="pt-2">
+                    <CardContent class="pt-2">
+                        <form @submit.prevent="submit">
                             <div class="bg-teal-800 text-white p-4 rounded-lg mb-6">
                                 <h2 class="text-lg font-bold mb-2">Undang anggota peternakan Anda</h2>
                                 <p class="text-sm font-semibold mb-1">Fitur ini memungkinkan anda untuk:</p>
@@ -164,7 +276,7 @@ const back = () => window.history.back();
                                             <td class="px-4 py-3">{{ user.phone }}</td>
                                             <td class="px-4 py-3">{{ user.email }}</td>
                                             <td class="px-4 py-3 gap-2">
-                                                <DropdownMenu v-if="user.pivot.role !== 'ownera'">
+                                                <DropdownMenu v-if="user.pivot.role !== 'owner'">
                                                     <DropdownMenuTrigger>
                                                         <Button variant="secondary" size="sm">
                                                             {{
@@ -195,16 +307,107 @@ const back = () => window.history.back();
                                                 </Button>
                                             </td>
                                         </tr>
+                                        <tr v-for="user in invites" :key="user.email"
+                                            class="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
+                                            <td class="flex items-center gap-3 px-4 py-3 italic">
+                                                Menunggu konfirmasi
+                                            </td>
+                                            <td class="px-4 py-3"></td>
+                                            <td class="px-4 py-3">{{ user.email }}</td>
+                                            <td class="px-4 py-3 gap-2">
+                                                <DropdownMenu v-if="user.role !== 'owner'">
+                                                    <DropdownMenuTrigger>
+                                                        <Button variant="secondary" size="sm">
+                                                            {{
+                                                                user.role.charAt(0).toUpperCase() +
+                                                                user.role.slice(1)
+                                                            }}
+                                                            <ChevronDown class="ml-1 w-4 h-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent>
+                                                        <DropdownMenuItem
+                                                            @click="updateRoleInvite(user.email, 'admin')">
+                                                            Admin
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem @click="updateRoleInvite(user.email, 'abk')">
+                                                            ABK
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            @click="updateRoleInvite(user.email, 'investor')">
+                                                            Investor
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                                <span class="font-semibold" v-else>{{ user.role }}</span>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <Button v-if="user.role !== 'owner'" variant="destructive" size="sm"
+                                                    @click="removeUserInvite(user.email)">
+                                                    <Trash2 class="w-4 h-4 mr-1" /> Keluarkan
+                                                </Button>
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
-                        </CardContent>
+                        </form>
+                    </CardContent>
 
-                        <CardFooter class="flex justify-between px-6 pb-6">
-                            <Button variant="outline" @click="back">Undang anggota</Button>
-                            <div></div>
-                        </CardFooter>
-                    </form>
+                    <CardFooter class="flex justify-between px-6 pb-6">
+                        <Dialog>
+                            <DialogTrigger as-child>
+                                <Button variant="outline">
+                                    Undang anggota
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent class="sm:max-w-[450px]">
+                                <DialogHeader>
+                                    <DialogTitle>Tambah Anggota</DialogTitle>
+                                    <DialogDescription>
+                                        Berikan akses ke data dan fitur peternakan kepada anggota.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div class="grid gap-4 py-4">
+                                    <div class="grid grid-cols-4 items-center gap-4">
+                                        <Label for="email" class="text-right">
+                                            Email
+                                        </Label>
+                                        <Input id="email" type="email" class="col-span-3" v-model="formInvite.email" />
+                                    </div>
+                                    <div class="grid grid-cols-4 items-center gap-4">
+                                        <Label for="name" class="text-right">
+                                            Role
+                                        </Label>
+                                        <!-- <Input id="name" value="Pedro Duarte" class="col-span-3" /> -->
+                                        <Select v-model="formInvite.role">
+                                            <SelectTrigger class="col-span-3">
+                                                <SelectValue placeholder="Pilih role" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="admin">
+                                                    Admin
+                                                </SelectItem>
+                                                <SelectItem value="abk">
+                                                    ABK
+                                                </SelectItem>
+                                                <SelectItem value="investor">
+                                                    Investor
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <DialogClose as-child>
+                                        <Button type="submit" class="w-full" v-on:click="invite">
+                                            Undang
+                                        </Button>
+                                    </DialogClose>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    </CardFooter>
                 </Card>
             </div>
         </div>

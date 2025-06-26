@@ -121,7 +121,8 @@ const toggleAppearance = (event: Event) => {
                     <DropdownMenuTrigger :as-child="true">
                         <Button variant="outline" size="sm"
                             class="relative w-auto rounded-full focus-within:ring-2 focus-within:ring-primary">
-                            <Building2 class="size-4" /> {{ $page.props.auth.user.current_farm.name }}
+                            <Building2 class="size-4" />
+                            {{ $page.props.auth.user.current_farm?.name || 'Pilih Peternakan' }}
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-80 p-0 bg-teal-950 text-white rounded-xl">

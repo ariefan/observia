@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('farm_user_invite', function (Blueprint $table) {
+        Schema::create('farm_invites', function (Blueprint $table) {
             $table->id();
             $table->foreignUuid('farm_id');
             $table->string('email');

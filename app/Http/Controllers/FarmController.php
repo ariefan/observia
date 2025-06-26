@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Farm;
+use App\Models\FarmInvite;
 use App\Models\Province;
 use App\Models\City;
 use App\Http\Requests\StoreFarmRequest;
@@ -48,7 +49,7 @@ class FarmController extends Controller
         if ($request->hasFile('picture_blob')) {
             $file = $request->file('picture_blob');
             $path = $file->store('farm_pictures', 'public');
-            $data['picture'] = $path;
+            $data['picture'] = asset('storage/' . $path);
         }
         $farm = Farm::create([
             ...$data,
@@ -68,9 +69,11 @@ class FarmController extends Controller
      */
     public function show(Farm $farm)
     {
+        $farm = Farm::findOrFail(auth()->user()->current_farm_id);
         $farm->load(['users']);
         return Inertia::render('farms/Show', [
             'farm' => $farm ?? null,
+            'invites' => FarmInvite::where('farm_id', $farm->id)->get(),
         ]);
     }
 
@@ -79,6 +82,7 @@ class FarmController extends Controller
      */
     public function edit(Farm $farm)
     {
+        $farm = Farm::findOrFail(auth()->user()->current_farm_id);
         $farm->load(['city.province']);
         return Inertia::render('farms/Form', [
             'provinces' => Province::all(),
@@ -99,7 +103,7 @@ class FarmController extends Controller
         if ($request->hasFile('picture_blob')) {
             $file = $request->file('picture_blob');
             $path = $file->store('farm_pictures', 'public');
-            $data['picture'] = $path;
+            $data['picture'] = asset('storage/' . $path);
 
             // Optional: delete the old picture from storage if it exists
             if ($farm->picture && \Storage::disk('public')->exists($farm->picture)) {
@@ -108,9 +112,7 @@ class FarmController extends Controller
         }
 
         $farm->update($data);
-
-        return redirect()->route('farms.show', ['farm' => $farm->id])
-            ->with('success', 'Farm updated successfully.');
+        return redirect()->back()->with('success', 'Data peternakan berhasil diperbarui.');
     }
     
     public function updateRole(Request $request, Farm $farm, User $user)
@@ -121,7 +123,7 @@ class FarmController extends Controller
 
         // Check if the user is actually related to this farm
         if (!$farm->users()->where('user_id', $user->id)->exists()) {
-            return response()->json(['message' => 'User not part of this farm'], 404);
+            return back()->with('error', 'Anda tidak memiliki akses ke peternakan ini.');
         }
 
         // Update the pivot table
@@ -130,14 +132,78 @@ class FarmController extends Controller
         return back()->with('success', 'Role updated!');
     }
     
-    public function destroyMember(Request $request)
+    public function updateRoleInvite(Request $request, Farm $farm, $email)
     {
-        //
+        $validated = $request->validate([
+            'email' => 'required|email|exists:farm_invites,email,farm_id,' . $farm->id,
+            'role' => 'required|string|max:50',
+        ]);
+
+        FarmInvite::where('farm_id', $farm->id)
+            ->where('email', $email)
+            ->update(['role' => $validated['role']]);
+
+        return back()->with('success', 'Role updated!');
     }
     
-    public function inviteMember(Request $request)
+    public function switch(Request $request, Farm $farm)
     {
-        //
+        $user = auth()->user();
+
+        // Check if the farm belongs to the user
+        if (!$user->farms()->where('farms.id', $farm->id)->exists()) {
+            return redirect()->route('farms.index')->with('error', 'You do not have access to this farm.');
+        }
+
+        // Update the user's current farm
+        $user->update(['current_farm_id' => $farm->id]);
+
+       return redirect()->back()->with('success', 'Anda telah beralih ke peternakan: ' . $farm->name);
+    }
+    
+    public function inviteMember(Request $request, Farm $farm)
+    {
+        $request->validate([
+            'email' => 'required|email|unique:farm_invites,email,NULL,id,farm_id,' . $farm->id,
+            'role' => 'required|string|max:50',
+        ]);
+
+        FarmInvite::create([
+            'farm_id' => $farm->id,
+            'email' => $request->email,
+            'role' => $request->role,
+        ]);
+       return redirect()->back()->with('success', 'Pengguna dengan email ' . $request->email . ' telah diundang ke peternakan: ' . $farm->name);
+    }
+    
+    public function destroyMember(Request $request, Farm $farm, User $user)
+    {
+        // Check if the user is actually related to this farm
+        if (!$farm->users()->where('user_id', $user->id)->exists()) {
+            return back()->with('error', 'Anda tidak memiliki akses ke peternakan ini.');
+        }
+
+        // Remove the user from the farm
+        $farm->users()->detach($user->id);
+
+        return back()->with('success', 'Pengguna dengan ID ' . $user->id . ' telah dihapus dari peternakan: ' . $farm->name);
+    }
+    
+    public function destroyMemberInvite(Request $request, Farm $farm, string $email)
+    {
+        // Check if the invite exists
+        $invite = FarmInvite::where('farm_id', $farm->id)
+            ->where('email', $email)
+            ->first();
+
+        if (!$invite) {
+            return back()->with('error', 'Undangan tidak ditemukan untuk email: ' . $email);
+        }
+
+        // Delete the invite
+        $invite->delete();
+
+        return back()->with('success', 'Undangan untuk email ' . $email . ' telah dihapus dari peternakan: ' . $farm->name);
     }
 
     /**
