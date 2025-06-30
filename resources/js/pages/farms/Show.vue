@@ -276,7 +276,8 @@ const back = () => window.history.back();
                                             <td class="px-4 py-3">{{ user.phone }}</td>
                                             <td class="px-4 py-3">{{ user.email }}</td>
                                             <td class="px-4 py-3 gap-2">
-                                                <DropdownMenu v-if="user.pivot.role !== 'owner'">
+                                                <DropdownMenu
+                                                    v-if="user.pivot.role !== 'owner' && $page.props.auth.user.role === 'owner'">
                                                     <DropdownMenuTrigger>
                                                         <Button variant="secondary" size="sm">
                                                             {{
