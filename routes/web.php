@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\GoogleLoginController;
 use App\Http\Controllers\FarmController;
 use App\Http\Controllers\LivestockController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -34,6 +35,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+
+    // Farms
     Route::get('/farms.logout', [HomeController::class, 'farmLogout'])->name('farms.logout');
     Route::get('/farms/{farm}/switch', [FarmController::class, 'switch'])->name('farms.switch');
     Route::post('/farms/{farm}/invite', [FarmController::class, 'inviteMember'])->name('farms.invite');
@@ -42,9 +45,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/farms/{farm}/users/{user}', [FarmController::class, 'destroyMember'])->name('farms.user');
     Route::delete('/farms/{farm}/email/{email}', [FarmController::class, 'destroyMemberInvite'])->name('farms.user.remove-invite');
 
-    // Route::get('/dashboard', function () {
-    //     return Inertia::render('Dashboard');
-    // })->name('dashboard');
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/{notification}/accept', [NotificationController::class, 'accept']);
+    Route::post('/notifications/{notification}/reject', [NotificationController::class, 'reject']);
+
 });
 
 require __DIR__.'/settings.php';

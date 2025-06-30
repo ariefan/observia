@@ -8,15 +8,20 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
-            $table->uuid('id')->primary(); // if you want UUIDs, use this
+            $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
 
-            $table->string('type')->nullable(); // 'message', 'update', 'reminder', etc.
+            $table->string('type'); // 'invite', 'system', 'info'
             $table->string('title');
             $table->text('message');
 
-            $table->timestamp('read_at')->nullable(); // NULL = unread
-            $table->timestamps(); // created_at = shown in UI
+            $table->boolean('action_required')->default(false); // TRUE = user must take action
+
+            $table->enum('action_status', ['pending', 'accepted', 'rejected'])->nullable();
+            $table->timestamp('acted_at')->nullable();
+
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
         });
     }
 

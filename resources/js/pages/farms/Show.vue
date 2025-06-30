@@ -306,7 +306,7 @@ const back = () => window.history.back();
                                                 <Button
                                                     v-if="user.pivot.role !== 'owner' &&
                                                         ['owner', 'admin'].includes($page.props.auth.user.current_farm.role)"
-                                                    variant="destructive" size="sm">
+                                                    variant="destructive" size="sm" @click="removeUser(user)">
                                                     <Trash2 class="w-4 h-4 mr-1" /> Keluarkan
                                                 </Button>
                                             </td>

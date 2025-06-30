@@ -158,7 +158,7 @@ const toggleAppearance = (event: Event) => {
                     </template>
                 </Menu>
 
-                <DropdownMenu>
+                <!-- <DropdownMenu>
                     <DropdownMenuTrigger as-child>
                         <Button variant="ghost" size="icon" class="group h-9 w-9 cursor-pointer relative">
                             <Bell class="size-5 opacity-80 group-hover:opacity-100" />
@@ -185,7 +185,7 @@ const toggleAppearance = (event: Event) => {
                             <Button variant="ghost" size="sm" class="w-full">View all</Button>
                         </div>
                     </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu> -->
 
                 <DropdownMenu>
                     <DropdownMenuTrigger :as-child="true">
