@@ -38,7 +38,7 @@ defineProps<{
                         </div>
                     </template>
 
-                    <template #footer>
+                    <template #footer v-if="!$page.props.auth.user.current_farm_id">
                         <div class="relative w-full h-[150px] lg:h-[180px] rounded-xl overflow-hidden">
                             <!-- The sacred image, now behaving like a good zoomed boy -->
                             <img :src="Welcome1" alt="Welcome 1"
