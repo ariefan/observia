@@ -15,7 +15,7 @@ import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItemType, NavItem } from '@/types';
 import type { Auth } from '@/types';
 import { useAppearance } from '@/composables/useAppearance';
-import { Monitor, Moon, Sun, SunMoon, Building2 } from 'lucide-vue-next';
+import { Monitor, Moon, Sun, SunMoon, Building2, Bell } from 'lucide-vue-next';
 import type { SharedData, User } from '@/types';
 
 const props = defineProps<{
@@ -157,6 +157,34 @@ const toggleAppearance = (event: Event) => {
                         </a>
                     </template>
                 </Menu>
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                        <Button variant="ghost" size="icon" class="group h-9 w-9 cursor-pointer relative">
+                            <Bell class="size-5 opacity-80 group-hover:opacity-100" />
+                            <span class="absolute top-1 right-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" class="w-80 p-0">
+                        <ul>
+                            <li v-for="(notification, idx) in [
+                                { id: 1, title: 'New message', desc: 'You have a new message from John', time: '2m ago' },
+                                { id: 2, title: 'Farm updated', desc: 'Farm profile was updated', time: '10m ago' },
+                                { id: 3, title: 'Reminder', desc: 'Check your livestock health', time: '1h ago' },
+                                { id: 4, title: 'Task assigned', desc: 'A new task has been assigned to you', time: '3h ago' },
+                                { id: 5, title: 'System alert', desc: 'System maintenance scheduled', time: '1d ago' }
+                            ]" :key="notification.id"
+                                class="px-4 py-3 bg-gray-50 dark:bg-gray-900 hover:bg-teal-100 dark:hover:bg-teal-900 cursor-pointer">
+                                <div class="text-sm font-medium">{{ notification.title }}</div>
+                                <div class="text-xs">{{ notification.desc }}</div>
+                                <div class="text-xs mt-1">{{ notification.time }}</div>
+                            </li>
+                        </ul>
+                        <div class="p-2 text-center bg-gray-50 dark:bg-gray-900">
+                            <Button variant="ghost" size="sm" class="w-full">View all</Button>
+                        </div>
+                    </DropdownMenuContent>
+                </DropdownMenu>
 
                 <DropdownMenu>
                     <DropdownMenuTrigger :as-child="true">
