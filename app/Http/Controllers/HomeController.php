@@ -15,7 +15,9 @@ class HomeController extends Controller
      */
     public function index()
     {
-        // dd(auth()->user()->farms);
+        if(auth()->user()->current_farm_id) {
+            return redirect()->route('dashboard');
+        }
         $data = [];
         return Inertia::render('home/Home', $data);
     }

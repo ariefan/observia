@@ -60,7 +60,7 @@ interface Farm {
 
         <!-- Other Farms -->
         <div class="bg-teal-950 px-4 py-4 text-white text-sm">
-            <h3 class="mb-2 font-semibold">Peternakan lain</h3>
+            <h3 class="mb-2 font-semibold">Peternakan anda</h3>
             <ul class="space-y-1">
                 <li v-for="(farm, i) in $page.props.auth.farms.filter(
                     (farm) => farm.id !== ($page.props.auth.user.current_farm?.id || '')

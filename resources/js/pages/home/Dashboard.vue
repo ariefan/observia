@@ -2,6 +2,8 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
+import Rank from './Rank.vue';
+import Tips from './Tips.vue';
 import Guide from './Guide.vue';
 import {
     Card,
@@ -124,28 +126,14 @@ defineProps<{
                 <div class="relative flex-1 mt-6">
                     <Guide />
                 </div>
-            </div>
 
-            <div class="relative flex-1">
-            </div>
+                <div class="relative flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <Rank />
+                </div>
 
-            <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div
-                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
+                <div class="relative flex-1 mt-6">
+                    <Tips />
                 </div>
-                <div
-                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-                <div
-                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-            </div>
-            <div
-                class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border md:min-h-min">
-                <PlaceholderPattern />
             </div>
         </div>
     </AppLayout>
