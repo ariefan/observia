@@ -45,7 +45,6 @@ import { getInitials } from '@/composables/useInitials';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Pencil, ChevronDown, Trash2, Building2, Users } from 'lucide-vue-next';
 
-
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Profil Peternakan', href: '/teams' },
 ];
@@ -232,6 +231,7 @@ const back = () => window.history.back();
             <div class="flex-1 flex flex-col gap-4 p-4 max-w-7xl mx-auto">
                 <div>
                     <h1 class="text-xl font-semibold text-primary">
+                        {{ $page.props.auth.user.role }}
                         Anggota {{ $page.props.auth.user.current_farm.name }}
                     </h1>
                 </div>
@@ -277,7 +277,8 @@ const back = () => window.history.back();
                                             <td class="px-4 py-3">{{ user.email }}</td>
                                             <td class="px-4 py-3 gap-2">
                                                 <DropdownMenu
-                                                    v-if="user.pivot.role !== 'owner' && $page.props.auth.user.role === 'owner'">
+                                                    v-if="user.pivot.role !== 'owner' &&
+                                                        ['owner', 'admin'].includes($page.props.auth.user.current_farm.role)">
                                                     <DropdownMenuTrigger>
                                                         <Button variant="secondary" size="sm">
                                                             {{
@@ -302,8 +303,10 @@ const back = () => window.history.back();
                                                 <span class="font-semibold" v-else>{{ user.pivot.role }}</span>
                                             </td>
                                             <td class="px-4 py-3">
-                                                <Button v-if="user.pivot.role !== 'owner'" variant="destructive"
-                                                    size="sm">
+                                                <Button
+                                                    v-if="user.pivot.role !== 'owner' &&
+                                                        ['owner', 'admin'].includes($page.props.auth.user.current_farm.role)"
+                                                    variant="destructive" size="sm">
                                                     <Trash2 class="w-4 h-4 mr-1" /> Keluarkan
                                                 </Button>
                                             </td>

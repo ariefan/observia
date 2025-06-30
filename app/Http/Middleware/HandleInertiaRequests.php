@@ -39,14 +39,29 @@ class HandleInertiaRequests extends Middleware
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
         $user = $request->user();
+        $userFarms = collect();
 
         if ($user) {
-            $user->load(['currentFarm' => function ($query) {
-                $query->withCount('users');
-            }]);
-            $userFarms = $user->farms()->select('farms.id', 'farms.name', 'farms.picture')->get();
-        } else {
-            $userFarms = collect();
+            $user->load([
+                'currentFarm' => function ($query) {
+                    $query->withCount('users');
+                }
+            ]);
+
+            $userFarms = $user->farms()
+                ->select('farms.id', 'farms.name', 'farms.picture')
+                ->get();
+
+            if ($user->current_farm_id) {
+                // Get pivot role from many-to-many
+                $pivot = $user->farms->firstWhere('id', $user->current_farm_id)?->pivot;
+                $role = $pivot?->role;
+
+                // Inject role directly into currentFarm object
+                if ($user->relationLoaded('currentFarm') && $user->currentFarm) {
+                    $user->currentFarm->setAttribute('role', $role);
+                }
+            }
         }
 
         return [
@@ -59,8 +74,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
-                'errror' => fn () => $request->session()->get('error'),
-                
+                'error' => fn () => $request->session()->get('error'),
             ],
         ];
     }
