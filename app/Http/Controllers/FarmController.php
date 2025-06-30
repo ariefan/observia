@@ -187,6 +187,7 @@ class FarmController extends Controller
 
         // Remove the user from the farm
         $farm->users()->detach($user->id);
+        $user->update(['current_farm_id' => null]);
 
         return back()->with('success', 'Pengguna dengan ID ' . $user->id . ' telah dihapus dari peternakan: ' . $farm->name);
     }

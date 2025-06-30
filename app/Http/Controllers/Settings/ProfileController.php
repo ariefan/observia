@@ -45,8 +45,19 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // $request->validate([
+        //     'password' => ['required', 'current_password'],
+        // ]);
         $request->validate([
-            'password' => ['required', 'current_password'],
+            'email' => [
+            'required',
+            'email',
+            function ($attribute, $value, $fail) use ($request) {
+                if ($value !== $request->user()->email) {
+                $fail('The provided email does not match your account email.');
+                }
+            },
+            ],
         ]);
 
         $user = $request->user();
