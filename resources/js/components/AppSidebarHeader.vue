@@ -162,7 +162,8 @@ const toggleAppearance = (event: Event) => {
                     <DropdownMenuTrigger as-child>
                         <Button variant="ghost" size="icon" class="group h-9 w-9 cursor-pointer relative">
                             <Bell class="size-5 opacity-80 group-hover:opacity-100" />
-                            <span class="absolute top-1 right-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+                            <span
+                                class="absolute top-1.5 right-1.5 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-80 p-0">

@@ -6,10 +6,10 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { getInitials } from '@/composables/useInitials';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Building2, Users, Plus } from 'lucide-vue-next';
+import { Building2, Users, Plus, LogOut } from 'lucide-vue-next';
 
 interface Farm {
     name: string;
@@ -43,8 +43,16 @@ interface Farm {
                 </Link>
                 <Link :href="route('farms.show', $page.props.auth.user.current_farm.id)">
                 <Button variant="outline"
-                    class="bg-white/10 text-white border-white/30 hover:bg-white/80 text-xs px-3 py-1 h-auto gap-1">
+                    class="bg-white/10 text-white border-white/30 hover:bg-white/80 text-xs px-3 py-1 h-auto gap-1"
+                    title="Lihat anggota peternakan">
                     <Users class="w-4 h-4" /> {{ $page.props.auth.user.current_farm.users_count }}
+                </Button>
+                </Link>
+                <Link :href="route('farms.logout')">
+                <Button variant="outline"
+                    class="bg-white/10 text-white border-white/30 hover:bg-white/80 text-xs px-3 py-1 h-auto gap-1"
+                    title="Log out peternakan ini">
+                    <LogOut class="w-4 h-4" />
                 </Button>
                 </Link>
             </div>
@@ -70,12 +78,11 @@ interface Farm {
                 </li>
             </ul>
 
-            <div class="mt-3">
-                <Link :href="route('farms.create')">
-                <Button variant="ghost" class="text-emerald-400 text-xs px-0 h-auto gap-1 hover:underline px-2">
+            <div class="mt-3 flex justify-between items-center">
+                <Button variant="ghost" class="text-emerald-400 text-xs px-0 h-auto gap-1 hover:underline px-2"
+                    @click="router.visit(route('farms.create'))">
                     <Plus class="w-4 h-4" /> Tambah Peternakan
                 </Button>
-                </Link>
             </div>
         </div>
     </div>

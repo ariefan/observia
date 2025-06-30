@@ -19,6 +19,12 @@ class HomeController extends Controller
         $data = [];
         return Inertia::render('home/Home', $data);
     }
+    
+    public function farmLogout(Request $request)
+    {
+        auth()->user()->update(['current_farm_id' => null]);
+        return redirect()->route('home')->with('success', 'Anda telah logout ke peternakan. Pilih peternakan untuk login kembali.');
+    }
 
     public function dashboard()
     {

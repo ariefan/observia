@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ]);
     
     Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/farms.logout', [HomeController::class, 'farmLogout'])->name('farms.logout');
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
     Route::get('/farms/{farm}/switch', [FarmController::class, 'switch'])->name('farms.switch');
     Route::post('/farms/{farm}/invite', [FarmController::class, 'inviteMember'])->name('farms.invite');
