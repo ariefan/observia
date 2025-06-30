@@ -15,11 +15,6 @@ const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
 
 const mainNavItems: NavItem[] = [
-    {
-        title: 'Home',
-        href: '/home',
-        icon: Home,
-    },
     ...(page.props.auth.farms && page.props.auth.user.current_farm_id
         ? [{
             title: 'Dashboard',
@@ -51,7 +46,13 @@ const mainNavItems: NavItem[] = [
             href: '/dashboard',
             icon: Database,
         }]
-        : []),
+        :
+        [{
+            title: 'Home',
+            href: '/home',
+            icon: Home,
+        }]
+    ),
 ];
 
 const footerNavItems: NavItem[] = [

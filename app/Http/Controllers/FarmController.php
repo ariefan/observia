@@ -152,13 +152,15 @@ class FarmController extends Controller
 
         // Check if the farm belongs to the user
         if (!$user->farms()->where('farms.id', $farm->id)->exists()) {
-            return redirect()->route('farms.index')->with('error', 'You do not have access to this farm.');
+            return redirect()->route('farms.index')->with('error', 'Anda tidak memiliki akses ke peternakan ini.');
         }
 
         // Update the user's current farm
         $user->update(['current_farm_id' => $farm->id]);
 
-       return redirect()->back()->with('success', 'Anda telah beralih ke peternakan: ' . $farm->name);
+        $currentRoute = $request->route()->getName();
+
+       return redirect()->route('dashboard')->with('success', 'Anda telah beralih ke peternakan: ' . $farm->name);
     }
     
     public function inviteMember(Request $request, Farm $farm)
