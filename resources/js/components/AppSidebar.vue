@@ -26,26 +26,27 @@ const mainNavItems: NavItem[] = [
             href: '/livestocks',
             icon: PawPrint,
         },
-        {
-            title: 'Produktivitas',
-            href: '/dashboard',
-            icon: ChartLine,
-        },
-        {
-            title: 'Transaksi',
-            href: '/dashboard',
-            icon: ArrowLeftRight,
-        },
-        {
-            title: 'Breeding',
-            href: '/dashboard',
-            icon: Heart,
-        },
-        {
-            title: 'Data',
-            href: '/dashboard',
-            icon: Database,
-        }]
+            // {
+            //     title: 'Produktivitas',
+            //     href: '/dashboard',
+            //     icon: ChartLine,
+            // },
+            // {
+            //     title: 'Transaksi',
+            //     href: '/dashboard',
+            //     icon: ArrowLeftRight,
+            // },
+            // {
+            //     title: 'Breeding',
+            //     href: '/dashboard',
+            //     icon: Heart,
+            // },
+            // {
+            //     title: 'Data',
+            //     href: '/dashboard',
+            //     icon: Database,
+            // }
+        ]
         :
         [{
             title: 'Home',
