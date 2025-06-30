@@ -220,10 +220,33 @@ const back = () => window.history.back();
                         class="flex items-center gap-2 text-sm font-semibold text-white bg-primary rounded-full px-4 py-2 transition-colors">
                     <Users class="size-4" /> Anggota Peternakan
                     </Link>
-                    <Link href="#"
-                        class="flex items-center gap-2 text-sm font-semibold hover:bg-primary hover:text-white rounded-full px-4 py-2 transition-colors">
-                    <Trash2 class="size-4" /> Hapus Peternakan
-                    </Link>
+
+                    <Dialog>
+                        <DialogTrigger as-child>
+                            <a href="#"
+                                class="flex items-center gap-2 text-sm font-semibold hover:bg-primary hover:text-white rounded-full px-4 py-2 transition-colors">
+                                <Trash2 class="size-4" /> Hapus Peternakan
+                            </a>
+                        </DialogTrigger>
+                        <DialogContent class="sm:max-w-[450px]">
+                            <DialogHeader>
+                                <DialogTitle>Hapus Peternakan</DialogTitle>
+                                <DialogDescription>
+                                    Berikan akses ke data dan fitur peternakan kepada anggota.
+                                </DialogDescription>
+                            </DialogHeader>
+                            Silahkan hubungi Aifarm untuk melakukan permohonan penghapusan peternakan.
+                            <DialogFooter>
+                                <DialogClose as-child>
+                                    <a href="https://wa.me/6282323294488" target="_blank" class="w-full">
+                                        <Button type="submit" class="w-full" v-on:click="invite">
+                                            Hubungi Aifarm
+                                        </Button>
+                                    </a>
+                                </DialogClose>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </nav>
             </aside>
 
