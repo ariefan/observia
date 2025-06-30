@@ -20,7 +20,7 @@ const mainNavItems: NavItem[] = [
         href: '/home',
         icon: Home,
     },
-    ...(page.props.auth.farms && page.props.auth.farms.length > 0
+    ...(page.props.auth.farms && page.props.auth.user.current_farm_id
         ? [{
             title: 'Dashboard',
             href: '/dashboard',

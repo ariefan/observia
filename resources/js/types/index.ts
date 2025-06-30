@@ -29,6 +29,7 @@ export interface User {
     email: string;
     avatar?: string;
     email_verified_at: string | null;
+    current_farm_id: string | null;
     farms: [] | null;
     created_at: string;
     updated_at: string;
