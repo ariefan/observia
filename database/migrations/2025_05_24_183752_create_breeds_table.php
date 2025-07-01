@@ -12,7 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('breeds', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('species_id')->nullable();
+            $table->string('name');
+            $table->string('origin')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

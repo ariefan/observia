@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Livestock;
+use App\Models\Species;
+use App\Models\Breed;
 use App\Http\Requests\StoreLivestockRequest;
 use App\Http\Requests\UpdateLivestockRequest;
 use Inertia\Inertia;
@@ -23,8 +25,16 @@ class LivestockController extends Controller
      */
     public function create()
     {
-        $data = [];
-        return Inertia::render('livestocks/Form', $data);
+        $species = Species::query()->select('id', 'name')->get();
+        $livestock = new Livestock();
+        $livestock->photo = [];
+
+        return Inertia::render('livestocks/Form', [
+            'livestock' => $livestock,
+            'species' => $species,
+            'male_livestock' => '',
+            'female_livestock' => '',
+        ]);
     }
 
     /**

@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('species', function (Blueprint $table) {
+        Schema::create('herds', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name');
-            $table->string('binomial_nomenclature')->nullable();
+            $table->uuid('farm_id');
+            $table->string('name', 100);
+            $table->string('description')->nullable();
+            $table->string('status')->nullable();
+            $table->string('type')->nullable();
+            $table->integer('capacity')->default(0);
             $table->timestamps();
         });
     }
@@ -24,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('species');
+        Schema::dropIfExists('herds');
     }
 };

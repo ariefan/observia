@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import type { NavItem, SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -43,7 +43,7 @@ const page = usePage<SharedData>();
                 </DropdownMenuTrigger>
                 <DropdownMenuContent class="w-56 ml-8">
                     <DropdownMenuGroup>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem @click="router.get('/livestocks/create')">
                             <PawPrint class="mr-2 h-4 w-4" />
                             <span>Ternak</span>
                         </DropdownMenuItem>
