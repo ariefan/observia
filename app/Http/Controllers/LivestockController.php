@@ -42,8 +42,32 @@ class LivestockController extends Controller
      */
     public function store(StoreLivestockRequest $request)
     {
-        Livestock::create($request->validated());
-        return redirect()->route('livestocks.index');
+        $livestock = new Livestock();
+        $livestock->fill($request->validated());
+        $livestock->team_id = auth()->user()->current_team_id;
+        $photos = [];
+
+        if (! is_null($request->photo) && ! empty($request->photo)) {
+            foreach ($request->photo as $key => $photo) {
+                if ($key > 4) {
+                    break;
+                }
+                $extension = $photo->extension();
+                $filename = Str::uuid().".{$extension}";
+                $photo->storeAs('livestock-photos', $filename);
+                $photos[] = asset("storage/livestock-photos/{$filename}");
+            }
+        }
+
+        $countLivestock = Livestock::query()->count();
+
+        $livestock->photo = $photos;
+        $livestock->aifarm_id = Livestock::generateAifarmId($countLivestock);
+        $livestock->save();
+
+        return redirect()
+            ->route('livestocks.index')
+            ->with('message', 'Livestock Created Successfully');
     }
 
     /**
