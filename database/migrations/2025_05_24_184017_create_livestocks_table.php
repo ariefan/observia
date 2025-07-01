@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('name');
             $table->dateTime('birthdate');
             $table->string('sex');
+            $table->string('origin');
+            $table->string('status');
             $table->integer('male_parent_id')->references('id')->on('livestocks')->nullable();
             $table->integer('female_parent_id')->references('id')->on('livestocks')->nullable();
             $table->dateTime('purchase_date');

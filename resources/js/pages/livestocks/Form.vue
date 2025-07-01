@@ -4,6 +4,23 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { ref, onMounted } from "vue";
 import _, { map } from "underscore";
 
+import { Check, Circle, Dot } from 'lucide-vue-next'
+
+import { Button } from '@/components/ui/button'
+import { Stepper, StepperDescription, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from '@/components/ui/stepper'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import InputError from '@/components/InputError.vue';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
 const props = defineProps({
   livestock: {
     type: Object,
@@ -151,6 +168,42 @@ onMounted(() => {
     };
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+const stepIndex = ref(1)
+const steps = [
+  {
+    step: 1,
+    title: 'Data Ternak',
+  },
+  {
+    step: 2,
+    title: 'Data Induk Jantan',
+  },
+  {
+    step: 3,
+    title: 'Data Induk Betina',
+  },
+]
+
+function onSubmit(values) {
+  toast({
+    title: 'You submitted the following values:',
+    description: h('pre', { class: 'mt-2 w-[340px] rounded-md bg-slate-950 p-4' }, h('code', { class: 'text-white' }, JSON.stringify(values, null, 2))),
+  })
+}
+
+const meta = { valid: true }
+
 </script>
 
 <template>
@@ -164,36 +217,371 @@ onMounted(() => {
           Tambahkan informasi mengenai ternak anda dengan lengkap. Bantu kami
           untuk lebih mudah dalam mengelola ternak anda.
         </p>
-        <div
-          class="mb-10 rounded-lg border border-gray-200 bg-white p-6 text-gray-500 shadow dark:border-gray-700 dark:bg-gray-800">
-          <div class="grid grid-cols-2 md:grid-cols-2">
-            <ul class="max-w-md list-inside list-disc space-y-1 dark:text-gray-400">
-              <li>
-                Format foto
-                <strong class="font-semibold text-gray-900 dark:text-white">.jpeg</strong>,
-                <strong class="font-semibold text-gray-900 dark:text-white">.jpg</strong>, dan
-                <strong class="font-semibold text-gray-900 dark:text-white">.png</strong>. Ukuran maksimal
-                <strong class="font-semibold text-gray-900 dark:text-white">2 MB</strong>
-              </li>
-              <li>
-                Pilih foto landscape yang jelas, simetris, dan dapat
-                diidentifikasi
-              </li>
-              <li>
-                Pastikan hanya ada
-                <strong class="font-semibold text-gray-900 dark:text-white">1 ternak</strong>
-                di dalam tiap foto
-              </li>
-              <li>Anda dapat mengupload/unggah maksimal 5 foto</li>
-              <li>Contoh gambar seperti disamping</li>
-            </ul>
-            <img class="h-52 w-1/2 object-cover"
-              src="https://media.4-paws.org/a/4/8/b/a48b18270b120e60e9bd4783e9106940a2808acd/VIER%20PFOTEN_2013-07-19_024-3851x2665-1920x1329.jpg"
-              alt="Goat" />
-          </div>
-        </div>
 
-        <div v-if="livestock.photo.length > 0" id="indicators-carousel" class="relative mb-8 w-full"
+
+
+
+
+
+
+        <Stepper v-slot="{ isNextDisabled, isPrevDisabled, nextStep, prevStep }" v-model="stepIndex"
+          class="block w-full">
+          <form @submit="(e) => {
+            e.preventDefault()
+            validate()
+
+            if (stepIndex === steps.length && meta.valid) {
+              onSubmit(values)
+            }
+          }">
+            <div class="flex w-full flex-start gap-2">
+              <StepperItem v-for="step in steps" :key="step.step" v-slot="{ state }"
+                class="relative flex w-full flex-col items-center justify-center" :step="step.step">
+                <StepperSeparator v-if="step.step !== steps[steps.length - 1].step"
+                  class="absolute left-[calc(50%+20px)] right-[calc(-50%+10px)] top-5 block h-0.5 shrink-0 rounded-full bg-muted group-data-[state=completed]:bg-primary" />
+
+                <StepperTrigger as-child>
+                  <Button :variant="state === 'completed' || state === 'active' ? 'default' : 'outline'" size="icon"
+                    class="z-10 rounded-full shrink-0"
+                    :class="[state === 'active' && 'ring-2 ring-ring ring-offset-2 ring-offset-background']"
+                    :disabled="state !== 'completed' && !meta.valid">
+                    <Check v-if="state === 'completed'" class="size-5" />
+                    <Circle v-if="state === 'active'" />
+                    <Dot v-if="state === 'inactive'" />
+                  </Button>
+                </StepperTrigger>
+
+                <div class="mt-5 flex flex-col items-center text-center">
+                  <StepperTitle :class="[state === 'active' && 'text-primary']"
+                    class="text-sm font-semibold transition lg:text-base">
+                    {{ step.title }}
+                  </StepperTitle>
+                  <StepperDescription :class="[state === 'active' && 'text-primary']"
+                    class="sr-only text-xs text-muted-foreground transition md:not-sr-only lg:text-sm">
+                    {{ step.description }}
+                  </StepperDescription>
+                </div>
+              </StepperItem>
+            </div>
+
+            <div class="flex flex-col gap-4 mt-4">
+              <template v-if="stepIndex === 1">
+                <form class="space-y-4" @submit.prevent="saveAction">
+
+
+                  <div
+                    class="mb-2 rounded-lg border border-gray-200 bg-white p-6 text-gray-500 shadow dark:border-gray-700 dark:bg-gray-800">
+                    <div class="grid grid-cols-2 md:grid-cols-2">
+                      <ul class="max-w-md list-inside list-disc space-y-1 dark:text-gray-400">
+                        <li>
+                          Format foto
+                          <strong class="font-semibold text-gray-900 dark:text-white">.jpeg</strong>,
+                          <strong class="font-semibold text-gray-900 dark:text-white">.jpg</strong>, dan
+                          <strong class="font-semibold text-gray-900 dark:text-white">.png</strong>. Ukuran maksimal
+                          <strong class="font-semibold text-gray-900 dark:text-white">2 MB</strong>
+                        </li>
+                        <li>
+                          Pilih foto landscape yang jelas, simetris, dan dapat
+                          diidentifikasi
+                        </li>
+                        <li>
+                          Pastikan hanya ada
+                          <strong class="font-semibold text-gray-900 dark:text-white">1 ternak</strong>
+                          di dalam tiap foto
+                        </li>
+                        <li>Anda dapat mengupload/unggah maksimal 5 foto</li>
+                        <li>Contoh gambar seperti disamping</li>
+                      </ul>
+                      <img class="h-52 w-1/2 object-cover"
+                        src="https://media.4-paws.org/a/4/8/b/a48b18270b120e60e9bd4783e9106940a2808acd/VIER%20PFOTEN_2013-07-19_024-3851x2665-1920x1329.jpg"
+                        alt="Goat" />
+                    </div>
+                  </div>
+
+
+                  <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+
+                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                      <Label for="name">Nama</Label>
+                      <Input id="name" v-model="form.name" placeholder="Email" />
+                      <InputError class="mt-2" :message="form.errors.name" />
+                    </div>
+
+                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                      <Label for="name">Asal Ternak</Label>
+                      <Select v-model="form.origin">
+                        <SelectTrigger class="max-w-sm">
+                          <SelectValue placeholder="Pilih..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="born_in_farm">
+                              Lahir di kandang
+                            </SelectItem>
+                            <SelectItem value="buy">
+                              Beli
+                            </SelectItem>
+                            <SelectItem value="grant">
+                              Hibah
+                            </SelectItem>
+                            <SelectItem value="barter">
+                              Barter
+                            </SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <InputError class="mt-2" :message="form.errors.origin" />
+                    </div>
+
+                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                      <Label for="name">Asal Ternak</Label>
+                      <Select v-model="form.status">
+                        <SelectTrigger class="max-w-sm">
+                          <SelectValue placeholder="Pilih..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="alive">
+                              Hidup
+                            </SelectItem>
+                            <SelectItem value="dead">
+                              Mati
+                            </SelectItem>
+                            <SelectItem value="out_of_farm">
+                              Keluar kandang
+                            </SelectItem>
+                            <SelectItem value="pregnant">
+                              Bunting
+                            </SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <InputError class="mt-2" :message="form.errors.status" />
+                    </div>
+
+                    <div class="col-span-1">
+                      <label for="type" class="block text-sm font-medium text-gray-700">Jenis ternak</label>
+                      <select id="species" v-model="form.speciesSelected" @change="fetchBreeds"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                        <!-- Options go here -->
+                        <option v-for="spc in species" :key="spc.id" :value="spc">
+                          {{ spc.name }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="col-span-1">
+                      <label for="breed" :class="form.errors.breed_id
+                        ? `block text-sm font-medium text-red-700 dark:text-red-500`
+                        : `block text-sm font-medium text-gray-700`
+                        ">Jenis kambing/ Jenis domba</label>
+                      <select id="breed" v-model="form.breedSelected" :class="form.errors.breed_id
+                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
+                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
+                        ">
+                        <!-- Options go here -->
+                        <option v-for="breed in breeds" :key="breed.id" :value="breed">
+                          {{ breed.name }}
+                        </option>
+                      </select>
+                      <p v-if="form.errors.breed_id" class="mt-2 text-sm text-red-600 dark:text-red-500">
+                        {{ form.errors.breed_id }}
+                      </p>
+                    </div>
+                    <div class="col-span-1">
+                      <label for="gender" class="block text-sm font-medium text-gray-700">Jenis kelamin</label>
+                      <select id="gender" v-model="form.sex"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                        <option value="F">Betina</option>
+                        <option value="M">Jantan</option>
+                      </select>
+                    </div>
+                    <div class="col-span-1 hidden">
+                      <label for="tag-type" :class="form.errors.tag_type
+                        ? `block text-sm font-medium text-red-700 dark:text-red-500`
+                        : `block text-sm font-medium text-gray-700`
+                        ">Jenis tag</label>
+                      <input type="text" id="tag-type" v-model="form.tag_type" :class="form.errors.breed_id
+                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
+                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
+                        " />
+                      <p v-if="form.errors.tag_type" class="mt-2 text-sm text-red-600 dark:text-red-500">
+                        {{ form.errors.tag_type }}
+                      </p>
+                    </div>
+                    <div class="col-span-1">
+                      <label for="tag-number" class="block text-sm font-medium text-gray-700">ID Ternak (Eartag)</label>
+                      <input type="text" v-model="form.tag_id" id="tag-number" :class="form.errors.tag_type
+                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
+                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
+                        " />
+                      <p v-if="form.errors.tag_type" class="mt-2 text-sm text-red-600 dark:text-red-500">
+                        {{ form.errors.breed_id }}
+                      </p>
+                    </div>
+                    <div class="col-span-1">
+                      <label for="birthdate" :class="form.errors.birthdate
+                        ? `block text-sm font-medium text-red-700 dark:text-red-500`
+                        : `block text-sm font-medium text-gray-700`
+                        ">Tanggal lahir</label>
+                      <input type="date" v-model="form.birthdate" id="birthdate" :class="form.errors.birthdate
+                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
+                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
+                        " />
+                      <p v-if="form.errors.birthdate" class="mt-2 text-sm text-red-600 dark:text-red-500">
+                        {{ form.errors.birthdate }}
+                      </p>
+                    </div>
+                    <div class="col-span-1">
+                      <label for="entry-date" :class="form.errors.purchase_date
+                        ? `block text-sm font-medium text-red-700 dark:text-red-500`
+                        : `block text-sm font-medium text-gray-700`
+                        ">Tanggal masuk</label>
+                      <input type="date" v-model="form.purchase_date" id="entry-date" :class="form.errors.purchase_date
+                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
+                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
+                        " />
+                      <p v-if="form.errors.purchase_date" class="mt-2 text-sm text-red-600 dark:text-red-500">
+                        {{ form.errors.purchase_date }}
+                      </p>
+                    </div>
+                    <div class="col-span-1">
+                      <label for="birth-weight" :class="form.errors.birth_weight
+                        ? `block text-sm font-medium text-red-700 dark:text-red-500`
+                        : `block text-sm font-medium text-gray-700`
+                        ">Bobot lahir (Kg)</label>
+                      <input type="number" v-model="form.birth_weight" id="birth-weight" :class="form.errors.purchase_date
+                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
+                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
+                        " />
+                      <p v-if="form.errors.birth_weight" class="mt-2 text-sm text-red-600 dark:text-red-500">
+                        {{ form.errors.birth_weight }}
+                      </p>
+                    </div>
+                    <div class="col-span-1">
+                      <label for="current-weight" :class="form.errors.weight
+                        ? `block text-sm font-medium text-red-700 dark:text-red-500`
+                        : `block text-sm font-medium text-gray-700`
+                        ">Bobot sekarang (Kg)</label>
+                      <input type="number" v-model="form.weight" id="current-weight" :class="form.errors.weight
+                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
+                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
+                        " />
+                      <p v-if="form.errors.weight" class="mt-2 text-sm text-red-600 dark:text-red-500">
+                        {{ form.errors.weight }}
+                      </p>
+                    </div>
+
+                    <div class="col-span-1">
+                      <label for="parent_male" :class="form.errors.male_parent_id
+                        ? `block text-sm font-medium text-red-700 dark:text-red-500`
+                        : `block text-sm font-medium text-gray-700`
+                        ">Induk Jantan</label>
+                      <input type="text" v-model="male_livestock" @input="filterParentlivestocks(male_livestock, 'M')"
+                        :class="form.errors.male_parent_id
+                          ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
+                          : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
+                          " required />
+                      <div v-if="male_livestocks.length > 0"
+                        class="mt-1 block w-full rounded-lg border border-gray-300 bg-white">
+                        <ul>
+                          <li v-for="(male_livestock, index) in male_livestocks"
+                            @click="selectLivestock(male_livestock, 'M')" class="cursor-pointer p-2 hover:bg-gray-100">
+                            {{ male_livestock.tag_id }} - {{ male_livestock.name }}
+                          </li>
+                        </ul>
+                      </div>
+                      <p v-if="form.errors.male_parent_id" class="mt-2 text-sm text-red-600 dark:text-red-500">
+                        {{ form.errors.male_parent_id }}
+                      </p>
+                    </div>
+
+                    <div class="col-span-1">
+                      <label for="parent_male" :class="form.errors.male_parent_id
+                        ? `block text-sm font-medium text-red-700 dark:text-red-500`
+                        : `block text-sm font-medium text-gray-700`
+                        ">Induk Betina</label>
+                      <input type="text" v-model="female_livestock"
+                        @input="filterParentlivestocks(female_livestock, 'F')" :class="form.errors.female_parent_id
+                          ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
+                          : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
+                          " required />
+                      <div v-if="female_livestocks.length > 0"
+                        class="mt-1 block w-full rounded-lg border border-gray-300 bg-white">
+                        <ul>
+                          <li v-for="(female_livestock, index) in female_livestocks"
+                            @click="selectLivestock(female_livestock, 'F')"
+                            class="cursor-pointer p-2 hover:bg-gray-100">
+                            {{ female_livestock.tag_id }} - {{ female_livestock.name }}
+                          </li>
+                        </ul>
+                      </div>
+                      <p v-if="form.errors.female_parent_id" class="mt-2 text-sm text-red-600 dark:text-red-500">
+                        {{ form.errors.female_parent_id }}
+                      </p>
+                    </div>
+
+                    <div class="col-span-1">
+                      <label :class="form.errors.photo
+                        ? `block text-sm font-medium text-red-700 dark:text-red-500`
+                        : `block text-sm font-medium text-gray-700`
+                        " for="multiple_files">Pilih foto/gambar ternak</label>
+                      <input
+                        class="block w-full cursor-pointer rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-900 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400"
+                        id="multiple_files" type="file" @input="form.photo = $event.target.files" accept="image/*"
+                        multiple />
+                      <p v-if="form.errors.photo" class="mt-2 text-sm text-red-600 dark:text-red-500">
+                        {{ form.errors.photo }}
+                      </p>
+                      <progress v-if="form.progress" :value="form.progress.percentage" max="100">
+                        {{ form.progress.percentage }}%
+                      </progress>
+                    </div>
+                  </div>
+                  <!-- <div class="flex justify-end space-x-4">
+                    <Link :href="route('livestocks.index')"
+                      class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Kembali</Link>
+                    <button type="submit" :disabled="form.processing"
+                      class="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                      Simpan
+                    </button>
+                  </div> -->
+                </form>
+              </template>
+
+              <template v-if="stepIndex === 2">
+                page 2
+              </template>
+
+              <template v-if="stepIndex === 3">
+                page 3
+              </template>
+            </div>
+
+            <div class="flex items-center justify-between mt-4">
+              <Button :disabled="isPrevDisabled" variant="outline" size="sm" @click="prevStep()">
+                Back
+              </Button>
+              <div class="flex items-center gap-3">
+                <Button v-if="stepIndex !== 3" :type="meta.valid ? 'button' : 'submit'" :disabled="isNextDisabled"
+                  size="sm" @click="meta.valid && nextStep()">
+                  Next
+                </Button>
+                <Button v-if="stepIndex === 3" size="sm" type="submit">
+                  Submit
+                </Button>
+              </div>
+            </div>
+          </form>
+        </Stepper>
+
+
+
+
+
+
+
+        <div v-if="livestock.photo.length > 0" id="indicators-carousel" class="relative mb-2 w-full"
           data-carousel="static">
           <!-- Carousel wrapper -->
           <div class="relative h-56 overflow-hidden rounded-lg md:h-96">
@@ -233,231 +621,8 @@ onMounted(() => {
           </button>
         </div>
 
-        <p class="text-lg text-gray-700 dark:text-white">
-          {{ livestock.id ? "Edit" : "Tambah" }} Ternak
-        </p>
         <div class="container mx-auto p-4">
-          <form class="space-y-4" @submit.prevent="saveAction">
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div class="col-span-1">
-                <label for="name" :class="form.errors.name
-                  ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                  : `block text-sm font-medium text-gray-700`
-                  ">Nama</label>
-                <input type="text" id="name" v-model="form.name" :class="form.errors.name
-                  ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                  : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                  " />
-                <p v-if="form.errors.name" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                  {{ form.errors.name }}
-                </p>
-              </div>
-              <div class="col-span-1">
-                <label for="origin" class="block text-sm font-medium text-gray-700">Asal ternak</label>
-                <select id="origin" v-model="form.origin"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
-                  <option value="0">Lahir di kandang</option>
-                  <option value="1">Lahir di klinik</option>
-                  <option value="2">Beli</option>
-                  <option value="3">Hibah</option>
-                  <option value="4">Barter</option>
-                </select>
-              </div>
-              <div class="col-span-1">
-                <label for="status" class="block text-sm font-medium text-gray-700">Status ternak</label>
-                <select id="status" v-model="form.status"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
-                  <option value="1">Hidup</option>
-                  <option value="0">Mati</option>
-                  <option value="2">Keluar kandang</option>
-                  <option value="3">Bunting</option>
-                </select>
-              </div>
-              <div class="col-span-1">
-                <label for="type" class="block text-sm font-medium text-gray-700">Jenis ternak</label>
-                <select id="species" v-model="form.speciesSelected" @change="fetchBreeds"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
-                  <!-- Options go here -->
-                  <option v-for="spc in species" :key="spc.id" :value="spc">
-                    {{ spc.name }}
-                  </option>
-                </select>
-              </div>
-              <div class="col-span-1">
-                <label for="breed" :class="form.errors.breed_id
-                  ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                  : `block text-sm font-medium text-gray-700`
-                  ">Jenis kambing/ Jenis domba</label>
-                <select id="breed" v-model="form.breedSelected" :class="form.errors.breed_id
-                  ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                  : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                  ">
-                  <!-- Options go here -->
-                  <option v-for="breed in breeds" :key="breed.id" :value="breed">
-                    {{ breed.name }}
-                  </option>
-                </select>
-                <p v-if="form.errors.breed_id" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                  {{ form.errors.breed_id }}
-                </p>
-              </div>
-              <div class="col-span-1">
-                <label for="gender" class="block text-sm font-medium text-gray-700">Jenis kelamin</label>
-                <select id="gender" v-model="form.sex"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
-                  <option value="F">Betina</option>
-                  <option value="M">Jantan</option>
-                </select>
-              </div>
-              <div class="col-span-1 hidden">
-                <label for="tag-type" :class="form.errors.tag_type
-                  ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                  : `block text-sm font-medium text-gray-700`
-                  ">Jenis tag</label>
-                <input type="text" id="tag-type" v-model="form.tag_type" :class="form.errors.breed_id
-                  ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                  : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                  " />
-                <p v-if="form.errors.tag_type" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                  {{ form.errors.tag_type }}
-                </p>
-              </div>
-              <div class="col-span-1">
-                <label for="tag-number" class="block text-sm font-medium text-gray-700">ID Ternak (Eartag)</label>
-                <input type="text" v-model="form.tag_id" id="tag-number" :class="form.errors.tag_type
-                  ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                  : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                  " />
-                <p v-if="form.errors.tag_type" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                  {{ form.errors.breed_id }}
-                </p>
-              </div>
-              <div class="col-span-1">
-                <label for="birthdate" :class="form.errors.birthdate
-                  ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                  : `block text-sm font-medium text-gray-700`
-                  ">Tanggal lahir</label>
-                <input type="date" v-model="form.birthdate" id="birthdate" :class="form.errors.birthdate
-                  ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                  : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                  " />
-                <p v-if="form.errors.birthdate" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                  {{ form.errors.birthdate }}
-                </p>
-              </div>
-              <div class="col-span-1">
-                <label for="entry-date" :class="form.errors.purchase_date
-                  ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                  : `block text-sm font-medium text-gray-700`
-                  ">Tanggal masuk</label>
-                <input type="date" v-model="form.purchase_date" id="entry-date" :class="form.errors.purchase_date
-                  ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                  : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                  " />
-                <p v-if="form.errors.purchase_date" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                  {{ form.errors.purchase_date }}
-                </p>
-              </div>
-              <div class="col-span-1">
-                <label for="birth-weight" :class="form.errors.birth_weight
-                  ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                  : `block text-sm font-medium text-gray-700`
-                  ">Bobot lahir (Kg)</label>
-                <input type="number" v-model="form.birth_weight" id="birth-weight" :class="form.errors.purchase_date
-                  ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                  : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                  " />
-                <p v-if="form.errors.birth_weight" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                  {{ form.errors.birth_weight }}
-                </p>
-              </div>
-              <div class="col-span-1">
-                <label for="current-weight" :class="form.errors.weight
-                  ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                  : `block text-sm font-medium text-gray-700`
-                  ">Bobot sekarang (Kg)</label>
-                <input type="number" v-model="form.weight" id="current-weight" :class="form.errors.weight
-                  ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                  : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                  " />
-                <p v-if="form.errors.weight" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                  {{ form.errors.weight }}
-                </p>
-              </div>
 
-              <div class="col-span-1">
-                <label for="parent_male" :class="form.errors.male_parent_id
-                  ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                  : `block text-sm font-medium text-gray-700`
-                  ">Induk Jantan</label>
-                <input type="text" v-model="male_livestock" @input="filterParentlivestocks(male_livestock, 'M')" :class="form.errors.male_parent_id
-                  ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                  : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                  " required />
-                <div v-if="male_livestocks.length > 0"
-                  class="mt-1 block w-full rounded-lg border border-gray-300 bg-white">
-                  <ul>
-                    <li v-for="(male_livestock, index) in male_livestocks" @click="selectLivestock(male_livestock, 'M')"
-                      class="cursor-pointer p-2 hover:bg-gray-100">
-                      {{ male_livestock.tag_id }} - {{ male_livestock.name }}
-                    </li>
-                  </ul>
-                </div>
-                <p v-if="form.errors.male_parent_id" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                  {{ form.errors.male_parent_id }}
-                </p>
-              </div>
-
-              <div class="col-span-1">
-                <label for="parent_male" :class="form.errors.male_parent_id
-                  ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                  : `block text-sm font-medium text-gray-700`
-                  ">Induk Betina</label>
-                <input type="text" v-model="female_livestock" @input="filterParentlivestocks(female_livestock, 'F')"
-                  :class="form.errors.female_parent_id
-                    ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                    : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                    " required />
-                <div v-if="female_livestocks.length > 0"
-                  class="mt-1 block w-full rounded-lg border border-gray-300 bg-white">
-                  <ul>
-                    <li v-for="(female_livestock, index) in female_livestocks"
-                      @click="selectLivestock(female_livestock, 'F')" class="cursor-pointer p-2 hover:bg-gray-100">
-                      {{ female_livestock.tag_id }} - {{ female_livestock.name }}
-                    </li>
-                  </ul>
-                </div>
-                <p v-if="form.errors.female_parent_id" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                  {{ form.errors.female_parent_id }}
-                </p>
-              </div>
-
-              <div class="col-span-1">
-                <label :class="form.errors.photo
-                  ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                  : `block text-sm font-medium text-gray-700`
-                  " for="multiple_files">Pilih foto/gambar ternak</label>
-                <input
-                  class="block w-full cursor-pointer rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-900 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400"
-                  id="multiple_files" type="file" @input="form.photo = $event.target.files" accept="image/*" multiple />
-                <p v-if="form.errors.photo" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                  {{ form.errors.photo }}
-                </p>
-                <progress v-if="form.progress" :value="form.progress.percentage" max="100">
-                  {{ form.progress.percentage }}%
-                </progress>
-              </div>
-            </div>
-            <div class="flex justify-end space-x-4">
-              <Link :href="route('livestocks.index')"
-                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-              Kembali</Link>
-              <button type="submit" :disabled="form.processing"
-                class="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                Simpan
-              </button>
-            </div>
-          </form>
         </div>
       </div>
     </div>
