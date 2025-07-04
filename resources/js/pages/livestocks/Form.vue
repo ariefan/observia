@@ -243,7 +243,7 @@ const meta = { valid: true }
 
                 <StepperTrigger as-child>
                   <Button :variant="state === 'completed' || state === 'active' ? 'default' : 'outline'" size="icon"
-                    class="z-10 rounded-full shrink-0"
+                    class="z-10 rounded-full shrink-0 size-6"
                     :class="[state === 'active' && 'ring-2 ring-ring ring-offset-2 ring-offset-background']"
                     :disabled="state !== 'completed' && !meta.valid">
                     <Check v-if="state === 'completed'" class="size-5" />
