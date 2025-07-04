@@ -272,36 +272,6 @@ const meta = { valid: true }
                   <LivestockUploader />
 
 
-                  <div
-                    class="mb-2 rounded-lg border border-gray-200 bg-white p-6 text-gray-500 shadow dark:border-gray-700 dark:bg-gray-800">
-                    <div class="grid grid-cols-2 md:grid-cols-2">
-                      <ul class="max-w-md list-inside list-disc space-y-1 dark:text-gray-400">
-                        <li>
-                          Format foto
-                          <strong class="font-semibold text-gray-900 dark:text-white">.jpeg</strong>,
-                          <strong class="font-semibold text-gray-900 dark:text-white">.jpg</strong>, dan
-                          <strong class="font-semibold text-gray-900 dark:text-white">.png</strong>. Ukuran maksimal
-                          <strong class="font-semibold text-gray-900 dark:text-white">2 MB</strong>
-                        </li>
-                        <li>
-                          Pilih foto landscape yang jelas, simetris, dan dapat
-                          diidentifikasi
-                        </li>
-                        <li>
-                          Pastikan hanya ada
-                          <strong class="font-semibold text-gray-900 dark:text-white">1 ternak</strong>
-                          di dalam tiap foto
-                        </li>
-                        <li>Anda dapat mengupload/unggah maksimal 5 foto</li>
-                        <li>Contoh gambar seperti disamping</li>
-                      </ul>
-                      <img class="h-52 w-1/2 object-cover"
-                        src="https://media.4-paws.org/a/4/8/b/a48b18270b120e60e9bd4783e9106940a2808acd/VIER%20PFOTEN_2013-07-19_024-3851x2665-1920x1329.jpg"
-                        alt="Goat" />
-                    </div>
-                  </div>
-
-
                   <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 
                     <div class="grid w-full max-w-sm items-center gap-1.5">

@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { Plus, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
-import { Carousel } from '@/components/ui/carousel'
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 
 interface UploadedImage {
     file: File
@@ -75,10 +75,10 @@ const removeImage = (index: number) => {
 </script>
 
 <template>
-    <div class="max-w-6xl mx-auto p-6">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="max-w-7xl mx-auto mb-2">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <!-- Left Side - Upload Guidelines -->
-            <div class="space-y-6">
+            <div class="space-y-2">
                 <div class="bg-white rounded-lg p-6 shadow-sm border">
                     <h2 class="text-lg font-semibold mb-4">Panduan Upload Foto Ternak</h2>
                     <ul class="space-y-3 text-sm text-gray-600">
@@ -144,17 +144,21 @@ const removeImage = (index: number) => {
 
                     <div class="relative">
                         <Carousel :slides="uploadedImages">
-                            <div v-for="(image, index) in uploadedImages" :key="index"
-                                class="embla__slide flex-shrink-0 w-full relative">
-                                <div class="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                                    <img :src="image.url" :alt="`Uploaded image ${index + 1}`"
-                                        class="w-full h-full object-cover" />
-                                    <button @click="removeImage(index)"
-                                        class="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
-                                        <X class="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
+                            <CarouselContent>
+                                <CarouselItem v-for="(image, index) in uploadedImages" :key="index"
+                                    class="embla__slide flex-shrink-0 w-full relative">
+                                    <div class="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                                        <img :src="image.url" :alt="`Uploaded image ${index + 1}`"
+                                            class="w-full h-full object-cover" />
+                                        <button @click="removeImage(index)"
+                                            class="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
+                                            <X class="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </CarouselItem>
+                            </CarouselContent>
+                            <CarouselPrevious class="ml-10" />
+                            <CarouselNext class="mr-10" />
                         </Carousel>
                     </div>
                 </div>
