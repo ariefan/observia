@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import LivestockUploader from "./LivestockUploader.vue";
 
 const props = defineProps({
   livestock: {
@@ -268,6 +269,8 @@ const meta = { valid: true }
               <template v-if="stepIndex === 1">
                 <form class="space-y-4" @submit.prevent="saveAction">
 
+                  <LivestockUploader />
+
 
                   <div
                     class="mb-2 rounded-lg border border-gray-200 bg-white p-6 text-gray-500 shadow dark:border-gray-700 dark:bg-gray-800">
@@ -303,7 +306,7 @@ const meta = { valid: true }
 
                     <div class="grid w-full max-w-sm items-center gap-1.5">
                       <Label for="name">Nama</Label>
-                      <Input id="name" v-model="form.name" placeholder="Email" />
+                      <Input id="name" v-model="form.name" placeholder="Nama ternak" />
                       <InputError class="mt-2" :message="form.errors.name" />
                     </div>
 
@@ -359,65 +362,89 @@ const meta = { valid: true }
                       <InputError class="mt-2" :message="form.errors.status" />
                     </div>
 
-                    <div class="col-span-1">
-                      <label for="type" class="block text-sm font-medium text-gray-700">Jenis ternak</label>
-                      <select id="species" v-model="form.speciesSelected" @change="fetchBreeds"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
-                        <!-- Options go here -->
-                        <option v-for="spc in species" :key="spc.id" :value="spc">
-                          {{ spc.name }}
-                        </option>
-                      </select>
+
+
+                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                      <Label for="name">Jenis ternak</Label>
+                      <Select id="species" v-model="form.speciesSelected" @change="fetchBreeds">
+                        <SelectTrigger class="max-w-sm">
+                          <SelectValue placeholder="Pilih..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem v-for="spc in species" :key="spc.id" :value="spc">
+                              {{ spc.name }}
+                            </SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <InputError class="mt-2" :message="form.errors.speciesSelected" />
                     </div>
-                    <div class="col-span-1">
-                      <label for="breed" :class="form.errors.breed_id
-                        ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                        : `block text-sm font-medium text-gray-700`
-                        ">Jenis kambing/ Jenis domba</label>
-                      <select id="breed" v-model="form.breedSelected" :class="form.errors.breed_id
-                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                        ">
-                        <!-- Options go here -->
-                        <option v-for="breed in breeds" :key="breed.id" :value="breed">
-                          {{ breed.name }}
-                        </option>
-                      </select>
-                      <p v-if="form.errors.breed_id" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                        {{ form.errors.breed_id }}
-                      </p>
+
+                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                      <Label for="name">Breed</Label>
+                      <Select id="species" v-model="form.breedSelected">
+                        <SelectTrigger class="max-w-sm">
+                          <SelectValue placeholder="Pilih..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem v-for="breed in breeds" :key="breed.id" :value="breed">
+                              {{ breed.name }}
+                            </SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <InputError class="mt-2" :message="form.errors.breedSelected" />
                     </div>
-                    <div class="col-span-1">
-                      <label for="gender" class="block text-sm font-medium text-gray-700">Jenis kelamin</label>
-                      <select id="gender" v-model="form.sex"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
-                        <option value="F">Betina</option>
-                        <option value="M">Jantan</option>
-                      </select>
+
+                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                      <Label for="name">Jenis kelamin</Label>
+                      <Select id="species" v-model="form.sex">
+                        <SelectTrigger class="max-w-sm">
+                          <SelectValue placeholder="Pilih..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="female">
+                              Betina
+                            </SelectItem>
+                            <SelectItem value="male">
+                              Jantan
+                            </SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <InputError class="mt-2" :message="form.errors.sex" />
                     </div>
-                    <div class="col-span-1 hidden">
-                      <label for="tag-type" :class="form.errors.tag_type
-                        ? `block text-sm font-medium text-red-700 dark:text-red-500`
-                        : `block text-sm font-medium text-gray-700`
-                        ">Jenis tag</label>
-                      <input type="text" id="tag-type" v-model="form.tag_type" :class="form.errors.breed_id
-                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                        " />
-                      <p v-if="form.errors.tag_type" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                        {{ form.errors.tag_type }}
-                      </p>
+
+                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                      <Label for="name">Jenis kelamin</Label>
+                      <Select id="species" v-model="form.sex">
+                        <SelectTrigger class="max-w-sm">
+                          <SelectValue placeholder="Pilih..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="female">
+                              Betina
+                            </SelectItem>
+                            <SelectItem value="male">
+                              Jantan
+                            </SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <InputError class="mt-2" :message="form.errors.sex" />
                     </div>
-                    <div class="col-span-1">
-                      <label for="tag-number" class="block text-sm font-medium text-gray-700">ID Ternak (Eartag)</label>
-                      <input type="text" v-model="form.tag_id" id="tag-number" :class="form.errors.tag_type
-                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                        " />
-                      <p v-if="form.errors.tag_type" class="mt-2 text-sm text-red-600 dark:text-red-500">
-                        {{ form.errors.breed_id }}
-                      </p>
+
+
+                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                      <Label for="tag_id">ID Ternak (Eartag)</Label>
+                      <Input id="tag_id" v-model="form.tag_id" placeholder="ID Ternak (Eartag)" />
+                      <InputError class="mt-2" :message="form.errors.tag_id" />
                     </div>
+
                     <div class="col-span-1">
                       <label for="birthdate" :class="form.errors.birthdate
                         ? `block text-sm font-medium text-red-700 dark:text-red-500`
@@ -436,7 +463,7 @@ const meta = { valid: true }
                         ? `block text-sm font-medium text-red-700 dark:text-red-500`
                         : `block text-sm font-medium text-gray-700`
                         ">Tanggal masuk</label>
-                      <input type="date" v-model="form.purchase_date" id="entry-date" :class="form.errors.purchase_date
+                      <Input type="date" v-model="form.purchase_date" id="entry-date" :class="form.errors.purchase_date
                         ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
                         : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
                         " />
@@ -449,10 +476,7 @@ const meta = { valid: true }
                         ? `block text-sm font-medium text-red-700 dark:text-red-500`
                         : `block text-sm font-medium text-gray-700`
                         ">Bobot lahir (Kg)</label>
-                      <input type="number" v-model="form.birth_weight" id="birth-weight" :class="form.errors.purchase_date
-                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                        " />
+                      <Input type="number" v-model="form.birth_weight" id="birth-weight" />
                       <p v-if="form.errors.birth_weight" class="mt-2 text-sm text-red-600 dark:text-red-500">
                         {{ form.errors.birth_weight }}
                       </p>
@@ -462,10 +486,7 @@ const meta = { valid: true }
                         ? `block text-sm font-medium text-red-700 dark:text-red-500`
                         : `block text-sm font-medium text-gray-700`
                         ">Bobot sekarang (Kg)</label>
-                      <input type="number" v-model="form.weight" id="current-weight" :class="form.errors.weight
-                        ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                        : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                        " />
+                      <Input type="number" v-model="form.weight" id="current-weight" />
                       <p v-if="form.errors.weight" class="mt-2 text-sm text-red-600 dark:text-red-500">
                         {{ form.errors.weight }}
                       </p>
@@ -476,11 +497,8 @@ const meta = { valid: true }
                         ? `block text-sm font-medium text-red-700 dark:text-red-500`
                         : `block text-sm font-medium text-gray-700`
                         ">Induk Jantan</label>
-                      <input type="text" v-model="male_livestock" @input="filterParentlivestocks(male_livestock, 'M')"
-                        :class="form.errors.male_parent_id
-                          ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                          : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                          " required />
+                      <Input type="text" v-model="male_livestock" @input="filterParentlivestocks(male_livestock, 'M')"
+                        required />
                       <div v-if="male_livestocks.length > 0"
                         class="mt-1 block w-full rounded-lg border border-gray-300 bg-white">
                         <ul>
@@ -500,11 +518,8 @@ const meta = { valid: true }
                         ? `block text-sm font-medium text-red-700 dark:text-red-500`
                         : `block text-sm font-medium text-gray-700`
                         ">Induk Betina</label>
-                      <input type="text" v-model="female_livestock"
-                        @input="filterParentlivestocks(female_livestock, 'F')" :class="form.errors.female_parent_id
-                          ? `block w-full rounded-lg border border-red-500 bg-red-50 p-2.5 text-sm text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500`
-                          : `mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm`
-                          " required />
+                      <Input type="text" v-model="female_livestock"
+                        @input="filterParentlivestocks(female_livestock, 'F')" required />
                       <div v-if="female_livestocks.length > 0"
                         class="mt-1 block w-full rounded-lg border border-gray-300 bg-white">
                         <ul>
@@ -525,9 +540,7 @@ const meta = { valid: true }
                         ? `block text-sm font-medium text-red-700 dark:text-red-500`
                         : `block text-sm font-medium text-gray-700`
                         " for="multiple_files">Pilih foto/gambar ternak</label>
-                      <input
-                        class="block w-full cursor-pointer rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-900 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400"
-                        id="multiple_files" type="file" @input="form.photo = $event.target.files" accept="image/*"
+                      <Input id="multiple_files" type="file" @input="form.photo = $event.target.files" accept="image/*"
                         multiple />
                       <p v-if="form.errors.photo" class="mt-2 text-sm text-red-600 dark:text-red-500">
                         {{ form.errors.photo }}
