@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import { Plus, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
+import Example3 from '@/assets/example-3.jpg';
+import Example4 from '@/assets/example-4.jpg';
 
 interface UploadedImage {
     file: File
@@ -80,8 +82,8 @@ const removeImage = (index: number) => {
             <!-- Left Side - Upload Guidelines -->
             <div class="space-y-2">
                 <div class="bg-white rounded-lg p-6 shadow-sm border">
-                    <h2 class="text-lg font-semibold mb-4">Panduan Upload Foto Ternak</h2>
-                    <ul class="space-y-3 text-sm text-gray-600">
+                    <h2 class="text-lg font-semibold mb-2">Panduan Upload Foto Ternak</h2>
+                    <ul class="space-y-1 text-sm text-gray-600">
                         <li class="flex items-start gap-2">
                             <span class="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
                             <span>Format foto <strong>.jpg, .jpeg, dan png</strong> ukuran maks
@@ -104,12 +106,10 @@ const removeImage = (index: number) => {
 
                 <!-- Example Images -->
                 <div class="bg-white rounded-lg p-6 shadow-sm border">
-                    <h3 class="text-sm font-medium mb-4">Contoh gambar seperti di bawah:</h3>
+                    <h3 class="text-sm font-medium mb-2">Contoh gambar seperti di bawah:</h3>
                     <div class="grid grid-cols-2 gap-4">
-                        <img src="https://images.pexels.com/photos/422220/pexels-photo-422220.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop"
-                            alt="Contoh foto ternak 1" class="w-full h-24 object-cover rounded-lg" />
-                        <img src="https://images.pexels.com/photos/1300375/pexels-photo-1300375.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop"
-                            alt="Contoh foto ternak 2" class="w-full h-24 object-cover rounded-lg" />
+                        <img :src="Example3" alt="Contoh foto ternak 1" class="w-full h-36 object-cover rounded-lg" />
+                        <img :src="Example4" alt="Contoh foto ternak 2" class="w-full h-36 object-cover rounded-lg" />
                     </div>
                 </div>
             </div>
