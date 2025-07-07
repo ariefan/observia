@@ -13,7 +13,7 @@ class Species extends Model
     use HasUuids;
 
     protected $fillable = [
-        'name',
+        'name', 'code', 'binomial_nomenclature',
     ];
 
     public function breeds(): HasMany

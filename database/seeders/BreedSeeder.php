@@ -14,60 +14,42 @@ class BreedSeeder extends Seeder
     public function run(): void
     {
         Breed::truncate();
-        $species = Species::where('name', 'Kambing')->first();
-        Breed::create([
-            'species_id' => $species->id,
-            'name' => 'Etawa',
-            'origin' => 'India',
-            'description' => 'Kambing berbadan besar dan tinggi, bulu putih atau krem, produktivitas susu tinggi.',
-        ]);
-        Breed::create([
-            'species_id' => $species->id,
-            'name' => 'Jamnapari',
-            'origin' => 'India',
-            'description' => 'Kambing berbadan besar dan panjang, bulu hitam atau putih, produktivitas susu tinggi.',
-        ]);
-        Breed::create([
-            'species_id' => $species->id,
-            'name' => 'Kacang',
-            'origin' => 'Indonesia',
-            'description' => 'Kambing berbadan kecil dan ramping, bulu hitam, putih, atau coklat, produktivitas daging tinggi.',
-        ]);
-        Breed::create([
-            'species_id' => $species->id,
-            'name' => 'Pekan',
-            'origin' => 'Indonesia',
-            'description' => 'Kambing berbadan besar dan panjang, bulu putih atau hitam, produktivitas daging tinggi.',
-        ]);
-        Breed::create([
-            'species_id' => $species->id,
-            'name' => 'Sumbawa',
-            'origin' => 'Indonesia',
-            'description' => 'Kambing berbadan besar dan panjang, bulu putih atau hitam, produktivitas daging tinggi.',
-        ]);
-        Breed::create([
-            'species_id' => $species->id,
-            'name' => 'Boer',
-            'origin' => 'Afrika Selatan',
-            'description' => 'Kambing berbadan besar dan gemuk, bulu putih atau hitam, produktivitas daging sangat tinggi.',
-        ]);
-        Breed::create([
-            'species_id' => $species->id,
-            'name' => 'Pygmy',
-            'origin' => 'Afrika Barat',
-            'description' => 'Kambing terkecil di dunia, bulu beragam, jinak dan cocok untuk dipelihara.',
-        ]);
-        Breed::create([
-            'species_id' => $species->id,
-            'name' => 'Saanen',
-            'origin' => 'Swiss',
-            'description' => 'Kambing berbadan besar dan tinggi, bulu putih, produktivitas susu sangat tinggi.',
-        ]);
-        Breed::create([
-            'species_id' => $species->id,
-            'name' => 'Alpine',
-            'origin' => 'Prancis, Swiss',
-            'description' => 'Kambing berbadan sedang dan ramping, bulu berwarna putih, produktivitas susu tinggi, tahan terhadap cuaca dingin.',
-        ]);
+        $domba = Species::where('name', 'Domba')->first();
+        $kambing = Species::where('name', 'Kambing')->first();
+
+        $breeds = [
+            ['species_id' => $domba->id, 'code' => 'DLK', 'name' => 'Lokal'],
+            ['species_id' => $domba->id, 'code' => 'DGR', 'name' => 'Garut'],
+            ['species_id' => $domba->id, 'code' => 'DMI', 'name' => 'Merino'],
+            ['species_id' => $domba->id, 'code' => 'DMG', 'name' => 'Mega'],
+            ['species_id' => $domba->id, 'code' => 'DTX', 'name' => 'Texel'],
+            ['species_id' => $domba->id, 'code' => 'DDP', 'name' => 'Dolper'],
+            ['species_id' => $domba->id, 'code' => 'DEG', 'name' => 'Ekor Gemuk'],
+            ['species_id' => $domba->id, 'code' => 'DPT', 'name' => 'Batur'],
+            ['species_id' => $domba->id, 'code' => 'DAW', 'name' => 'Awassi'],
+            ['species_id' => $kambing->id, 'code' => 'KSN', 'name' => 'Sanen'],
+            ['species_id' => $kambing->id, 'code' => 'KSE', 'name' => 'Sapera'],
+            ['species_id' => $kambing->id, 'code' => 'KEW', 'name' => 'Etawa'],
+            ['species_id' => $kambing->id, 'code' => 'KBE', 'name' => 'Boer'],
+            ['species_id' => $kambing->id, 'code' => 'KAI', 'name' => 'Alpine'],
+            ['species_id' => $kambing->id, 'code' => 'KJR', 'name' => 'Jawa Randu'],
+            ['species_id' => $kambing->id, 'code' => 'KKA', 'name' => 'Kacang'],
+            ['species_id' => $kambing->id, 'code' => 'KAN', 'name' => 'Anglo Nubian'],
+            ['species_id' => $kambing->id, 'code' => 'KAO', 'name' => 'Anglopera'],
+            ['species_id' => $kambing->id, 'code' => 'KNR', 'name' => 'Nigerian'],
+            ['species_id' => $kambing->id, 'code' => 'KPG', 'name' => 'Pygmy'],
+            ['species_id' => $kambing->id, 'code' => 'KTN', 'name' => 'Toggenburg'],
+            ['species_id' => $kambing->id, 'code' => 'KSD', 'name' => 'Senduro'],
+            ['species_id' => $kambing->id, 'code' => 'PEW', 'name' => 'Peranakan Etawa'],
+            ['species_id' => $kambing->id, 'code' => 'SPF1', 'name' => 'Sapera F1'],
+            ['species_id' => $kambing->id, 'code' => 'SPF2', 'name' => 'Sapera F2'],
+            ['species_id' => $kambing->id, 'code' => 'SPF3', 'name' => 'Sapera F3'],
+            ['species_id' => $kambing->id, 'code' => 'SPF4', 'name' => 'Sapera F4'],
+            ['species_id' => $kambing->id, 'code' => 'SHM1', 'name' => 'Shami'],
+        ];
+
+        foreach ($breeds as $breed) {
+            Breed::create($breed);
+        }
     }
 }

@@ -13,7 +13,7 @@ class Breed extends Model
     use HasUuids;
 
     protected $fillable = [
-        'species_id', 'name', 'origin', 'description',
+        'species_id', 'code', 'name', 'origin', 'description',
     ];
 
     public function species(): BelongsTo

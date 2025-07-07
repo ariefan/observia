@@ -19,13 +19,14 @@ class DatabaseSeeder extends Seeder
             SpeciesSeeder::class,
             BreedSeeder::class,
             HerdSeeder::class,
+            LivestockSeeder::class,
         ]);
 
-        User::truncate();
+        // User::truncate();
         // User::factory(10)->create();
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
     }
 }

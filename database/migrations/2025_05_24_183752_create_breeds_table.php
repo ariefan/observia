@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('breeds', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('species_id')->nullable();
+            $table->string('code')->unique()->nullable();
             $table->string('name');
             $table->string('origin')->nullable();
             $table->text('description')->nullable();
