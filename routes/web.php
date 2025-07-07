@@ -7,6 +7,7 @@ use App\Http\Controllers\FarmController;
 use App\Http\Controllers\LivestockController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Api\SpeciesController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -51,6 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/notifications/{notification}/accept', [NotificationController::class, 'accept']);
     Route::post('/notifications/{notification}/reject', [NotificationController::class, 'reject']);
 
+    Route::get('/api/species/{species}/breeds', [SpeciesController::class, 'breeds']);
 });
 
 require __DIR__.'/settings.php';

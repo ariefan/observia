@@ -22,8 +22,8 @@ return new class extends Migration
             $table->string('status');
             $table->integer('male_parent_id')->references('id')->on('livestocks')->nullable();
             $table->integer('female_parent_id')->references('id')->on('livestocks')->nullable();
-            $table->dateTime('purchase_date');
-            $table->bigInteger('purchase_price');
+            $table->dateTime('purchase_date')->nullable();
+            $table->bigInteger('purchase_price')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

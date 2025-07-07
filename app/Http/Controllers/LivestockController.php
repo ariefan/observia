@@ -42,20 +42,18 @@ class LivestockController extends Controller
      */
     public function store(StoreLivestockRequest $request)
     {
+        $validated = $request->validated();
+        $validated['farm_id'] = auth()->user()->current_farm_id;
+
         $livestock = new Livestock();
-        $livestock->fill($request->validated());
-        $livestock->team_id = auth()->user()->current_team_id;
+        $livestock->fill($validated);
+
         $photos = [];
 
         if (! is_null($request->photo) && ! empty($request->photo)) {
-            foreach ($request->photo as $key => $photo) {
-                if ($key > 4) {
-                    break;
-                }
-                $extension = $photo->extension();
-                $filename = Str::uuid().".{$extension}";
-                $photo->storeAs('livestock-photos', $filename);
-                $photos[] = asset("storage/livestock-photos/{$filename}");
+            foreach ($request->photo as $photo) {
+                $path = $photo->store('public/livestocks');
+                $photos[] = $path;
             }
         }
 
@@ -65,9 +63,7 @@ class LivestockController extends Controller
         $livestock->aifarm_id = Livestock::generateAifarmId($countLivestock);
         $livestock->save();
 
-        return redirect()
-            ->route('livestocks.index')
-            ->with('message', 'Livestock Created Successfully');
+        // return redirect()->route('livestocks.index');
     }
 
     /**
@@ -93,7 +89,8 @@ class LivestockController extends Controller
      */
     public function update(UpdateLivestockRequest $request, Livestock $livestock)
     {
-        Livestock::update($request->validated());
+        $livestock->fill($request->validated());
+        $livestock->save();
         return redirect()->route('livestocks.index');
     }
 

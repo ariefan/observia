@@ -22,6 +22,7 @@ class Livestock extends Model
     protected $fillable = [
         'name', 'birthdate', 'sex', 'purchase_date', 'origin', 'status', 'tag_type',
         'tag_id', 'birth_weight', 'weight', 'breed_id', 'male_parent_id', 'female_parent_id',
+        'farm_id', 'barter_livestock_id', 'barter_from', 'barter_date', 'photo', 'purchase_price',
     ];
 
     public function breed(): BelongsTo
@@ -39,7 +40,7 @@ class Livestock extends Model
         return [
             'origin' => OriginLivestock::class,
             'status' => StatusLivestock::class,
-            'photo' => 'array',
+            'photo' => 'json',
         ];
     }
 
