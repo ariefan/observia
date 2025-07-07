@@ -16,6 +16,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ProvinceSeeder::class,
             CitySeeder::class,
+            SpeciesSeeder::class,
+            BreedSeeder::class,
+            HerdSeeder::class,
         ]);
 
         User::truncate();
