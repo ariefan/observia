@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { FloatingInput } from "@/components/ui/floating-input";
 import { MapInput } from "@/components/ui/map-input";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -207,34 +208,21 @@ const goatData = {
       <!-- Population Stats Card -->
       <Card class="border-0 bg-primary">
         <CardContent class="pt-4">
-          <p class="text-white font-sans mb-4">Populasi ternak jantan dan betina di peternakan Anda:</p>
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-white font-sans">
-            <!-- Goat Section -->
-            <div class="rounded-2xl flex flex-col">
-              <div
-                class="bg-teal-500 dark:bg-teal-200 text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
-                <Mars />
-                <span>Kambing</span>
-              </div>
-              <div
-                class="bg-white dark:bg-zinc-800 dark:text-white text-teal-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-                00 <span class="text-sm font-normal">Ekor</span>
-              </div>
-            </div>
-
-            <!-- Milk Section -->
-            <div class="rounded-2xl flex flex-col">
-              <div
-                class="bg-cyan-500 dark:bg-cyan-200 text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
-                <Venus />
-                <span>Susu</span>
-              </div>
-              <div
-                class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-                00 <span class="text-sm font-normal">Liter</span>
-              </div>
-            </div>
-          </div>
+          <Carousel class="relative w-full max-w-xs">
+            <CarouselContent>
+              <CarouselItem v-for="(_, index) in 5" :key="index">
+                <div class="p-1">
+                  <Card>
+                    <CardContent class="flex aspect-square items-center justify-center p-6">
+                      <span class="text-4xl font-semibold">{{ index + 1 }}</span>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CarouselItem>
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         </CardContent>
       </Card>
 
