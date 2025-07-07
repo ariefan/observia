@@ -139,12 +139,12 @@ const feedData = [
 
       <!-- Population Stats Card -->
       <Card class="border-0 bg-primary">
-        <CardContent class="pt-4">
-          <Carousel class="relative w-full max-w-xs">
+        <CardContent class="pt-4 flex justify-center">
+          <Carousel class="relative w-full max-w-2xl" :opts="{ align: 'center' }">
             <CarouselContent>
               <CarouselItem v-for="(photo, index) in props.livestock.photo" :key="index">
                 <div class="p-1">
-                  <img :src="getPhotoUrl(photo)" alt="Livestock photo" class="rounded-lg object-cover w-full h-64">
+                  <img :src="getPhotoUrl(photo)" alt="Livestock photo" class="rounded-lg object-cover w-full h-96">
                 </div>
               </CarouselItem>
             </CarouselContent>
