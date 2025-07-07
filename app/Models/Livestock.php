@@ -169,4 +169,13 @@ class Livestock extends Model
     {
         return $this->belongsTo(Livestock::class, 'female_parent_id')->withDefault();
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->aifarm_id = generateAifarmId();
+        });
+    }
 }

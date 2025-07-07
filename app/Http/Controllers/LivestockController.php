@@ -9,6 +9,7 @@ use App\Http\Requests\StoreLivestockRequest;
 use App\Http\Requests\UpdateLivestockRequest;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class LivestockController extends Controller
 {
@@ -17,8 +18,19 @@ class LivestockController extends Controller
      */
     public function index()
     {
-        $data = [];
-        return Inertia::render('livestocks/Index', $data);
+        $livestocks = Livestock::query()
+            ->where('farm_id', Auth::user()->current_farm_id)
+            ->with('breed')
+            ->get();
+
+        $male_count = $livestocks->where('sex', 'M')->count();
+        $female_count = $livestocks->where('sex', 'F')->count();
+
+        return Inertia::render('livestocks/Index', [
+            'livestocks' => $livestocks,
+            'male_count' => $male_count,
+            'female_count' => $female_count,
+        ]);
     }
 
     /**

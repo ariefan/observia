@@ -16,7 +16,7 @@ class LivestockSeeder extends Seeder
      */
     public function run(): void
     {
-        \DB::table('users')->truncate();
+        // \DB::table('users')->truncate();
         \DB::table('farms')->truncate();
         \DB::table('livestocks')->truncate();
 
@@ -42,6 +42,10 @@ class LivestockSeeder extends Seeder
                 'farm_id' => $farm->id,
                 'breed_id' => $breeds->random()->id,
             ]);
+
+            foreach ($livestocks as $livestock) {
+                $livestock->update(['aifarm_id' => generateAifarmId()]);
+            }
 
             // Add some parentage
             foreach ($livestocks as $livestock) {

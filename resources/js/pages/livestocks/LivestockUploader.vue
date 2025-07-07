@@ -94,13 +94,13 @@ watch(() => props.modelValue, (newVal) => {
 
 <template>
     <div class="max-w-7xl mx-auto mb-2">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-7 gap-4">
             <!-- Left Side - Upload Guidelines -->
-            <div class="space-y-2">
+            <div class="space-y-2 col-span-3">
                 <div class="bg-white rounded-lg p-6 shadow-sm border">
-                    <h3 class="text-lg font-semibold mb-4">Panduan Unggah Foto</h3>
-                    <ul class="list-disc list-inside space-y-2 text-sm text-gray-600">
-                        <li>Ambil foto dari berbagai sisi: depan, belakang, samping kiri dan kanan.</li>
+                    <h3 class="text-lg font-semibold mb-2">Panduan Unggah Foto</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
+                        <li>Foto dari dari berbagai sisi: depan, belakang, samping.</li>
                         <li>Pastikan pencahayaan cukup dan gambar tidak buram.</li>
                         <li>Ukuran file maksimal 20MB per foto.</li>
                         <li>Format file yang diizinkan: .jpg, .jpeg, .png.</li>
@@ -110,7 +110,7 @@ watch(() => props.modelValue, (newVal) => {
 
                 <!-- Example Images -->
                 <div class="bg-white rounded-lg p-6 shadow-sm border">
-                    <h3 class="text-lg font-semibold mb-4">Contoh Foto yang Baik</h3>
+                    <h3 class="text-lg font-semibold mb-2">Contoh Foto yang Baik</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <img :src="Example3" alt="Contoh foto ternak 1" class="rounded-lg object-cover w-full h-32">
                         <img :src="Example4" alt="Contoh foto ternak 2" class="rounded-lg object-cover w-full h-32">
@@ -119,7 +119,8 @@ watch(() => props.modelValue, (newVal) => {
             </div>
 
             <!-- Right Side - Upload Area / Carousel -->
-            <div class="bg-white rounded-lg p-6 shadow-sm border flex flex-col justify-center items-center space-y-4">
+            <div
+                class="bg-white rounded-lg p-6 shadow-sm border flex flex-col justify-center items-center space-y-4 col-span-4">
                 <div v-if="uploadedImages.length === 0"
                     class="upload-area w-full h-full flex flex-col justify-center items-center border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors"
                     @click="triggerFileInput" @dragover.prevent @drop.prevent="handleDrop">
@@ -129,8 +130,10 @@ watch(() => props.modelValue, (newVal) => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
                                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
-                        <p class="mt-2 text-sm">Seret & Lepas atau <span class="font-semibold text-primary">Klik untuk
-                                Unggah</span></p>
+                        <p class="mt-2 text-sm">
+                            Seret & Lepas atau
+                            <span class="font-semibold text-primary">Klik untuk Unggah</span>
+                        </p>
                         <p class="text-xs mt-1">JPG, JPEG, PNG (Maks. 20MB)</p>
                     </div>
                 </div>
@@ -142,7 +145,7 @@ watch(() => props.modelValue, (newVal) => {
                             <CarouselItem v-for="(image, index) in uploadedImages" :key="index" class="relative">
                                 <div class="p-1">
                                     <img :src="image.url" alt="Uploaded image"
-                                        class="rounded-lg object-cover w-full h-64">
+                                        class="rounded-lg object-cover w-full h-80">
                                     <Button variant="destructive" size="icon"
                                         class="absolute top-2 right-2 h-7 w-7 rounded-full" @click="removeImage(index)">
                                         <X class="h-4 w-4" />
