@@ -8,6 +8,7 @@ use App\Models\Breed;
 use App\Http\Requests\StoreLivestockRequest;
 use App\Http\Requests\UpdateLivestockRequest;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 
 class LivestockController extends Controller
 {
@@ -52,7 +53,7 @@ class LivestockController extends Controller
 
         if (! is_null($request->photo) && ! empty($request->photo)) {
             foreach ($request->photo as $photo) {
-                $path = $photo->store('public/livestocks');
+                $path = $photo->store('livestocks', 'public');
                 $photos[] = $path;
             }
         }
@@ -63,16 +64,19 @@ class LivestockController extends Controller
         $livestock->aifarm_id = Livestock::generateAifarmId($countLivestock);
         $livestock->save();
 
-        // return redirect()->route('livestocks.index');
+        return redirect()->route('livestocks.show', $livestock);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(/*Livestock*/ $livestock)
+    public function show(Livestock $livestock)
     {
-        $data = [];
-        return Inertia::render('livestocks/Show', $data);
+        $livestock->load('breed.species', 'maleParent', 'femaleParent');
+
+        return Inertia::render('livestocks/Show', [
+            'livestock' => $livestock,
+        ]);
     }
 
     /**
@@ -80,8 +84,18 @@ class LivestockController extends Controller
      */
     public function edit(Livestock $livestock)
     {
-        $data = [];
-        return Inertia::render('livestocks/Form', $data);
+        $species = Species::query()->select('id', 'name')->get();
+        $male_livestock = $livestock->maleParent ? $livestock->maleParent->name : '';
+        $female_livestock = $livestock->femaleParent ? $livestock->femaleParent->name : '';
+
+        $livestock->load('breed.species');
+
+        return Inertia::render('livestocks/Form', [
+            'livestock' => $livestock,
+            'species' => $species,
+            'male_livestock' => $male_livestock,
+            'female_livestock' => $female_livestock,
+        ]);
     }
 
     /**
@@ -89,9 +103,21 @@ class LivestockController extends Controller
      */
     public function update(UpdateLivestockRequest $request, Livestock $livestock)
     {
-        $livestock->fill($request->validated());
+        $validated = $request->validated();
+        $livestock->fill($validated);
+
+        $photos = $livestock->photo ?? [];
+
+        if (! is_null($request->photo) && ! empty($request->photo)) {
+            foreach ($request->photo as $photo) {
+                $path = $photo->store('livestocks', 'public');
+                $photos[] = $path;
+            }
+        }
+
+        $livestock->photo = $photos;
         $livestock->save();
-        return redirect()->route('livestocks.index');
+        return redirect()->route('livestocks.show', $livestock);
     }
 
     /**

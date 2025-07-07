@@ -55,5 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/species/{species}/breeds', [SpeciesController::class, 'breeds']);
 });
 
+Route::get('/livestocks/photo/{path}', [LivestockController::class, 'showPhoto'])->where('path', '.*')->name('livestocks.photo');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

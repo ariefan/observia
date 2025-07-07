@@ -222,7 +222,6 @@ const meta = { valid: true }
                             <SelectItem value="2">Terjual</SelectItem>
                             <SelectItem value="3">Mati</SelectItem>
                             <SelectItem value="4">Disembelih</SelectItem>
-                            <SelectItem value="5">Dibunuh</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>
@@ -295,6 +294,7 @@ const meta = { valid: true }
                             <SelectItem value="2">Pembelian</SelectItem>
                             <SelectItem value="3">Barter</SelectItem>
                             <SelectItem value="4">Hibah</SelectItem>
+                            <SelectItem value="5">Peminjaman</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>
@@ -341,6 +341,18 @@ const meta = { valid: true }
                     <div v-if="form.origin == 4">
                       <!-- TODO -->
                       <Label for="">Tanggal Hibah</Label>
+                      <Input id="" />
+                      <InputError :message="''" />
+                    </div>
+                    <div v-if="form.origin == 5">
+                      <!-- TODO -->
+                      <Label for="">Pinjam Dari</Label>
+                      <Input id="" />
+                      <InputError :message="''" />
+                    </div>
+                    <div v-if="form.origin == 5">
+                      <!-- TODO -->
+                      <Label for="">Tanggal Pinjam</Label>
                       <Input id="" />
                       <InputError :message="''" />
                     </div>
@@ -418,13 +430,7 @@ const meta = { valid: true }
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                     <div>
                       <!-- TODO -->
-                      <Label for="">Nama Induk Jantan</Label>
-                      <Input id="" />
-                      <InputError :message="''" />
-                    </div>
-                    <div>
-                      <!-- TODO -->
-                      <Label for="">Ras</Label>
+                      <Label for="">ID Ternak</Label>
                       <Input id="" />
                       <InputError :message="''" />
                     </div>
@@ -436,7 +442,13 @@ const meta = { valid: true }
                     </div>
                     <div>
                       <!-- TODO -->
-                      <Label for="">ID Ternak</Label>
+                      <Label for="">Nama Induk Jantan</Label>
+                      <Input id="" />
+                      <InputError :message="''" />
+                    </div>
+                    <div>
+                      <!-- TODO -->
+                      <Label for="">Ras</Label>
                       <Input id="" />
                       <InputError :message="''" />
                     </div>
@@ -478,13 +490,7 @@ const meta = { valid: true }
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                     <div>
                       <!-- TODO -->
-                      <Label for="">Nama Induk Betina</Label>
-                      <Input id="" />
-                      <InputError :message="''" />
-                    </div>
-                    <div>
-                      <!-- TODO -->
-                      <Label for="">Ras</Label>
+                      <Label for="">ID Ternak</Label>
                       <Input id="" />
                       <InputError :message="''" />
                     </div>
@@ -496,7 +502,13 @@ const meta = { valid: true }
                     </div>
                     <div>
                       <!-- TODO -->
-                      <Label for="">ID Ternak</Label>
+                      <Label for="">Nama Induk Betina</Label>
+                      <Input id="" />
+                      <InputError :message="''" />
+                    </div>
+                    <div>
+                      <!-- TODO -->
+                      <Label for="">Ras</Label>
                       <Input id="" />
                       <InputError :message="''" />
                     </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Plus, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
@@ -10,6 +10,12 @@ interface UploadedImage {
     file: File
     url: string
 }
+
+const props = defineProps<{
+    modelValue: File[]
+}>()
+
+const emit = defineEmits(['update:modelValue'])
 
 const uploadedImages = ref<UploadedImage[]>([])
 const fileInput = ref<HTMLInputElement>()
@@ -57,6 +63,8 @@ const addImages = (files: FileList | null) => {
             })
         }
     })
+
+    emit('update:modelValue', uploadedImages.value.map(img => img.file))
 }
 
 const handleFileSelect = (event: Event) => {
@@ -73,7 +81,15 @@ const removeImage = (index: number) => {
     // Revoke object URL to prevent memory leaks
     URL.revokeObjectURL(uploadedImages.value[index].url)
     uploadedImages.value.splice(index, 1)
+    emit('update:modelValue', uploadedImages.value.map(img => img.file))
 }
+
+watch(() => props.modelValue, (newVal) => {
+    if (!newVal || newVal.length === 0) {
+        uploadedImages.value.forEach(img => URL.revokeObjectURL(img.url))
+        uploadedImages.value = []
+    }
+})
 </script>
 
 <template>
@@ -82,90 +98,71 @@ const removeImage = (index: number) => {
             <!-- Left Side - Upload Guidelines -->
             <div class="space-y-2">
                 <div class="bg-white rounded-lg p-6 shadow-sm border">
-                    <h2 class="text-lg font-semibold mb-2">Panduan Upload Foto Ternak</h2>
-                    <ul class="space-y-1 text-sm text-gray-600">
-                        <li class="flex items-start gap-2">
-                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                            <span>Format foto <strong>.jpg, .jpeg, dan png</strong> ukuran maks
-                                <strong>20MB</strong></span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                            <span>Pilih foto lanscape yang jelas, simetris dan dapat diidentifikasi</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                            <span>Pastikan hanya ada <strong>1 ternak</strong> di dalam foto</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                            <span>Anda dapat mengupload maks <strong>5 foto</strong></span>
-                        </li>
+                    <h3 class="text-lg font-semibold mb-4">Panduan Unggah Foto</h3>
+                    <ul class="list-disc list-inside space-y-2 text-sm text-gray-600">
+                        <li>Ambil foto dari berbagai sisi: depan, belakang, samping kiri dan kanan.</li>
+                        <li>Pastikan pencahayaan cukup dan gambar tidak buram.</li>
+                        <li>Ukuran file maksimal 20MB per foto.</li>
+                        <li>Format file yang diizinkan: .jpg, .jpeg, .png.</li>
+                        <li>Anda dapat mengunggah maksimal 5 foto.</li>
                     </ul>
                 </div>
 
                 <!-- Example Images -->
                 <div class="bg-white rounded-lg p-6 shadow-sm border">
-                    <h3 class="text-sm font-medium mb-2">Contoh gambar seperti di bawah:</h3>
+                    <h3 class="text-lg font-semibold mb-4">Contoh Foto yang Baik</h3>
                     <div class="grid grid-cols-2 gap-4">
-                        <img :src="Example3" alt="Contoh foto ternak 1" class="w-full h-36 object-cover rounded-lg" />
-                        <img :src="Example4" alt="Contoh foto ternak 2" class="w-full h-36 object-cover rounded-lg" />
+                        <img :src="Example3" alt="Contoh foto ternak 1" class="rounded-lg object-cover w-full h-32">
+                        <img :src="Example4" alt="Contoh foto ternak 2" class="rounded-lg object-cover w-full h-32">
                     </div>
                 </div>
             </div>
 
             <!-- Right Side - Upload Area / Carousel -->
-            <div class="bg-white rounded-lg p-6 shadow-sm border">
-                <div v-if="uploadedImages.length === 0" class="upload-area">
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors"
-                        @dragover.prevent @drop.prevent="handleDrop" @click="triggerFileInput">
-                        <div class="flex flex-col items-center justify-center space-y-4">
-                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                                <Plus class="w-8 h-8 text-gray-400" />
-                            </div>
-                            <div>
-                                <p class="text-lg font-medium text-gray-700">Tambah foto</p>
-                                <p class="text-sm text-gray-500 mt-1">Klik atau drag & drop file di sini</p>
-                            </div>
-                        </div>
+            <div class="bg-white rounded-lg p-6 shadow-sm border flex flex-col justify-center items-center space-y-4">
+                <div v-if="uploadedImages.length === 0"
+                    class="upload-area w-full h-full flex flex-col justify-center items-center border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                    @click="triggerFileInput" @dragover.prevent @drop.prevent="handleDrop">
+                    <div class="text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p class="mt-2 text-sm">Seret & Lepas atau <span class="font-semibold text-primary">Klik untuk
+                                Unggah</span></p>
+                        <p class="text-xs mt-1">JPG, JPEG, PNG (Maks. 20MB)</p>
                     </div>
                 </div>
 
                 <!-- Carousel -->
-                <div v-else class="space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-medium">Foto Ternak ({{ uploadedImages.length }}/5)</h3>
-                        <Button variant="outline" size="sm" @click="triggerFileInput"
-                            :disabled="uploadedImages.length >= 5">
-                            <Plus class="w-4 h-4 mr-2" />
-                            Tambah Foto
-                        </Button>
-                    </div>
-
-                    <div class="relative">
-                        <Carousel :slides="uploadedImages">
-                            <CarouselContent>
-                                <CarouselItem v-for="(image, index) in uploadedImages" :key="index"
-                                    class="embla__slide flex-shrink-0 w-full relative">
-                                    <div class="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                                        <img :src="image.url" :alt="`Uploaded image ${index + 1}`"
-                                            class="w-full h-full object-cover" />
-                                        <button @click="removeImage(index)"
-                                            class="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
-                                            <X class="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </CarouselItem>
-                            </CarouselContent>
-                            <CarouselPrevious class="ml-10" />
-                            <CarouselNext class="mr-10" />
-                        </Carousel>
-                    </div>
+                <div v-else class="space-y-4 w-full">
+                    <Carousel class="relative w-full">
+                        <CarouselContent>
+                            <CarouselItem v-for="(image, index) in uploadedImages" :key="index" class="relative">
+                                <div class="p-1">
+                                    <img :src="image.url" alt="Uploaded image"
+                                        class="rounded-lg object-cover w-full h-64">
+                                    <Button variant="destructive" size="icon"
+                                        class="absolute top-2 right-2 h-7 w-7 rounded-full" @click="removeImage(index)">
+                                        <X class="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </CarouselItem>
+                        </CarouselContent>
+                        <CarouselPrevious class="ml-10" v-if="uploadedImages.length > 1" />
+                        <CarouselNext class="mr-10" v-if="uploadedImages.length > 1" />
+                    </Carousel>
+                    <Button v-if="uploadedImages.length < MAX_FILES" variant="outline" class="w-full"
+                        @click="triggerFileInput">
+                        <Plus class="mr-2 h-4 w-4" />
+                        Tambah Foto
+                    </Button>
                 </div>
 
                 <!-- Hidden file input -->
                 <input ref="fileInput" type="file" accept=".jpg,.jpeg,.png" multiple class="hidden"
-                    @change="handleFileSelect" />
+                    @change="handleFileSelect">
             </div>
         </div>
 

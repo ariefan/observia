@@ -8,4 +8,5 @@ enum OriginLivestock: int
     case PURCHASE = 2;
     case BARTER = 3;
     case GIFT = 4;
+    case RENT = 5;
 }

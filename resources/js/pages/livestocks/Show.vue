@@ -45,10 +45,7 @@ import Example2 from "@/assets/example-2.png";
 
 // Props
 const props = defineProps<{
-  name?: string;
-  labels?: string[];
-  dataPoints?: number[];
-  label?: string;
+  livestock: any;
 }>();
 
 // Breadcrumb navigation
@@ -74,8 +71,12 @@ const isDarkMode = computed(() => document.documentElement.classList.contains('d
 const submit = () => { };
 
 // Navigation functions
-const show = (id: string) => router.visit(route("livestocks.show", id));
+const show = (id: string) => router.visit(route("livestocks.show", { livestock: id }));
 const back = () => window.history.back();
+
+const getPhotoUrl = (path) => {
+  return `/storage/${path.replace('public/', '')}`;
+}
 
 // Data for health and feed history
 const healthData = [
@@ -116,75 +117,6 @@ const feedData = [
     avatar: "https://randomuser.me/api/portraits/thumb/men/3.jpg",
   },
 ];
-
-
-
-const goatData = {
-  id: '009',
-  name: 'Slamet',
-  breed: 'Etawa PE',
-  image: '/images/009.jpg',
-  mother: {
-    id: '001',
-    name: 'Cantik Putih',
-    breed: 'Etawa PO',
-    image: '/images/001.jpg',
-    mother: {
-      id: '021',
-      name: 'Cantik Putih',
-      breed: 'Etawa PO',
-      image: '/images/021.jpg'
-    },
-    father: {
-      id: '020',
-      name: 'Tanduk Lengkung',
-      breed: 'Etawa PE',
-      image: '/images/020.jpg'
-    }
-  },
-  father: {
-    id: '002',
-    name: 'Tanduk Lengkung',
-    breed: 'Etawa PE',
-    image: '/images/002.jpg',
-    mother: {
-      id: '023',
-      name: 'Cantik Putih',
-      breed: 'Etawa PO',
-      image: '/images/023.jpg',
-      mother: {
-        id: '021',
-        name: 'Cantik Putih',
-        breed: 'Etawa PO',
-        image: '/images/021.jpg'
-      },
-      father: {
-        id: '020',
-        name: 'Tanduk Lengkung',
-        breed: 'Etawa PE',
-        image: '/images/020.jpg'
-      }
-    },
-    father: {
-      id: '024',
-      name: 'Tanduk Lengkung',
-      breed: 'Etawa PE',
-      image: '/images/024.jpg',
-      mother: {
-        id: '023',
-        name: 'Cantik Putih',
-        breed: 'Etawa PO',
-        image: '/images/023.jpg'
-      },
-      father: {
-        id: '024',
-        name: 'Tanduk Lengkung',
-        breed: 'Etawa PE',
-        image: '/images/024.jpg'
-      }
-    }
-  }
-}
 </script>
 
 <template>
@@ -198,10 +130,10 @@ const goatData = {
         <Button variant="ghost" size="icon" @click="back">
           <ArrowLeft />
         </Button>
-        <h1 class="text-3xl font-semibold">Putih</h1>
+        <h1 class="text-3xl font-semibold">{{ props.livestock.name }}</h1>
         <div class="flex flex-col">
-          <Badge class="bg-primary text-white rounded-full">ID-007</Badge>
-          <p class="text-sm">Etawa PE</p>
+          <Badge class="bg-primary text-white rounded-full">{{ props.livestock.aifarm_id }}</Badge>
+          <p class="text-sm">{{ props.livestock.breed.name }}</p>
         </div>
       </div>
 
@@ -210,18 +142,14 @@ const goatData = {
         <CardContent class="pt-4">
           <Carousel class="relative w-full max-w-xs">
             <CarouselContent>
-              <CarouselItem v-for="(_, index) in 5" :key="index">
+              <CarouselItem v-for="(photo, index) in props.livestock.photo" :key="index">
                 <div class="p-1">
-                  <Card>
-                    <CardContent class="flex aspect-square items-center justify-center p-6">
-                      <span class="text-4xl font-semibold">{{ index + 1 }}</span>
-                    </CardContent>
-                  </Card>
+                  <img :src="getPhotoUrl(photo)" alt="Livestock photo" class="rounded-lg object-cover w-full h-64">
                 </div>
               </CarouselItem>
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            <CarouselPrevious v-if="props.livestock.photo && props.livestock.photo.length > 1" />
+            <CarouselNext v-if="props.livestock.photo && props.livestock.photo.length > 1" />
           </Carousel>
         </CardContent>
       </Card>

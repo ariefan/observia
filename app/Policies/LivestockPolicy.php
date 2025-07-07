@@ -4,16 +4,18 @@ namespace App\Policies;
 
 use App\Models\Livestock;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class LivestockPolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +23,7 @@ class LivestockPolicy
      */
     public function view(User $user, Livestock $livestock): bool
     {
-        return false;
+        return $user->current_farm_id === $livestock->farm_id;
     }
 
     /**
@@ -29,7 +31,7 @@ class LivestockPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -37,7 +39,7 @@ class LivestockPolicy
      */
     public function update(User $user, Livestock $livestock): bool
     {
-        return false;
+        return $user->current_farm_id === $livestock->farm_id;
     }
 
     /**
@@ -45,7 +47,7 @@ class LivestockPolicy
      */
     public function delete(User $user, Livestock $livestock): bool
     {
-        return false;
+        return $user->current_farm_id === $livestock->farm_id;
     }
 
     /**
@@ -53,7 +55,7 @@ class LivestockPolicy
      */
     public function restore(User $user, Livestock $livestock): bool
     {
-        return false;
+        return $user->current_farm_id === $livestock->farm_id;
     }
 
     /**
@@ -61,6 +63,6 @@ class LivestockPolicy
      */
     public function forceDelete(User $user, Livestock $livestock): bool
     {
-        return false;
+        return $user->current_farm_id === $livestock->farm_id;
     }
 }
