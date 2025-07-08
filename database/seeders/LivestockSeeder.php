@@ -38,7 +38,7 @@ class LivestockSeeder extends Seeder
 
             $user->farms()->attach($farm, ['role' => 'admin']);
 
-            $livestocks = Livestock::factory()->count(15)->create([
+            $livestocks = Livestock::factory()->count(8)->create([
                 'farm_id' => $farm->id,
                 'breed_id' => $breeds->random()->id,
             ]);

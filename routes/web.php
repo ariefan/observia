@@ -29,11 +29,6 @@ Route::get('/google/redirect', [GoogleLoginController::class, 'redirectToGoogle'
 Route::get('/google/callback', [GoogleLoginController::class, 'handleGoogleCallback'])->name('google.callback');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resources([
-        'farms' => FarmController::class,
-        'livestocks' => LivestockController::class,
-    ]);
-
     Route::get('/livestocks/weight', [LivestockController::class, 'weighting'])->name('livestocks.weighting');
     Route::post('/livestocks/weight', [LivestockController::class, 'storeWeight'])->name('livestocks.weight.store');
     
@@ -57,6 +52,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/api/species/{species}/breeds', [SpeciesController::class, 'breeds']);
     Route::get('/api/livestocks', [LivestockController::class, 'search'])->name('livestocks.search');
+
+    Route::resources([
+        'farms' => FarmController::class,
+        'livestocks' => LivestockController::class,
+    ]);
 });
 
 Route::get('/livestocks/photo/{path}', [LivestockController::class, 'showPhoto'])->where('path', '.*')->name('livestocks.photo');

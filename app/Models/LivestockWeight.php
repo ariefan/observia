@@ -9,7 +9,7 @@ class LivestockWeight extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['livestock_id', 'weight', 'date'];
+    protected $fillable = ['livestock_id', 'weight', 'date', 'user_id'];
 
     public function livestock()
     {

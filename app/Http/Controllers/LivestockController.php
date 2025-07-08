@@ -100,7 +100,7 @@ class LivestockController extends Controller
     public function weighting()
     {
         return Inertia::render('livestocks/Weighting', [
-            'livestock' => null,
+            'livestock' => new Livestock(),
         ]);
     }
 
@@ -117,7 +117,7 @@ class LivestockController extends Controller
         $livestock->weights()->create([
             'weight' => $validated['weight'],
             'date' => $validated['date'],
-            'user_id' => Auth::id(),
+            'user_id' => auth()->id(),
         ]);
 
         $livestock->update(['weight' => $validated['weight']]);
@@ -186,10 +186,19 @@ class LivestockController extends Controller
 
         $livestocks = Livestock::query()
             ->where('farm_id', Auth::user()->current_farm_id)
-            ->where('name', 'like', "%{$query}%")
-            ->where('sex', $sex)
-            ->with('breed')
-            ->select('id', 'name', 'breed_id', 'aifarm_id', 'tag_id')
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('aifarm_id', 'like', "%{$query}%")
+                    ->orWhere('tag_id', 'like', "%{$query}%");
+            });
+
+        if ($sex) {
+            $livestocks->where('sex', $sex);
+        }
+
+        $livestocks = $livestocks
+            ->select('id', 'name', 'aifarm_id', 'tag_id')
+            ->limit(10)
             ->get();
 
         return response()->json($livestocks);
