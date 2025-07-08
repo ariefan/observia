@@ -92,8 +92,23 @@ class LivestockController extends Controller
     {
         $livestock->load('breed.species', 'maleParent', 'femaleParent');
 
+        // Get weight history for the last 12 months
+        $weightHistory = $livestock->weights()
+            ->where('date', '>=', now()->subMonths(12))
+            ->orderBy('date')
+            ->get()
+            ->groupBy(function($weight) {
+                return \Carbon\Carbon::parse($weight->date)->format('Y-m');
+            })
+            ->map(function($monthWeights) {
+                // Get the latest weight for each month
+                return $monthWeights->sortByDesc('date')->first();
+            })
+            ->values();
+
         return Inertia::render('livestocks/Show', [
             'livestock' => $livestock,
+            'weightHistory' => $weightHistory,
         ]);
     }
 

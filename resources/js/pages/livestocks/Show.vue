@@ -31,6 +31,7 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  ImageOff,
 } from "lucide-vue-next";
 
 // Types
@@ -50,6 +51,7 @@ import Example2 from "@/assets/example-2.png";
 // Props
 const props = defineProps<{
   livestock: any;
+  weightHistory: any[];
 }>();
 
 // Breadcrumb navigation
@@ -84,7 +86,7 @@ const deleteLivestock = () => {
   }
 }
 
-const getPhotoUrl = (path) => {
+const getPhotoUrl = (path: string) => {
   if (path.startsWith('public/')) {
     return `/storage/${path.substring(7)}`;
   }
@@ -130,6 +132,65 @@ const feedData = [
     avatar: "https://randomuser.me/api/portraits/thumb/men/3.jpg",
   },
 ];
+
+// Process weight history data for the chart
+const processWeightData = () => {
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const last12Months: Array<{ key: string, label: string, year: number }> = [];
+  const weightDataPoints: number[] = [];
+
+  // Generate last 12 months
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    last12Months.push({
+      key: monthKey,
+      label: monthNames[date.getMonth()],
+      year: date.getFullYear()
+    });
+  }
+
+  // Map weight history to months
+  const weightMap = new Map<string, number>();
+  if (props.weightHistory && props.weightHistory.length > 0) {
+    props.weightHistory.forEach((weight: any) => {
+      const date = new Date(weight.date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      weightMap.set(monthKey, parseFloat(weight.weight));
+    });
+  }
+
+  // Create data points, using 0 for months without data
+  last12Months.forEach(month => {
+    weightDataPoints.push(weightMap.get(month.key) || 0);
+  });
+
+  return {
+    labels: last12Months.map(m => m.label),
+    dataPoints: weightDataPoints
+  };
+};
+
+const weightChartData = processWeightData();
+
+// Calculate weight trend
+const weightTrend = computed(() => {
+  const dataPoints = weightChartData.dataPoints.filter(point => point > 0);
+  if (dataPoints.length < 2) return null;
+
+  const lastWeight = dataPoints[dataPoints.length - 1];
+  const previousWeight = dataPoints[dataPoints.length - 2];
+  const difference = lastWeight - previousWeight;
+  const percentage = ((difference / previousWeight) * 100).toFixed(1);
+
+  return {
+    difference: difference.toFixed(1),
+    percentage: percentage,
+    isIncreasing: difference > 0,
+    hasData: dataPoints.length > 0
+  };
+});
 </script>
 
 <template>
@@ -147,7 +208,7 @@ const feedData = [
           <div class="space-y-1">
             <div class="flex items-center gap-2">
               <h1 class="text-2xl font-bold tracking-tight">{{ livestock.name }}</h1>
-              <Badge :variant="livestock.status.value == 1 ? 'success' : 'destructive'">
+              <Badge :variant="livestock.status.value == 1 ? 'default' : 'destructive'">
                 {{ livestock.tag_id }}</Badge>
             </div>
             <div class="flex items-center gap-2">
@@ -183,17 +244,25 @@ const feedData = [
       <!-- Population Stats Card -->
       <Card class="border-0 bg-primary">
         <CardContent class="pt-4 flex justify-center">
-          <Carousel class="relative w-full max-w-2xl" :opts="{ align: 'center' }">
-            <CarouselContent>
-              <CarouselItem v-for="(photo, index) in props.livestock.photo" :key="index">
-                <div class="p-1">
-                  <img :src="getPhotoUrl(photo)" alt="Livestock photo" class="rounded-lg object-cover w-full h-96">
-                </div>
-              </CarouselItem>
-            </CarouselContent>
-            <CarouselPrevious v-if="props.livestock.photo && props.livestock.photo.length > 1" />
-            <CarouselNext v-if="props.livestock.photo && props.livestock.photo.length > 1" />
-          </Carousel>
+          <div v-if="props.livestock.photo && props.livestock.photo.length > 0" class="relative w-full max-w-2xl">
+            <Carousel class="relative w-full" :opts="{ align: 'center' }">
+              <CarouselContent>
+                <CarouselItem v-for="(photo, index) in props.livestock.photo" :key="index">
+                  <div class="p-1">
+                    <img :src="getPhotoUrl(photo)" alt="Livestock photo" class="rounded-lg object-cover w-full h-96">
+                  </div>
+                </CarouselItem>
+              </CarouselContent>
+              <CarouselPrevious v-if="props.livestock.photo.length > 1" />
+              <CarouselNext v-if="props.livestock.photo.length > 1" />
+            </Carousel>
+          </div>
+          <div v-else
+            class="flex flex-col items-center justify-center w-full max-w-2xl h-96 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <ImageOff class="h-16 w-16 text-gray-400 dark:text-gray-600 mb-4" />
+            <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">Tidak ada foto</p>
+            <p class="text-gray-400 dark:text-gray-500 text-sm">Foto ternak belum tersedia</p>
+          </div>
         </CardContent>
       </Card>
 
@@ -282,15 +351,25 @@ const feedData = [
 
         <Card class="border border-primary/20 dark:border-primary/80">
           <CardContent class="p-4">
-            <Alert variant="danger" class="mb-2">
-              <ThumbsDown class="h-4 w-4" />
+            <Alert :variant="weightTrend?.hasData ? (weightTrend.isIncreasing ? 'success' : 'destructive') : 'default'"
+              class="mb-2">
+              <ThumbsUp v-if="weightTrend?.isIncreasing" class="h-4 w-4" />
+              <ThumbsDown v-else class="h-4 w-4" />
               <AlertTitle>Produktivitas Bobot</AlertTitle>
-              <AlertDescription class="text-sm">Perkembangan bobot ternakmu hari ini menurun 4kg atau -10% dari bobot
-                sebelumnya</AlertDescription>
+              <AlertDescription class="text-sm">
+                <template v-if="weightTrend?.hasData">
+                  Perkembangan bobot ternak {{ weightTrend.isIncreasing ? 'meningkat' : 'menurun' }}
+                  {{ Math.abs(parseFloat(weightTrend.difference)) }}kg atau {{
+                    Math.abs(parseFloat(weightTrend.percentage)) }}%
+                  dari bobot sebelumnya
+                </template>
+                <template v-else>
+                  Belum ada data bobot ternak yang tercatat. Mulai tambahkan data bobot untuk melihat tren perkembangan.
+                </template>
+              </AlertDescription>
             </Alert>
-            <LineChart :labels="['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']"
-              :dataPoints="[10, 30, 40, 60, 70, 80, 80, 90, 100, 80, 110, 130]" label="Bobot Ternak (kg)"
-              :isDark="isDarkMode" />
+            <LineChart :labels="weightChartData.labels" :dataPoints="weightChartData.dataPoints"
+              label="Bobot Ternak (kg)" :isDark="isDarkMode" />
           </CardContent>
         </Card>
       </div>
