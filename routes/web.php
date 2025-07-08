@@ -33,6 +33,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'farms' => FarmController::class,
         'livestocks' => LivestockController::class,
     ]);
+
+    Route::get('/livestocks/weight', [LivestockController::class, 'weighting'])->name('livestocks.weighting');
+    Route::post('/livestocks/weight', [LivestockController::class, 'storeWeight'])->name('livestocks.weight.store');
     
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');

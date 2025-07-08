@@ -11,6 +11,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Models\LivestockWeight;
 
 class LivestockController extends Controller
 {
@@ -94,6 +95,34 @@ class LivestockController extends Controller
         return Inertia::render('livestocks/Show', [
             'livestock' => $livestock,
         ]);
+    }
+
+    public function weighting()
+    {
+        return Inertia::render('livestocks/Weighting', [
+            'livestock' => null,
+        ]);
+    }
+
+    public function storeWeight(Request $request)
+    {
+        $validated = $request->validate([
+            'livestock_id' => 'required|exists:livestocks,id',
+            'weight' => 'required|numeric',
+            'date' => 'required|date',
+        ]);
+
+        $livestock = Livestock::find($validated['livestock_id']);
+
+        $livestock->weights()->create([
+            'weight' => $validated['weight'],
+            'date' => $validated['date'],
+            'user_id' => Auth::id(),
+        ]);
+
+        $livestock->update(['weight' => $validated['weight']]);
+
+        return redirect()->route('livestocks.show', $livestock);
     }
 
     /**

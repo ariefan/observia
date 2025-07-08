@@ -35,7 +35,7 @@ const page = usePage<SharedData>();
     <SidebarGroup class="px-2 py-0">
         <SidebarGroupLabel>Platform</SidebarGroupLabel>
         <SidebarMenu>
-            <DropdownMenu>
+            <DropdownMenu v-if="page.props.auth.farms && page.props.auth.user.current_farm_id">
                 <DropdownMenuTrigger as-child>
                     <Button size="icon" class="mb-4 rounded-lg">
                         <Plus class="w-4 h-4" />
@@ -55,7 +55,7 @@ const page = usePage<SharedData>();
                             <CreditCard class="mr-2 h-4 w-4" />
                             <span>Perah</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem @click="router.get('/livestocks/create')">
                             <Anvil class="mr-2 h-4 w-4" />
                             <span>Bobot ternak</span>
                         </DropdownMenuItem>

@@ -156,6 +156,11 @@ class Livestock extends Model
         return str_pad($result, 6, '0', STR_PAD_LEFT);
     }
 
+    public function weights(): HasMany
+    {
+        return $this->hasMany(LivestockWeight::class);
+    }
+
     public function milkingSummaries(): HasMany
     {
         return $this->hasMany(MilkingSummary::class);
