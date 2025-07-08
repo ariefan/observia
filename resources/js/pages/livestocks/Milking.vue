@@ -50,7 +50,7 @@ const isUpdatingAutomatically = ref(false);
 // Load initial livestock data
 const loadLivestock = async (query: string = '') => {
     try {
-        const response = await axios.get(route('livestocks.search', { q: query }));
+        const response = await axios.get(route('livestocks.search', { q: query, sex: 'F' }));
         searchResults.value = response.data;
     } catch (error) {
         console.error(error);

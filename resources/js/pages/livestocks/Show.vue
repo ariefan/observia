@@ -453,8 +453,11 @@ const milkingTrend = computed(() => {
             <Alert
               :variant="milkingTrend?.hasData && !milkingTrend.singleDataPoint ? (milkingTrend.isIncreasing ? 'success' : 'destructive') : 'default'"
               class="mb-2">
-              <ThumbsUp v-if="milkingTrend?.hasData && !milkingTrend.singleDataPoint && milkingTrend.isIncreasing" class="h-4 w-4" />
-              <ThumbsDown v-else-if="milkingTrend?.hasData && !milkingTrend.singleDataPoint && !milkingTrend.isIncreasing" class="h-4 w-4" />
+              <ThumbsUp v-if="milkingTrend?.hasData && !milkingTrend.singleDataPoint && milkingTrend.isIncreasing"
+                class="h-4 w-4" />
+              <ThumbsDown
+                v-else-if="milkingTrend?.hasData && !milkingTrend.singleDataPoint && !milkingTrend.isIncreasing"
+                class="h-4 w-4" />
               <AlertTitle>Produktivitas Susu</AlertTitle>
               <AlertDescription class="text-sm">
                 <template v-if="milkingTrend?.hasData">
@@ -481,10 +484,13 @@ const milkingTrend = computed(() => {
 
         <Card class="border border-primary/20 dark:border-primary/80">
           <CardContent class="p-4">
-            <Alert :variant="weightTrend?.hasData && !weightTrend.singleDataPoint ? (weightTrend.isIncreasing ? 'success' : 'destructive') : 'default'"
+            <Alert
+              :variant="weightTrend?.hasData && !weightTrend.singleDataPoint ? (weightTrend.isIncreasing ? 'success' : 'destructive') : 'default'"
               class="mb-2">
-              <ThumbsUp v-if="weightTrend?.hasData && !weightTrend.singleDataPoint && weightTrend.isIncreasing" class="h-4 w-4" />
-              <ThumbsDown v-else-if="weightTrend?.hasData && !weightTrend.singleDataPoint && !weightTrend.isIncreasing" class="h-4 w-4" />
+              <ThumbsUp v-if="weightTrend?.hasData && !weightTrend.singleDataPoint && weightTrend.isIncreasing"
+                class="h-4 w-4" />
+              <ThumbsDown v-else-if="weightTrend?.hasData && !weightTrend.singleDataPoint && !weightTrend.isIncreasing"
+                class="h-4 w-4" />
               <AlertTitle>Produktivitas Bobot</AlertTitle>
               <AlertDescription class="text-sm">
                 <template v-if="weightTrend?.hasData">
