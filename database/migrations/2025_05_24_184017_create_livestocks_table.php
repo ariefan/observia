@@ -30,9 +30,15 @@ return new class extends Migration
             $table->foreignUuid('female_parent_id')->nullable()->constrained('livestocks');
             $table->dateTime('purchase_date')->nullable();
             $table->bigInteger('purchase_price')->nullable();
+            $table->string('purchase_from')->nullable();
             $table->string('barter_livestock_id')->nullable(); 
             $table->string('barter_from')->nullable();
             $table->date('barter_date')->nullable();
+            $table->string('grant_from')->nullable();
+            $table->date('grant_date')->nullable();
+            $table->string('borrowed_from')->nullable();
+            $table->date('borrowed_date')->nullable();
+            $table->date('entry_date')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

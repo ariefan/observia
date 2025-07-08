@@ -53,6 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/notifications/{notification}/reject', [NotificationController::class, 'reject']);
 
     Route::get('/api/species/{species}/breeds', [SpeciesController::class, 'breeds']);
+    Route::get('/api/livestocks', [LivestockController::class, 'search'])->name('livestocks.search');
 });
 
 Route::get('/livestocks/photo/{path}', [LivestockController::class, 'showPhoto'])->where('path', '.*')->name('livestocks.photo');

@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateLivestockRequest;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class LivestockController extends Controller
 {
@@ -65,8 +66,12 @@ class LivestockController extends Controller
 
         if (! is_null($request->photo) && ! empty($request->photo)) {
             foreach ($request->photo as $photo) {
-                $path = $photo->store('livestocks', 'public');
-                $photos[] = $path;
+                if (is_string($photo)) {
+                    $photos[] = $photo;
+                } else {
+                    $path = $photo->store('livestocks', 'public');
+                    $photos[] = $path;
+                }
             }
         }
 
@@ -122,8 +127,12 @@ class LivestockController extends Controller
 
         if (! is_null($request->photo) && ! empty($request->photo)) {
             foreach ($request->photo as $photo) {
-                $path = $photo->store('livestocks', 'public');
-                $photos[] = $path;
+                if (is_string($photo)) {
+                    $photos[] = $photo;
+                } else {
+                    $path = $photo->store('livestocks', 'public');
+                    $photos[] = $path;
+                }
             }
         }
 
@@ -137,7 +146,23 @@ class LivestockController extends Controller
      */
     public function destroy(Livestock $livestock)
     {
-        Livestock::destroy($livestock);
+        $livestock->delete();
         return redirect()->route('livestocks.index');
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('q');
+        $sex = $request->input('sex');
+
+        $livestocks = Livestock::query()
+            ->where('farm_id', Auth::user()->current_farm_id)
+            ->where('name', 'like', "%{$query}%")
+            ->where('sex', $sex)
+            ->with('breed')
+            ->select('id', 'name', 'breed_id', 'aifarm_id', 'tag_id')
+            ->get();
+
+        return response()->json($livestocks);
     }
 }

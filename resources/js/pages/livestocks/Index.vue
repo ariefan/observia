@@ -40,6 +40,7 @@ interface Livestock {
     id: string;
     name: string;
     aifarm_id: string;
+    tag_id: string;
     sex: 'M' | 'F';
     birthdate: string; // Date string
     photo: string[]; // Array of photo paths
@@ -186,7 +187,7 @@ const back = () => window.history.back();
                         </div>
 
                         <Badge class="absolute bottom-2 right-2 bg-primary text-white rounded-full">{{
-                            livestock.aifarm_id }}</Badge>
+                            livestock.tag_id }}</Badge>
                     </div>
 
                     <!-- Goat info section -->

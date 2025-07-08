@@ -11,6 +11,7 @@ import { MapInput } from "@/components/ui/map-input";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,9 @@ import {
   ChartNoAxesColumnIncreasing,
   ThumbsUp,
   ThumbsDown,
+  MoreVertical,
+  Pencil,
+  Trash2,
 } from "lucide-vue-next";
 
 // Types
@@ -74,8 +78,17 @@ const submit = () => { };
 const show = (id: string) => router.visit(route("livestocks.show", { livestock: id }));
 const back = () => window.history.back();
 
+const deleteLivestock = () => {
+  if (confirm('Are you sure you want to delete this livestock?')) {
+    router.delete(route('livestocks.destroy', props.livestock.id));
+  }
+}
+
 const getPhotoUrl = (path) => {
-  return `/storage/${path.replace('public/', '')}`;
+  if (path.startsWith('public/')) {
+    return `/storage/${path.substring(7)}`;
+  }
+  return `/storage/${path}`;
 }
 
 // Data for health and feed history
@@ -126,15 +139,45 @@ const feedData = [
   <AppLayout>
     <div class="flex h-full w-full flex-1 flex-col gap-4 p-4 max-w-7xl mx-auto">
       <!-- Header Section -->
-      <div class="flex items-start space-x-4">
-        <Button variant="ghost" size="icon" @click="back">
-          <ArrowLeft />
-        </Button>
-        <h1 class="text-3xl font-semibold">{{ props.livestock.name }}</h1>
-        <div class="flex flex-col">
-          <Badge class="bg-primary text-white rounded-full">{{ props.livestock.aifarm_id }}</Badge>
-          <p class="text-sm">{{ props.livestock.breed.name }}</p>
+      <div class="flex items-start justify-between space-x-4">
+        <div class="flex items-start space-x-4">
+          <Button @click="back" variant="outline" size="icon" class="h-10 w-10 shrink-0">
+            <ArrowLeft class="h-5 w-5" />
+          </Button>
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <h1 class="text-2xl font-bold tracking-tight">{{ livestock.name }}</h1>
+              <Badge :variant="livestock.status.value == 1 ? 'success' : 'destructive'">
+                {{ livestock.tag_id }}</Badge>
+            </div>
+            <div class="flex items-center gap-2">
+              <p class="text-muted-foreground">{{ livestock.breed.species.name }} - {{ livestock.breed.name }}</p>
+              <Mars v-if="livestock.sex == 'M'" class="text-blue-500" />
+              <Venus v-else class="text-pink-500" />
+            </div>
+          </div>
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="ghost" size="icon">
+              <MoreVertical class="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem as-child>
+              <Link :href="route('livestocks.edit', livestock.id)" class="flex items-center gap-2">
+              <Pencil class="h-4 w-4" />
+              <span>Edit</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem @click="deleteLivestock" class="flex items-center gap-2 text-red-600">
+              <Trash2 class="h-4 w-4" />
+              <span>Delete</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <!-- Population Stats Card -->
@@ -167,7 +210,12 @@ const feedData = [
           <!-- Big fat number -->
           <div
             class="bg-white dark:bg-zinc-800 dark:text-white text-teal-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-            00 <span class="text-sm font-normal">Ekor</span>
+            <template v-if="livestock.age_in_year > 0">
+              {{ livestock.age_in_year }} <span class="text-sm font-normal">Tahun</span>
+            </template>
+            <template v-else>
+              {{ livestock.age_in_month }} <span class="text-sm font-normal">Bulan</span>
+            </template>
           </div>
         </div>
 
@@ -182,7 +230,7 @@ const feedData = [
           <!-- Big fat number -->
           <div
             class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-            00 <span class="text-sm font-normal">Liter</span>
+            {{ livestock.weight }} <span class="text-sm font-normal">Kg</span>
           </div>
         </div>
 

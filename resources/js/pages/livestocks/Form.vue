@@ -1,10 +1,10 @@
 <script setup>
 import { Head, Link, useForm } from "@inertiajs/vue3";
 import AppLayout from '@/layouts/AppLayout.vue';
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import _, { map } from "underscore";
 
-import { Check, Circle, Dot } from 'lucide-vue-next'
+import { Check, Circle, Dot, ArrowLeft } from 'lucide-vue-next'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,6 +41,8 @@ const male_livestocks = ref([]);
 const male_livestock = ref(props.male_livestock);
 const female_livestocks = ref([]);
 const female_livestock = ref(props.female_livestock);
+const selected_male_parent = ref(null);
+const selected_female_parent = ref(null);
 
 const form_1 = ref(null)
 
@@ -64,6 +66,12 @@ const form = useForm({
   barter_from: props.livestock.barter_from,
   barter_date: props.livestock.barter_date,
   purchase_price: props.livestock.purchase_price,
+  purchase_from: props.livestock.purchase_from,
+  grant_from: props.livestock.grant_from,
+  grant_date: props.livestock.grant_date,
+  borrowed_from: props.livestock.borrowed_from,
+  borrowed_date: props.livestock.borrowed_date,
+  entry_date: props.livestock.entry_date,
 });
 
 const submitStep1 = (nextStep) => {
@@ -81,7 +89,10 @@ const submitStep1 = (nextStep) => {
 
 const saveAction = () => {
   if (props.livestock.id) {
-    form.put(route('livestocks.update', props.livestock.id));
+    form.transform((data) => ({
+      ...data,
+      _method: 'put',
+    })).post(route('livestocks.update', props.livestock.id));
   } else {
     form.post(route('livestocks.store'));
   }
@@ -105,17 +116,19 @@ const selectLivestock = (livestock, sex) => {
     male_livestock.value = livestock.name;
     form.male_parent_id = livestock.id;
     male_livestocks.value = [];
+    selected_male_parent.value = livestock;
   } else {
     female_livestock.value = livestock.name;
     form.female_parent_id = livestock.id;
     female_livestocks.value = [];
+    selected_female_parent.value = livestock;
   }
 };
 
 async function fetchLivestocks(query, sex) {
   if (query.length > 2) {
     const response = await fetch(
-      `/api/livestocks?query=${query}&sex=${sex}`
+      route("livestocks.search", { q: query, sex: sex })
     );
     if (sex === "M") {
       male_livestocks.value = await response.json();
@@ -130,7 +143,29 @@ onMounted(() => {
     form.speciesSelected = props.livestock.breed.species;
     fetchBreeds();
   }
+
+  if (props.livestock.male_parent) {
+    selected_male_parent.value = props.livestock.male_parent;
+  }
+
+  if (props.livestock.female_parent) {
+    selected_female_parent.value = props.livestock.female_parent;
+  }
 });
+
+watch(() => form.origin, (newOrigin) => {
+  if (newOrigin == 1) {
+    form.entry_date = form.birthdate;
+  }
+});
+
+watch(() => form.birthdate, (newBirthdate) => {
+  if (form.origin == 1) {
+    form.entry_date = newBirthdate;
+  }
+});
+
+const back = () => window.history.back();
 
 function onSubmit(values) {
   console.log('submitted', values)
@@ -143,16 +178,23 @@ const meta = { valid: true }
 <template>
   <AppLayout title="Form Ternak">
     <template #header>
-      <h3 class="font-semibold text-xl text-gray-800 leading-tight">
-        Form Ternak
-      </h3>
+      <div class="flex items-center gap-4">
+        <h3 class="font-semibold text-xl text-gray-800 leading-tight">
+          Form Ternak
+        </h3>
+      </div>
     </template>
 
     <div class="py-2">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
           <form ref="form_1" @submit.prevent="saveAction">
-            <h3 class="text-primary font-semibold">Data Ternak</h3>
+            <div class="flex items-center gap-4">
+              <Button @click="back" variant="ghost" size="icon" class="h-10 w-10 shrink-0">
+                <ArrowLeft class="h-5 w-5" />
+              </Button>
+              <h3 class="text-primary font-semibold">Data Ternak</h3>
+            </div>
             <div class="mt-2">
               <LivestockUploader v-model="form.photo" />
               <InputError :message="form.errors.photo" />
@@ -247,13 +289,11 @@ const meta = { valid: true }
                     <SelectValue placeholder="Pilih Asal" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="1">Kelahiran</SelectItem>
-                      <SelectItem value="2">Pembelian</SelectItem>
-                      <SelectItem value="3">Barter</SelectItem>
-                      <SelectItem value="4">Hibah</SelectItem>
-                      <SelectItem value="5">Peminjaman</SelectItem>
-                    </SelectGroup>
+                    <SelectItem value="1">Kelahiran</SelectItem>
+                    <SelectItem value="2">Pembelian</SelectItem>
+                    <SelectItem value="3">Barter</SelectItem>
+                    <SelectItem value="4">Hibah</SelectItem>
+                    <SelectItem value="5">Peminjaman</SelectItem>
                   </SelectContent>
                 </Select>
                 <InputError :message="form.errors.origin" />
@@ -265,9 +305,9 @@ const meta = { valid: true }
               </div>
               <div v-if="form.origin == 2">
                 <!-- TODO -->
-                <Label for="">Beli Dari</Label>
-                <Input id="" />
-                <InputError :message="''" />
+                <Label for="purchase_from">Beli Dari</Label>
+                <Input id="purchase_from" v-model="form.purchase_from" />
+                <InputError :message="form.errors.purchase_from" />
               </div>
               <div v-if="form.origin == 2">
                 <Label for="purchase_price">Harga Beli</Label>
@@ -275,10 +315,9 @@ const meta = { valid: true }
                 <InputError :message="form.errors.purchase_price" />
               </div>
               <div v-if="form.origin == 3">
-                <!-- TODO -->
-                <Label for="">ID Ternak Barter</Label>
-                <Input id="" />
-                <InputError :message="''" />
+                <Label for="barter_livestock_id">ID Ternak Barter</Label>
+                <Input id="barter_livestock_id" v-model="form.barter_livestock_id" />
+                <InputError :message="form.errors.barter_livestock_id" />
               </div>
               <div v-if="form.origin == 3">
                 <Label for="barter_from">Asal Barter</Label>
@@ -291,28 +330,24 @@ const meta = { valid: true }
                 <InputError :message="form.errors.barter_date" />
               </div>
               <div v-if="form.origin == 4">
-                <!-- TODO -->
-                <Label for="">Hibah Dari</Label>
-                <Input id="" />
-                <InputError :message="''" />
+                <Label for="grant_from">Hibah Dari</Label>
+                <Input id="grant_from" v-model="form.grant_from" />
+                <InputError :message="form.errors.grant_from" />
               </div>
               <div v-if="form.origin == 4">
-                <!-- TODO -->
-                <Label for="">Tanggal Hibah</Label>
-                <Input id="" />
-                <InputError :message="''" />
+                <Label for="grant_date">Tanggal Hibah</Label>
+                <Input id="grant_date" v-model="form.grant_date" type="date" />
+                <InputError :message="form.errors.grant_date" />
               </div>
               <div v-if="form.origin == 5">
-                <!-- TODO -->
-                <Label for="">Pinjam Dari</Label>
-                <Input id="" />
-                <InputError :message="''" />
+                <Label for="borrowed_from">Pinjam Dari</Label>
+                <Input id="borrowed_from" v-model="form.borrowed_from" />
+                <InputError :message="form.errors.borrowed_from" />
               </div>
               <div v-if="form.origin == 5">
-                <!-- TODO -->
-                <Label for="">Tanggal Pinjam</Label>
-                <Input id="" />
-                <InputError :message="''" />
+                <Label for="borrowed_date">Tanggal Pinjam</Label>
+                <Input id="borrowed_date" v-model="form.borrowed_date" type="date" />
+                <InputError :message="form.errors.borrowed_date" />
               </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
@@ -322,10 +357,9 @@ const meta = { valid: true }
                 <InputError :message="form.errors.birthdate" />
               </div>
               <div>
-                <!-- TODO -->
-                <Label for="">Tanggal Masuk Kandang</Label>
-                <Input type="date" id="" />
-                <InputError :message="''" />
+                <Label for="entry_date">Tanggal Masuk Kandang</Label>
+                <Input type="date" id="entry_date" v-model="form.entry_date" :disabled="form.origin == 1" />
+                <InputError :message="form.errors.entry_date" />
               </div>
               <div class="hidden">
                 <!-- Intentionally hidden for purpose -->
@@ -358,9 +392,14 @@ const meta = { valid: true }
                 </ul>
                 <InputError :message="form.errors.male_parent_id" />
               </div>
-              <!-- TODO: some information of male parent -->
+              <div v-if="selected_male_parent">
+                <p><strong>ID Aifarm:</strong> {{ selected_male_parent.aifarm_id }}</p>
+                <p><strong>ID Tag:</strong> {{ selected_male_parent.tag_id }}</p>
+                <p><strong>Nama:</strong> {{ selected_male_parent.name }}</p>
+                <p><strong>Ras:</strong> {{ selected_male_parent.breed.name }}</p>
+              </div>
             </div>
-            <h3 class="text-primary font-semibold mt-6">Data Induk Jantan</h3>
+            <h3 class="text-primary font-semibold mt-6">Data Induk Betina</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <Label for="female_parent">Cari Induk Betina</Label>
@@ -374,7 +413,12 @@ const meta = { valid: true }
                 </ul>
                 <InputError :message="form.errors.female_parent_id" />
               </div>
-              <!-- TODO: some information of female parent -->
+              <div v-if="selected_female_parent">
+                <p><strong>ID Aifarm:</strong> {{ selected_female_parent.aifarm_id }}</p>
+                <p><strong>ID Tag:</strong> {{ selected_female_parent.tag_id }}</p>
+                <p><strong>Nama:</strong> {{ selected_female_parent.name }}</p>
+                <p><strong>Ras:</strong> {{ selected_female_parent.breed.name }}</p>
+              </div>
             </div>
             <div class="flex justify-end mt-6">
               <Button type="submit" :disabled="form.processing">
