@@ -176,7 +176,7 @@ const back = () => window.history.back();
                                 <ComboboxEmpty>Ternak tidak ditemukan.</ComboboxEmpty>
                                 <ComboboxGroup>
                                     <ComboboxItem v-for="result in searchResults" :key="result.id" :value="result">
-                                        {{ result.aifarm_id }} - {{ result.name }}
+                                        {{ result.tag_id }} - {{ result.name }}
                                         <ComboboxItemIndicator>
                                             <Check class="ml-auto h-4 w-4" />
                                         </ComboboxItemIndicator>
@@ -219,7 +219,7 @@ const back = () => window.history.back();
                         <InputError :message="form.errors.date" />
                     </div>
 
-                    <div>
+                    <div class="hidden">
                         <Label for="time">Waktu Perah</Label>
                         <Input type="time" v-model="form.time" />
                         <InputError :message="form.errors.time" />

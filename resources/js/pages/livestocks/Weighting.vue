@@ -134,7 +134,7 @@ const back = () => window.history.back();
                                 <ComboboxEmpty>Ternak tidak ditemukan.</ComboboxEmpty>
                                 <ComboboxGroup>
                                     <ComboboxItem v-for="result in searchResults" :key="result.id" :value="result">
-                                        {{ result.aifarm_id }} - {{ result.name }}
+                                        {{ result.tag_id }} - {{ result.name }}
                                         <ComboboxItemIndicator>
                                             <Check class="ml-auto h-4 w-4" />
                                         </ComboboxItemIndicator>
