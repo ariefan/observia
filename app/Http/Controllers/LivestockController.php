@@ -180,6 +180,18 @@ class LivestockController extends Controller
 
         $livestock = Livestock::find($validated['livestock_id']);
 
+        // Check if milking already exists for this livestock, date, and session
+        $existingMilking = $livestock->milkings()
+            ->where('date', $validated['date'])
+            ->where('session', $validated['session'])
+            ->first();
+
+        if ($existingMilking) {
+            return back()->withErrors([
+                'session' => 'Data perahan untuk sesi ' . $validated['session'] . ' pada tanggal ini sudah ada. Setiap sesi hanya boleh dilakukan sekali per hari.'
+            ]);
+        }
+
         $livestock->milkings()->create([
             'milk_volume' => $validated['milk_volume'],
             'date' => $validated['date'],
