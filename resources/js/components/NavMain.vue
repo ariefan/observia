@@ -51,7 +51,7 @@ const page = usePage<SharedData>();
                             <Utensils class="mr-2 h-4 w-4" />
                             <span>Pakan</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem @click="router.get('/livestocks/milking')">
                             <CreditCard class="mr-2 h-4 w-4" />
                             <span>Perah</span>
                         </DropdownMenuItem>

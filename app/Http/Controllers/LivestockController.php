@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\LivestockWeight;
+use App\Models\LivestockMilking;
 
 class LivestockController extends Controller
 {
@@ -106,9 +107,28 @@ class LivestockController extends Controller
             })
             ->values();
 
+        // Get milking history for the last 12 months
+        $milkingHistory = $livestock->milkings()
+            ->where('date', '>=', now()->subMonths(12))
+            ->orderBy('date')
+            ->get()
+            ->groupBy(function($milking) {
+                return \Carbon\Carbon::parse($milking->date)->format('Y-m');
+            })
+            ->map(function($monthMilkings) {
+                // Sum all milk volumes for each month
+                return [
+                    'date' => $monthMilkings->first()->date,
+                    'total_volume' => $monthMilkings->sum('milk_volume'),
+                    'count' => $monthMilkings->count(),
+                ];
+            })
+            ->values();
+
         return Inertia::render('livestocks/Show', [
             'livestock' => $livestock,
             'weightHistory' => $weightHistory,
+            'milkingHistory' => $milkingHistory,
         ]);
     }
 
@@ -136,6 +156,38 @@ class LivestockController extends Controller
         ]);
 
         $livestock->update(['weight' => $validated['weight']]);
+
+        return redirect()->route('livestocks.show', $livestock);
+    }
+
+    public function milking()
+    {
+        return Inertia::render('livestocks/Milking', [
+            'livestock' => new Livestock(),
+        ]);
+    }
+
+    public function storeMilking(Request $request)
+    {
+        $validated = $request->validate([
+            'livestock_id' => 'required|exists:livestocks,id',
+            'milk_volume' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'time' => 'nullable|date_format:H:i',
+            'session' => 'nullable|in:morning,evening,afternoon,night,midnight,dawn',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $livestock = Livestock::find($validated['livestock_id']);
+
+        $livestock->milkings()->create([
+            'milk_volume' => $validated['milk_volume'],
+            'date' => $validated['date'],
+            'time' => $validated['time'] ?? null,
+            'session' => $validated['session'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'user_id' => auth()->id(),
+        ]);
 
         return redirect()->route('livestocks.show', $livestock);
     }

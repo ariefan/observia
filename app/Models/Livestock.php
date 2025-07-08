@@ -161,9 +161,9 @@ class Livestock extends Model
         return $this->hasMany(LivestockWeight::class);
     }
 
-    public function milkingSummaries(): HasMany
+    public function milkings(): HasMany
     {
-        return $this->hasMany(MilkingSummary::class);
+        return $this->hasMany(LivestockMilking::class);
     }
 
     public function maleParent(): BelongsTo

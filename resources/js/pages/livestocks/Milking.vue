@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Core Vue imports
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, nextTick } from "vue";
 import { Head, useForm } from "@inertiajs/vue3";
 import axios from "axios";
 
@@ -12,10 +12,10 @@ import { Label } from "@/components/ui/label";
 import InputError from "@/components/InputError.vue";
 import { Card, CardContent } from "@/components/ui/card";
 import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxList, ComboboxTrigger } from '@/components/ui/combobox'
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Icons
-import { ArrowLeft, Check, ChevronsUpDown } from "lucide-vue-next";
+import { ArrowLeft, Check, ChevronsUpDown, Milk } from "lucide-vue-next";
 
 // Props
 const props = defineProps<{
@@ -28,15 +28,24 @@ const getDisplayValue = (livestock: any) => {
     return `${livestock.aifarm_id} - ${livestock.name}`;
 };
 
+// Get current date and time
+const now = new Date();
+const currentHour = now.getHours();
+const currentSession = currentHour < 12 ? 'morning' : 'afternoon';
+
 const form = useForm({
     livestock_id: props.livestock.id,
-    weight: 0,
-    date: new Date().toISOString().slice(0, 10),
+    milk_volume: 0,
+    date: now.toISOString().slice(0, 10),
+    time: now.toTimeString().slice(0, 5),
+    session: currentSession,
+    notes: '',
 });
 
 const selectedLivestock = ref<any>(props.livestock.id ? props.livestock : null);
 const searchQuery = ref('');
 const searchResults = ref<any[]>([]);
+const isUpdatingAutomatically = ref(false);
 
 // Load initial livestock data
 const loadLivestock = async (query: string = '') => {
@@ -75,8 +84,39 @@ watch(selectedLivestock, (newValue) => {
     }
 });
 
+// Watch for session changes and update time accordingly
+watch(() => form.session, async (newSession) => {
+    if (isUpdatingAutomatically.value) return;
+
+    isUpdatingAutomatically.value = true;
+    if (newSession === 'morning') {
+        form.time = '08:00';
+    } else if (newSession === 'afternoon') {
+        form.time = '16:00';
+    }
+    await nextTick();
+    isUpdatingAutomatically.value = false;
+});
+
+// Watch for time changes and update session accordingly
+watch(() => form.time, async (newTime) => {
+    if (isUpdatingAutomatically.value) return;
+
+    if (newTime) {
+        isUpdatingAutomatically.value = true;
+        const [hours] = newTime.split(':').map(Number);
+        if (hours < 12) {
+            form.session = 'morning';
+        } else {
+            form.session = 'afternoon';
+        }
+        await nextTick();
+        isUpdatingAutomatically.value = false;
+    }
+});
+
 const submit = () => {
-    form.post(route('livestocks.weight.store'));
+    form.post(route('livestocks.milking.store'));
 };
 
 // Navigation functions
@@ -85,7 +125,7 @@ const back = () => window.history.back();
 
 <template>
 
-    <Head title="Tambah Bobot Ternak" />
+    <Head title="Tambah Data Perah" />
 
     <AppLayout>
         <div class="flex h-full w-full flex-1 flex-col gap-4 p-4 max-w-7xl mx-auto">
@@ -95,22 +135,24 @@ const back = () => window.history.back();
                     <ArrowLeft class="h-5 w-5" />
                 </Button>
                 <div class="space-y-1">
-                    <h1 class="text-2xl font-bold tracking-tight">Tambah Bobot Ternak</h1>
+                    <h1 class="text-2xl font-bold tracking-tight">Tambah Data Perah</h1>
                     <p class="text-muted-foreground">
-                        Tambahkan informasi mengenai ternak Anda dengan lengkap, bantu kami untuk lebih mudah dalam
-                        mengelola data ternak anda.
+                        Catat hasil perahan susu harian untuk memantau produktivitas ternak Anda dengan akurat.
                     </p>
                 </div>
             </div>
 
-            <Card class="bg-cyan-50 border-cyan-200">
+            <Card class="bg-blue-50 border-blue-200">
                 <CardContent class="p-6 flex items-center justify-between">
                     <div class="flex-1">
-                        <h2 class="text-lg font-semibold text-cyan-800">Input bobot ternak lebih cepat</h2>
-                        <p class="text-cyan-700 text-sm">Otomatiskan tugas-tugas manual seperti pengumpulan data dan
-                            analisis, menghemat waktu dan tenaga kerja Anda.</p>
+                        <h2 class="text-lg font-semibold text-blue-800">Monitoring Produktivitas Susu</h2>
+                        <p class="text-blue-700 text-sm">Pantau dan analisis produksi susu untuk mengoptimalkan
+                            manajemen peternakan dan kesehatan ternak Anda.</p>
                     </div>
-                    <Button variant="outline" class="border-cyan-600 text-cyan-600">Gunakan IOT</Button>
+                    <Button variant="outline" class="border-blue-600 text-blue-600">
+                        <Milk class="h-4 w-4 mr-2" />
+                        Gunakan IOT
+                    </Button>
                 </CardContent>
             </Card>
 
@@ -119,7 +161,7 @@ const back = () => window.history.back();
                     <div>
                         <Label for="livestock_id">ID Ternak</Label>
                         <Combobox v-model="selectedLivestock" v-model:search-term="searchQuery"
-                            :display-value="getDisplayValue" class="w-full">
+                            :display-value="getDisplayValue">
                             <ComboboxAnchor as-child>
                                 <ComboboxTrigger as-child>
                                     <Button variant="outline" class="justify-between w-full">
@@ -129,7 +171,7 @@ const back = () => window.history.back();
                                 </ComboboxTrigger>
                             </ComboboxAnchor>
 
-                            <ComboboxList>
+                            <ComboboxList class="w-full">
                                 <ComboboxInput v-model="searchQuery" placeholder="Cari ternak..." />
                                 <ComboboxEmpty>Ternak tidak ditemukan.</ComboboxEmpty>
                                 <ComboboxGroup>
@@ -146,25 +188,55 @@ const back = () => window.history.back();
                     </div>
 
                     <div>
-                        <Label for="weight">Bobot Ternak</Label>
+                        <Label for="milk_volume">Volume Susu</Label>
                         <div class="relative">
-                            <Input id="weight" type="number" v-model="form.weight" class="pr-12" />
+                            <Input id="milk_volume" type="number" step="0.1" v-model="form.milk_volume" class="pr-16" />
                             <div
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">
-                                Kg
+                                Liter
                             </div>
                         </div>
-                        <InputError :message="form.errors.weight" />
+                        <InputError :message="form.errors.milk_volume" />
                     </div>
 
                     <div>
-                        <Label for="date">Tanggal Penimbangan</Label>
+                        <Label for="session">Sesi Perah</Label>
+                        <Select v-model="form.session">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Pilih sesi perah" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="morning">Pagi</SelectItem>
+                                <SelectItem value="afternoon">Sore</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <InputError :message="form.errors.session" />
+                    </div>
+
+                    <div>
+                        <Label for="date">Tanggal Perah</Label>
                         <Input type="date" v-model="form.date" />
                         <InputError :message="form.errors.date" />
                     </div>
+
+                    <div>
+                        <Label for="time">Waktu Perah</Label>
+                        <Input type="time" v-model="form.time" />
+                        <InputError :message="form.errors.time" />
+                    </div>
+
+                    <div class="md:col-span-2 hidden">
+                        <Label for="notes">Catatan (Opsional)</Label>
+                        <Input id="notes" v-model="form.notes"
+                            placeholder="Tambahkan catatan tentang kondisi perah..." />
+                        <InputError :message="form.errors.notes" />
+                    </div>
                 </div>
                 <div class="flex justify-end mt-4">
-                    <Button type="submit" :disabled="form.processing">Simpan bobot</Button>
+                    <Button type="submit" :disabled="form.processing">
+                        <Milk class="h-4 w-4 mr-2" />
+                        Simpan Data Perah
+                    </Button>
                 </div>
             </form>
         </div>

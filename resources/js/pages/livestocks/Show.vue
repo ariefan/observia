@@ -32,6 +32,8 @@ import {
   Pencil,
   Trash2,
   ImageOff,
+  Scale,
+  Milk,
 } from "lucide-vue-next";
 
 // Types
@@ -52,6 +54,7 @@ import Example2 from "@/assets/example-2.png";
 const props = defineProps<{
   livestock: any;
   weightHistory: any[];
+  milkingHistory: any[];
 }>();
 
 // Breadcrumb navigation
@@ -174,10 +177,69 @@ const processWeightData = () => {
 
 const weightChartData = processWeightData();
 
+// Process milking history data for the chart
+const processMilkingData = () => {
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const last12Months: Array<{ key: string, label: string, year: number }> = [];
+  const milkingDataPoints: number[] = [];
+
+  // Generate last 12 months
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    last12Months.push({
+      key: monthKey,
+      label: monthNames[date.getMonth()],
+      year: date.getFullYear()
+    });
+  }
+
+  // Map milking history to months
+  const milkingMap = new Map<string, number>();
+  if (props.milkingHistory && props.milkingHistory.length > 0) {
+    props.milkingHistory.forEach((milking: any) => {
+      const date = new Date(milking.date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      milkingMap.set(monthKey, parseFloat(milking.total_volume));
+    });
+  }
+
+  // Create data points, using 0 for months without data
+  last12Months.forEach(month => {
+    milkingDataPoints.push(milkingMap.get(month.key) || 0);
+  });
+
+  return {
+    labels: last12Months.map(m => m.label),
+    dataPoints: milkingDataPoints
+  };
+};
+
+const milkingChartData = processMilkingData();
+
 // Calculate weight trend
 const weightTrend = computed(() => {
   const dataPoints = weightChartData.dataPoints.filter(point => point > 0);
-  if (dataPoints.length < 2) return null;
+
+  if (dataPoints.length === 0) {
+    return {
+      difference: '0',
+      percentage: '0',
+      isIncreasing: false,
+      hasData: false
+    };
+  }
+
+  if (dataPoints.length === 1) {
+    return {
+      difference: '0',
+      percentage: '0',
+      isIncreasing: false,
+      hasData: true,
+      singleDataPoint: true
+    };
+  }
 
   const lastWeight = dataPoints[dataPoints.length - 1];
   const previousWeight = dataPoints[dataPoints.length - 2];
@@ -188,7 +250,43 @@ const weightTrend = computed(() => {
     difference: difference.toFixed(1),
     percentage: percentage,
     isIncreasing: difference > 0,
-    hasData: dataPoints.length > 0
+    hasData: true
+  };
+});
+
+// Calculate milking trend
+const milkingTrend = computed(() => {
+  const dataPoints = milkingChartData.dataPoints.filter(point => point > 0);
+
+  if (dataPoints.length === 0) {
+    return {
+      difference: '0',
+      percentage: '0',
+      isIncreasing: false,
+      hasData: false
+    };
+  }
+
+  if (dataPoints.length === 1) {
+    return {
+      difference: '0',
+      percentage: '0',
+      isIncreasing: false,
+      hasData: true,
+      singleDataPoint: true
+    };
+  }
+
+  const lastMilk = dataPoints[dataPoints.length - 1];
+  const previousMilk = dataPoints[dataPoints.length - 2];
+  const difference = lastMilk - previousMilk;
+  const percentage = ((difference / previousMilk) * 100).toFixed(1);
+
+  return {
+    difference: difference.toFixed(1),
+    percentage: percentage,
+    isIncreasing: difference > 0,
+    hasData: true
   };
 });
 </script>
@@ -226,6 +324,19 @@ const weightTrend = computed(() => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem as-child>
+              <Link :href="route('livestocks.weighting')" class="flex items-center gap-2">
+              <Scale class="h-4 w-4" />
+              <span>Tambah Bobot</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem as-child>
+              <Link :href="route('livestocks.milking')" class="flex items-center gap-2">
+              <Milk class="h-4 w-4" />
+              <span>Tambah Data Perahan</span>
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem as-child>
               <Link :href="route('livestocks.edit', livestock.id)" class="flex items-center gap-2">
@@ -314,7 +425,8 @@ const weightTrend = computed(() => {
           <!-- Big fat number -->
           <div
             class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-            00 <span class="text-sm font-normal">Liter</span>
+            {{milkingChartData.dataPoints.reduce((sum, val) => sum + val, 0).toFixed(1)}} <span
+              class="text-sm font-normal">Liter</span>
           </div>
         </div>
 
@@ -338,30 +450,54 @@ const weightTrend = computed(() => {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card class="border border-primary/20 dark:border-primary/80">
           <CardContent class="p-4">
-            <Alert variant="success" class="mb-2">
-              <ThumbsUp class="h-4 w-4" />
+            <Alert
+              :variant="milkingTrend?.hasData && !milkingTrend.singleDataPoint ? (milkingTrend.isIncreasing ? 'success' : 'destructive') : 'default'"
+              class="mb-2">
+              <ThumbsUp v-if="milkingTrend?.hasData && !milkingTrend.singleDataPoint && milkingTrend.isIncreasing" class="h-4 w-4" />
+              <ThumbsDown v-else-if="milkingTrend?.hasData && !milkingTrend.singleDataPoint && !milkingTrend.isIncreasing" class="h-4 w-4" />
               <AlertTitle>Produktivitas Susu</AlertTitle>
-              <AlertDescription class="text-sm">Hasil susu ternakmu hari ini meningkat 100 ml atau 5%</AlertDescription>
+              <AlertDescription class="text-sm">
+                <template v-if="milkingTrend?.hasData">
+                  <template v-if="milkingTrend.singleDataPoint">
+                    Data produksi susu tersedia untuk bulan ini. Tambahkan data bulan berikutnya untuk melihat tren
+                    perbandingan.
+                  </template>
+                  <template v-else>
+                    Produksi susu {{ milkingTrend.isIncreasing ? 'meningkat' : 'menurun' }}
+                    {{ Math.abs(parseFloat(milkingTrend.difference)) }} liter atau {{
+                      Math.abs(parseFloat(milkingTrend.percentage)) }}%
+                    dari bulan sebelumnya
+                  </template>
+                </template>
+                <template v-else>
+                  Belum ada data produksi susu yang tercatat. Mulai tambahkan data perahan untuk melihat tren produksi.
+                </template>
+              </AlertDescription>
             </Alert>
-            <LineChart :labels="['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']"
-              :dataPoints="[1, 1.2, 1.1, 3.5, 4, 5, 6, 7, 3, 8, 10, 11]" label="Produksi Susu (liter)"
-              :isDark="isDarkMode" />
+            <LineChart :labels="milkingChartData.labels" :dataPoints="milkingChartData.dataPoints"
+              label="Produksi Susu (liter)" :isDark="isDarkMode" />
           </CardContent>
         </Card>
 
         <Card class="border border-primary/20 dark:border-primary/80">
           <CardContent class="p-4">
-            <Alert :variant="weightTrend?.hasData ? (weightTrend.isIncreasing ? 'success' : 'destructive') : 'default'"
+            <Alert :variant="weightTrend?.hasData && !weightTrend.singleDataPoint ? (weightTrend.isIncreasing ? 'success' : 'destructive') : 'default'"
               class="mb-2">
-              <ThumbsUp v-if="weightTrend?.isIncreasing" class="h-4 w-4" />
-              <ThumbsDown v-else class="h-4 w-4" />
+              <ThumbsUp v-if="weightTrend?.hasData && !weightTrend.singleDataPoint && weightTrend.isIncreasing" class="h-4 w-4" />
+              <ThumbsDown v-else-if="weightTrend?.hasData && !weightTrend.singleDataPoint && !weightTrend.isIncreasing" class="h-4 w-4" />
               <AlertTitle>Produktivitas Bobot</AlertTitle>
               <AlertDescription class="text-sm">
                 <template v-if="weightTrend?.hasData">
-                  Perkembangan bobot ternak {{ weightTrend.isIncreasing ? 'meningkat' : 'menurun' }}
-                  {{ Math.abs(parseFloat(weightTrend.difference)) }}kg atau {{
-                    Math.abs(parseFloat(weightTrend.percentage)) }}%
-                  dari bobot sebelumnya
+                  <template v-if="weightTrend.singleDataPoint">
+                    Data bobot ternak tersedia untuk bulan ini. Tambahkan data bobot bulan berikutnya untuk melihat tren
+                    perkembangan.
+                  </template>
+                  <template v-else>
+                    Perkembangan bobot ternak {{ weightTrend.isIncreasing ? 'meningkat' : 'menurun' }}
+                    {{ Math.abs(parseFloat(weightTrend.difference)) }}kg atau {{
+                      Math.abs(parseFloat(weightTrend.percentage)) }}%
+                    dari bobot sebelumnya
+                  </template>
                 </template>
                 <template v-else>
                   Belum ada data bobot ternak yang tercatat. Mulai tambahkan data bobot untuk melihat tren perkembangan.
