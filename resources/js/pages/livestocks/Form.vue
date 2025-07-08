@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import LivestockUploader from "./LivestockUploader.vue";
+import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxList, ComboboxTrigger } from '@/components/ui/combobox'
 
 const props = defineProps({
   livestock: {
@@ -138,18 +139,77 @@ async function fetchLivestocks(query, sex) {
   }
 }
 
+// --- Combobox state for parent selection ---
+const maleParentQuery = ref('');
+const femaleParentQuery = ref('');
+const maleParentOptions = ref([]);
+const femaleParentOptions = ref([]);
+const selectedMaleParent = ref(selected_male_parent.value || null);
+const selectedFemaleParent = ref(selected_female_parent.value || null);
+
+// Fetch parent options
+const fetchParentOptions = async (query, sex) => {
+  // Always fetch, even for empty query
+  const response = await fetch(route('livestocks.search', { q: query || '', sex }));
+  const data = await response.json();
+  if (sex === 'M') maleParentOptions.value = data;
+  else femaleParentOptions.value = data;
+};
+
+watch(maleParentQuery, (q) => {
+  if (!q) {
+    fetchParentOptions('', 'M'); // Show top 10 if empty
+  } else if (q.length < 2) {
+    maleParentOptions.value = [];
+  } else {
+    fetchParentOptions(q, 'M');
+  }
+});
+watch(femaleParentQuery, (q) => {
+  if (!q) {
+    fetchParentOptions('', 'F'); // Show top 10 if empty
+  } else if (q.length < 2) {
+    femaleParentOptions.value = [];
+  } else {
+    fetchParentOptions(q, 'F');
+  }
+});
+
+watch(selectedMaleParent, (val) => {
+  if (val) {
+    form.male_parent_id = val.id;
+    selected_male_parent.value = val;
+  } else {
+    form.male_parent_id = null;
+    selected_male_parent.value = null;
+  }
+});
+watch(selectedFemaleParent, (val) => {
+  if (val) {
+    form.female_parent_id = val.id;
+    selected_female_parent.value = val;
+  } else {
+    form.female_parent_id = null;
+    selected_female_parent.value = null;
+  }
+});
+
 onMounted(() => {
   if (props.livestock.breed) {
     form.speciesSelected = props.livestock.breed.species;
     fetchBreeds();
   }
 
+  // Fetch top 10 male and female parents on mount
+  fetchParentOptions('', 'M');
+  fetchParentOptions('', 'F');
+
   if (props.livestock.male_parent) {
-    selected_male_parent.value = props.livestock.male_parent;
+    selectedMaleParent.value = props.livestock.male_parent;
   }
 
   if (props.livestock.female_parent) {
-    selected_female_parent.value = props.livestock.female_parent;
+    selectedFemaleParent.value = props.livestock.female_parent;
   }
 });
 
@@ -378,46 +438,104 @@ const meta = { valid: true }
                 <InputError :message="form.errors.weight" />
               </div>
             </div>
-            <h3 class="text-primary font-semibold mt-6">Data Induk Jantan</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
               <div>
+                <h3 class="text-primary font-semibold mt-6">Data Induk Jantan</h3>
                 <Label for="male_parent">Cari Induk Jantan</Label>
-                <Input id="male_parent" v-model="male_livestock" type="text"
-                  @keyup="filterParentlivestocks($event.target.value, 'M')" />
-                <ul v-if="male_livestocks.length" class="border border-gray-300 rounded-md mt-1">
-                  <li v-for="livestock in male_livestocks" :key="livestock.id" @click="selectLivestock(livestock, 'M')"
-                    class="p-2 hover:bg-gray-200 cursor-pointer">
-                    {{ livestock.name }}
-                  </li>
-                </ul>
+                <Combobox v-model="selectedMaleParent" v-model:search-term="maleParentQuery"
+                  :display-value="(item) => item ? `${item.aifarm_id} - ${item.name}` : ''">
+                  <ComboboxAnchor as-child>
+                    <ComboboxTrigger as-child>
+                      <Button variant="outline" class="justify-between w-full">
+                        {{
+                          selectedMaleParent ?
+                            `${selectedMaleParent.aifarm_id} - ${selectedMaleParent.name}` :
+                            'Pilih Induk Jantan'
+                        }}
+                        <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </ComboboxTrigger>
+                  </ComboboxAnchor>
+                  <ComboboxList class="w-full">
+                    <ComboboxInput v-model="maleParentQuery" placeholder="Cari Induk Jantan..." />
+                    <ComboboxEmpty>Tidak ada hasil</ComboboxEmpty>
+                    <ComboboxGroup>
+                      <ComboboxItem v-for="option in maleParentOptions" :key="option.id" :value="option">
+                        {{ option.aifarm_id }} - {{ option.name }}
+                        <ComboboxItemIndicator>
+                          <Check class="ml-auto h-4 w-4" />
+                        </ComboboxItemIndicator>
+                      </ComboboxItem>
+                    </ComboboxGroup>
+                  </ComboboxList>
+                </Combobox>
                 <InputError :message="form.errors.male_parent_id" />
+                <div v-if="selectedMaleParent"
+                  class="mt-2 p-4 rounded-lg border border-blue-300 bg-blue-50 flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold text-blue-800">Induk Jantan Terpilih</div>
+                    <div><strong>ID Aifarm:</strong> {{ selectedMaleParent.aifarm_id }}</div>
+                    <div><strong>ID Tag:</strong> {{ selectedMaleParent.tag_id }}</div>
+                    <div><strong>Nama:</strong> {{ selectedMaleParent.name }}</div>
+                    <div><strong>Ras:</strong> {{ selectedMaleParent.breed?.name }}</div>
+                  </div>
+                  <Button variant="ghost" size="icon" class="text-blue-600" @click="selectedMaleParent = null"
+                    title="Hapus pilihan">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </Button>
+                </div>
               </div>
-              <div v-if="selected_male_parent">
-                <p><strong>ID Aifarm:</strong> {{ selected_male_parent.aifarm_id }}</p>
-                <p><strong>ID Tag:</strong> {{ selected_male_parent.tag_id }}</p>
-                <p><strong>Nama:</strong> {{ selected_male_parent.name }}</p>
-                <p><strong>Ras:</strong> {{ selected_male_parent.breed.name }}</p>
-              </div>
-            </div>
-            <h3 class="text-primary font-semibold mt-6">Data Induk Betina</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
+                <h3 class="text-primary font-semibold mt-6">Data Induk Betina</h3>
                 <Label for="female_parent">Cari Induk Betina</Label>
-                <Input id="female_parent" v-model="female_livestock" type="text"
-                  @keyup="filterParentlivestocks($event.target.value, 'F')" />
-                <ul v-if="female_livestocks.length" class="border border-gray-300 rounded-md mt-1">
-                  <li v-for="livestock in female_livestocks" :key="livestock.id"
-                    @click="selectLivestock(livestock, 'F')" class="p-2 hover:bg-gray-200 cursor-pointer">
-                    {{ livestock.name }}
-                  </li>
-                </ul>
+                <Combobox v-model="selectedFemaleParent" v-model:search-term="femaleParentQuery"
+                  :display-value="(item) => item ? `${item.aifarm_id} - ${item.name}` : ''">
+                  <ComboboxAnchor as-child>
+                    <ComboboxTrigger as-child>
+                      <Button variant="outline" class="justify-between w-full">
+                        {{
+                          selectedFemaleParent ?
+                            `${selectedFemaleParent.aifarm_id} - ${selectedFemaleParent.name}` :
+                            'Pilih Induk Betina'
+                        }}
+                        <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </ComboboxTrigger>
+                  </ComboboxAnchor>
+                  <ComboboxList class="w-full">
+                    <ComboboxInput v-model="femaleParentQuery" placeholder="Cari Induk Betina..." />
+                    <ComboboxEmpty>Tidak ada hasil</ComboboxEmpty>
+                    <ComboboxGroup>
+                      <ComboboxItem v-for="option in femaleParentOptions" :key="option.id" :value="option">
+                        {{ option.aifarm_id }} - {{ option.name }}
+                        <ComboboxItemIndicator>
+                          <Check class="ml-auto h-4 w-4" />
+                        </ComboboxItemIndicator>
+                      </ComboboxItem>
+                    </ComboboxGroup>
+                  </ComboboxList>
+                </Combobox>
                 <InputError :message="form.errors.female_parent_id" />
-              </div>
-              <div v-if="selected_female_parent">
-                <p><strong>ID Aifarm:</strong> {{ selected_female_parent.aifarm_id }}</p>
-                <p><strong>ID Tag:</strong> {{ selected_female_parent.tag_id }}</p>
-                <p><strong>Nama:</strong> {{ selected_female_parent.name }}</p>
-                <p><strong>Ras:</strong> {{ selected_female_parent.breed.name }}</p>
+                <div v-if="selectedFemaleParent"
+                  class="mt-2 p-4 rounded-lg border border-pink-300 bg-pink-50 flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold text-pink-800">Induk Betina Terpilih</div>
+                    <div><strong>ID Aifarm:</strong> {{ selectedFemaleParent.aifarm_id }}</div>
+                    <div><strong>ID Tag:</strong> {{ selectedFemaleParent.tag_id }}</div>
+                    <div><strong>Nama:</strong> {{ selectedFemaleParent.name }}</div>
+                    <div><strong>Ras:</strong> {{ selectedFemaleParent.breed?.name }}</div>
+                  </div>
+                  <Button variant="ghost" size="icon" class="text-pink-600" @click="selectedFemaleParent = null"
+                    title="Hapus pilihan">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </Button>
+                </div>
               </div>
             </div>
             <div class="flex justify-end mt-6">

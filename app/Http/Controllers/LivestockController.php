@@ -116,11 +116,14 @@ class LivestockController extends Controller
                 return \Carbon\Carbon::parse($milking->date)->format('Y-m');
             })
             ->map(function($monthMilkings) {
-                // Sum all milk volumes for each month
+                // Calculate average milk volume for each month
+                $count = $monthMilkings->count();
+                $totalVolume = $monthMilkings->sum('milk_volume');
                 return [
                     'date' => $monthMilkings->first()->date,
-                    'total_volume' => $monthMilkings->sum('milk_volume'),
-                    'count' => $monthMilkings->count(),
+                    'average_volume' => $count > 0 ? round($totalVolume / $count, 2) : 0,
+                    'total_volume' => $totalVolume,
+                    'count' => $count,
                 ];
             })
             ->values();

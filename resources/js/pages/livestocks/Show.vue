@@ -201,7 +201,7 @@ const processMilkingData = () => {
     props.milkingHistory.forEach((milking: any) => {
       const date = new Date(milking.date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      milkingMap.set(monthKey, parseFloat(milking.total_volume));
+      milkingMap.set(monthKey, parseFloat(milking.average_volume));
     });
   }
 
@@ -425,7 +425,7 @@ const milkingTrend = computed(() => {
           <!-- Big fat number -->
           <div
             class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-            {{milkingChartData.dataPoints.reduce((sum, val) => sum + val, 0).toFixed(1)}} <span
+            {{props.milkingHistory.reduce((sum, val) => sum + (val.total_volume || 0), 0).toFixed(1)}} <span
               class="text-sm font-normal">Liter</span>
           </div>
         </div>
@@ -458,27 +458,30 @@ const milkingTrend = computed(() => {
               <ThumbsDown
                 v-else-if="milkingTrend?.hasData && !milkingTrend.singleDataPoint && !milkingTrend.isIncreasing"
                 class="h-4 w-4" />
-              <AlertTitle>Produktivitas Susu</AlertTitle>
+              <AlertTitle>Rata-rata Produktivitas Susu</AlertTitle>
               <AlertDescription class="text-sm">
                 <template v-if="milkingTrend?.hasData">
                   <template v-if="milkingTrend.singleDataPoint">
-                    Data produksi susu tersedia untuk bulan ini. Tambahkan data bulan berikutnya untuk melihat tren
+                    Data rata-rata produksi susu tersedia untuk bulan ini. Tambahkan data perahan bulan berikutnya untuk
+                    melihat tren
                     perbandingan.
                   </template>
                   <template v-else>
-                    Produksi susu {{ milkingTrend.isIncreasing ? 'meningkat' : 'menurun' }}
-                    {{ Math.abs(parseFloat(milkingTrend.difference)) }} liter atau {{
+                    Rata-rata produksi susu {{ milkingTrend.isIncreasing ? 'meningkat' : 'menurun' }}
+                    {{ Math.abs(parseFloat(milkingTrend.difference)) }} liter/hari atau {{
                       Math.abs(parseFloat(milkingTrend.percentage)) }}%
                     dari bulan sebelumnya
                   </template>
                 </template>
                 <template v-else>
-                  Belum ada data produksi susu yang tercatat. Mulai tambahkan data perahan untuk melihat tren produksi.
+                  Belum ada data produksi susu yang tercatat. Mulai tambahkan data perahan untuk melihat tren rata-rata
+                  produksi.
                 </template>
               </AlertDescription>
             </Alert>
             <LineChart :labels="milkingChartData.labels" :dataPoints="milkingChartData.dataPoints"
-              label="Produksi Susu (liter)" :isDark="isDarkMode" />
+              label="Rata-rata Produksi Susu (liter/hari)" :isDark="isDarkMode" xAxisLabel="Bulan"
+              yAxisLabel="Rata-rata Produksi Susu (liter/hari)" />
           </CardContent>
         </Card>
 
@@ -511,7 +514,7 @@ const milkingTrend = computed(() => {
               </AlertDescription>
             </Alert>
             <LineChart :labels="weightChartData.labels" :dataPoints="weightChartData.dataPoints"
-              label="Bobot Ternak (kg)" :isDark="isDarkMode" />
+              label="Bobot Ternak (kg)" :isDark="isDarkMode" xAxisLabel="Bulan" yAxisLabel="Bobot Ternak (kg)" />
           </CardContent>
         </Card>
       </div>

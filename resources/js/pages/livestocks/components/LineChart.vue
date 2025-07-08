@@ -19,7 +19,15 @@ ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScal
 const props = defineProps({
   labels: Array,
   dataPoints: Array,
-  label: String
+  label: String,
+  xAxisLabel: {
+    type: String,
+    default: 'X Axis'
+  },
+  yAxisLabel: {
+    type: String,
+    default: 'Y Axis'
+  }
 })
 
 const isDark = ref(false)
@@ -67,7 +75,7 @@ const chartOptions = computed(() => ({
       },
       title: {
         display: true,
-        text: 'X Axis',
+        text: props.xAxisLabel,
         color: isDark.value ? '#E2E8F0' : '#2D3748',
         font: {
           size: 14,
@@ -85,7 +93,7 @@ const chartOptions = computed(() => ({
       },
       title: {
         display: true,
-        text: 'Y Axis',
+        text: props.yAxisLabel,
         color: isDark.value ? '#E2E8F0' : '#2D3748',
         font: {
           size: 14,
@@ -101,9 +109,5 @@ const chartOptions = computed(() => ({
 </script>
 
 <template>
-  <Line
-    :key="chartKey"
-    :data="chartData"
-    :options="chartOptions"
-  />
+  <Line :key="chartKey" :data="chartData" :options="chartOptions" />
 </template>
