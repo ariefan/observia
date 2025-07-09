@@ -35,7 +35,7 @@ beforeEach(function () {
     Storage::fake('public');
 });
 
-it('can store a new livestock without images', function () {
+it('dapat menyimpan ternak baru tanpa gambar', function () {
     $livestockData = [
         'name' => 'Test Livestock',
         'breed_id' => $this->breed->id,
@@ -71,7 +71,7 @@ it('can store a new livestock without images', function () {
     expect($livestock->aifarm_id)->not->toBeNull();
 });
 
-it('can store a new livestock with images', function () {
+it('dapat menyimpan ternak baru dengan gambar', function () {
     $image1 = UploadedFile::fake()->image('livestock1.jpg', 800, 600);
     $image2 = UploadedFile::fake()->image('livestock2.png', 800, 600);
 
@@ -115,7 +115,7 @@ it('can store a new livestock with images', function () {
     ]);
 });
 
-it('can store livestock with parent relationships', function () {
+it('dapat menyimpan ternak dengan hubungan induk', function () {
     // Create parent livestock
     $maleParent = Livestock::factory()->create([
         'farm_id' => $this->farm->id,
@@ -158,7 +158,7 @@ it('can store livestock with parent relationships', function () {
     ]);
 });
 
-it('can store livestock with different origins and related fields', function () {
+it('dapat menyimpan ternak dengan asal-usul berbeda dan bidang terkait', function () {
     // Test barter origin
     $barterData = [
         'name' => 'Barter Livestock',
@@ -240,7 +240,7 @@ it('can store livestock with different origins and related fields', function () 
     ]);
 });
 
-it('validates required fields when storing livestock', function () {
+it('memvalidasi bidang yang wajib diisi saat menyimpan ternak', function () {
     $invalidData = [
         // Missing required fields
         'sex' => 'F',
@@ -252,7 +252,7 @@ it('validates required fields when storing livestock', function () {
     $response->assertSessionHasErrors(['name', 'breed_id', 'origin', 'status', 'tag_id']);
 });
 
-it('validates image uploads', function () {
+it('memvalidasi unggahan gambar', function () {
     $invalidFile = UploadedFile::fake()->create('document.pdf', 1000);
 
     $livestockData = [
@@ -270,7 +270,7 @@ it('validates image uploads', function () {
     $response->assertSessionHasErrors(['photo.0']);
 });
 
-it('can update existing livestock without images', function () {
+it('dapat memperbarui ternak yang ada tanpa gambar', function () {
     $livestock = Livestock::factory()->create([
         'farm_id' => $this->farm->id,
         'breed_id' => $this->breed->id,
@@ -308,7 +308,7 @@ it('can update existing livestock without images', function () {
     ]);
 });
 
-it('can update existing livestock with new images', function () {
+it('dapat memperbarui ternak yang ada dengan gambar baru', function () {
     $livestock = Livestock::factory()->create([
         'farm_id' => $this->farm->id,
         'breed_id' => $this->breed->id,
@@ -345,7 +345,7 @@ it('can update existing livestock with new images', function () {
     }
 });
 
-it('can update livestock with mixed existing and new images', function () {
+it('dapat memperbarui ternak dengan campuran gambar lama dan baru', function () {
     $livestock = Livestock::factory()->create([
         'farm_id' => $this->farm->id,
         'breed_id' => $this->breed->id,
@@ -375,7 +375,7 @@ it('can update livestock with mixed existing and new images', function () {
     expect($livestock->photo)->toContain('existing_image.jpg');
 });
 
-it('validates required fields when updating livestock', function () {
+it('memvalidasi bidang yang wajib diisi saat memperbarui ternak', function () {
     $livestock = Livestock::factory()->create([
         'farm_id' => $this->farm->id,
         'breed_id' => $this->breed->id,
@@ -392,7 +392,7 @@ it('validates required fields when updating livestock', function () {
     $response->assertSessionHasErrors(['name', 'sex', 'breed_id', 'origin', 'status', 'tag_id']);
 });
 
-it('prevents unauthorized users from storing livestock', function () {
+it('mencegah pengguna yang tidak sah menyimpan ternak', function () {
     $otherProvince = Province::factory()->create();
     $otherCity = City::factory()->create(['province_id' => $otherProvince->id]);
     $otherUser = User::factory()->create();
@@ -419,7 +419,7 @@ it('prevents unauthorized users from storing livestock', function () {
     ]);
 });
 
-it('prevents unauthorized users from updating livestock', function () {
+it('mencegah pengguna yang tidak sah memperbarui ternak', function () {
     $livestock = Livestock::factory()->create([
         'farm_id' => $this->farm->id,
         'breed_id' => $this->breed->id,
@@ -443,7 +443,7 @@ it('prevents unauthorized users from updating livestock', function () {
     $response->assertStatus(403);
 });
 
-it('generates unique aifarm_id when storing livestock', function () {
+it('menghasilkan aifarm_id unik saat menyimpan ternak', function () {
     $livestock1Data = [
         'name' => 'Livestock 1',
         'breed_id' => $this->breed->id,
@@ -476,7 +476,7 @@ it('generates unique aifarm_id when storing livestock', function () {
     expect($livestock1->aifarm_id)->not->toBe($livestock2->aifarm_id);
 });
 
-it('handles large image uploads within limits', function () {
+it('menangani unggahan gambar besar dalam batas', function () {
     // Create a 2MB image (at the limit)
     $largeImage = UploadedFile::fake()->image('large_image.jpg', 2000, 2000)->size(2048);
 
@@ -501,7 +501,7 @@ it('handles large image uploads within limits', function () {
     expect(count($livestock->photo))->toBe(1);
 });
 
-it('rejects oversized image uploads', function () {
+it('menolak unggahan gambar yang terlalu besar', function () {
     // Create a 3MB image (over the limit)
     $oversizedImage = UploadedFile::fake()->image('oversized_image.jpg', 3000, 3000)->size(3072);
 
