@@ -8,6 +8,8 @@ use App\Http\Controllers\LivestockController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Api\SpeciesController;
+use App\Http\Controllers\FeedController;
+use App\Http\Controllers\RationController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -60,6 +62,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'farms' => FarmController::class,
         'livestocks' => LivestockController::class,
     ]);
+    Route::resource('rations', RationController::class);
+    Route::resource('feeds', FeedController::class);
 });
 
 Route::get('/livestocks/photo/{path}', [LivestockController::class, 'showPhoto'])->where('path', '.*')->name('livestocks.photo');

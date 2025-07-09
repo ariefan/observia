@@ -34,6 +34,9 @@ import {
   ImageOff,
   Scale,
   Milk,
+  TreeDeciduous,
+  Award,
+  Skull,
 } from "lucide-vue-next";
 
 // Types
@@ -323,30 +326,33 @@ const milkingTrend = computed(() => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem as-child>
-              <Link :href="route('livestocks.weighting')" class="flex items-center gap-2">
-              <Scale class="h-4 w-4" />
-              <span>Tambah Bobot</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem as-child>
-              <Link :href="route('livestocks.milking')" class="flex items-center gap-2">
-              <Milk class="h-4 w-4" />
-              <span>Tambah Data Perahan</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem as-child>
               <Link :href="route('livestocks.edit', livestock.id)" class="flex items-center gap-2">
               <Pencil class="h-4 w-4" />
-              <span>Edit</span>
+              <span>Edit data ternak</span>
               </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem as-child>
+              <div class="flex items-center gap-2">
+                <TreeDeciduous class="h-4 w-4" />
+                <span>Studbook</span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem as-child>
+              <div class="flex items-center gap-2">
+                <Award class="h-4 w-4" />
+                <span>Sertifikat ternak</span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem as-child>
+              <div class="flex items-center gap-2">
+                <Skull class="h-4 w-4" />
+                <span>Data end</span>
+              </div>
             </DropdownMenuItem>
             <DropdownMenuItem @click="deleteLivestock" class="flex items-center gap-2 text-red-600">
               <Trash2 class="h-4 w-4" />
-              <span>Delete</span>
+              <span>Hapus</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

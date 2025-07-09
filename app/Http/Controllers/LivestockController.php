@@ -121,18 +121,23 @@ class LivestockController extends Controller
             ->orderBy('date')
             ->get()
             ->groupBy(function($milking) {
-                return \Carbon\Carbon::parse($milking->date)->format('Y-m');
+            return \Carbon\Carbon::parse($milking->date)->format('Y-m');
             })
             ->map(function($monthMilkings) {
-                // Calculate average milk volume for each month
-                $count = $monthMilkings->count();
-                $totalVolume = $monthMilkings->sum('milk_volume');
-                return [
-                    'date' => $monthMilkings->first()->date,
-                    'average_volume' => $count > 0 ? round($totalVolume / $count, 2) : 0,
-                    'total_volume' => $totalVolume,
-                    'count' => $count,
-                ];
+            // Group by day within the month
+            $dailyTotals = $monthMilkings->groupBy('date')->map(function($dayMilkings) {
+                return $dayMilkings->sum('milk_volume');
+            });
+
+            $daysCount = $dailyTotals->count();
+            $totalVolume = $dailyTotals->sum();
+
+            return [
+                'date' => $monthMilkings->first()->date,
+                'average_volume' => $daysCount > 0 ? round($totalVolume / $daysCount, 2) : 0,
+                'total_volume' => $totalVolume,
+                'count' => $daysCount,
+            ];
             })
             ->values();
 

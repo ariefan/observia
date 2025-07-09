@@ -47,7 +47,7 @@ const page = usePage<SharedData>();
                             <PawPrint class="mr-2 h-4 w-4" />
                             <span>Ternak</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem @click="router.get('/rations')">
                             <Utensils class="mr-2 h-4 w-4" />
                             <span>Pakan</span>
                         </DropdownMenuItem>
