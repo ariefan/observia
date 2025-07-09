@@ -30,7 +30,7 @@ class StoreLivestockRequest extends FormRequest
             'origin' => ['required', 'numeric'],
             'status' => ['required', 'numeric'],
             'tag_type' => ['nullable', 'string', 'max:255'],
-            'tag_id' => ['nullable', 'string', 'max:255'],
+            'tag_id' => ['required', 'string', 'max:255'],
             'birth_weight' => ['nullable', 'numeric'],
             'weight' => ['nullable', 'numeric'],
             'breed_id' => ['required', 'uuid', 'exists:breeds,id'],
@@ -41,6 +41,12 @@ class StoreLivestockRequest extends FormRequest
             'barter_livestock_id' => ['nullable', 'string', 'max:255'],
             'barter_from' => ['nullable', 'string', 'max:255'],
             'barter_date' => ['nullable', 'date'],
+            'purchase_from' => ['nullable', 'string', 'max:255'],
+            'grant_from' => ['nullable', 'string', 'max:255'],
+            'grant_date' => ['nullable', 'date'],
+            'borrowed_from' => ['nullable', 'string', 'max:255'],
+            'borrowed_date' => ['nullable', 'date'],
+            'entry_date' => ['nullable', 'date'],
         ];
     }
 }

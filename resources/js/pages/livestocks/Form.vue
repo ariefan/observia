@@ -4,21 +4,12 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { ref, onMounted, watch } from "vue";
 import _, { map } from "underscore";
 
-import { Check, Circle, Dot, ArrowLeft } from 'lucide-vue-next'
+import { Check, Circle, Dot, ArrowLeft, ChevronsUpDown } from 'lucide-vue-next'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import InputError from '@/components/InputError.vue';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import LivestockUploader from "./LivestockUploader.vue";
 import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxList, ComboboxTrigger } from '@/components/ui/combobox'
 
@@ -51,7 +42,7 @@ const form = useForm({
   name: props.livestock.name,
   origin: props.livestock.origin,
   status: props.livestock.status,
-  speciesSelected: {},
+  species_id: props.livestock.breed?.species_id || props.livestock.species_id,
   breed_id: props.livestock.breed_id,
   male_parent_id: props.livestock.male_parent_id,
   female_parent_id: props.livestock.female_parent_id,
@@ -100,9 +91,9 @@ const saveAction = () => {
 };
 
 async function fetchBreeds() {
-  if (form.speciesSelected && form.speciesSelected.id) {
+  if (form.species_id) {
     const response = await fetch(
-      `/api/species/${form.speciesSelected.id}/breeds`
+      `/api/species/${form.species_id}/breeds`
     );
     breeds.value = await response.json();
   }
@@ -196,7 +187,7 @@ watch(selectedFemaleParent, (val) => {
 
 onMounted(() => {
   if (props.livestock.breed) {
-    form.speciesSelected = props.livestock.breed.species;
+    form.species_id = props.livestock.breed.species.id;
     fetchBreeds();
   }
 
@@ -272,65 +263,44 @@ const meta = { valid: true }
               </div>
               <div>
                 <Label for="status">Status</Label>
-                <Select v-model="form.status">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="1">Aktif</SelectItem>
-                      <SelectItem value="2">Terjual</SelectItem>
-                      <SelectItem value="3">Mati</SelectItem>
-                      <SelectItem value="4">Disembelih</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <select id="status" v-model="form.status"
+                  class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <option value="1">Aktif</option>
+                  <option value="2">Terjual</option>
+                  <option value="3">Mati</option>
+                  <option value="4">Disembelih</option>
+                </select>
                 <InputError :message="form.errors.status" />
               </div>
               <div>
                 <Label for="species">Ternak</Label>
-                <Select v-model="form.speciesSelected" @update:modelValue="fetchBreeds">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih ternak" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem v-for="specie in species" :key="specie.id" :value="specie">
-                        {{ specie.name }}
-                      </SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <select id="species" v-model="form.species_id" @change="fetchBreeds"
+                  class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <option value="">Pilih ternak</option>
+                  <option v-for="specie in species" :key="specie.id" :value="specie.id">
+                    {{ specie.name }}
+                  </option>
+                </select>
               </div>
               <div>
                 <Label for="breed">Ras</Label>
-                <Select v-model="form.breed_id">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih ras" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem v-for="breed in breeds" :key="breed.id" :value="breed.id">
-                        {{ breed.name }}
-                      </SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <select id="breed" v-model="form.breed_id"
+                  class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <option value="">Pilih ras</option>
+                  <option v-for="breed in breeds" :key="breed.id" :value="breed.id">
+                    {{ breed.name }}
+                  </option>
+                </select>
                 <InputError :message="form.errors.breed_id" />
               </div>
               <div>
                 <Label for="sex">Jenis Kelamin</Label>
-                <Select v-model="form.sex">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih jenis kelamin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="M">Jantan</SelectItem>
-                      <SelectItem value="F">Betina</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <select id="sex" v-model="form.sex"
+                  class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <option value="">Pilih jenis kelamin</option>
+                  <option value="M">Jantan</option>
+                  <option value="F">Betina</option>
+                </select>
                 <InputError :message="form.errors.sex" />
               </div>
             </div>
@@ -344,18 +314,14 @@ const meta = { valid: true }
                 }
               })()">
                 <Label for="origin">Asal</Label>
-                <Select v-model="form.origin">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Asal" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Kelahiran</SelectItem>
-                    <SelectItem value="2">Pembelian</SelectItem>
-                    <SelectItem value="3">Barter</SelectItem>
-                    <SelectItem value="4">Hibah</SelectItem>
-                    <SelectItem value="5">Peminjaman</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select id="origin" v-model="form.origin"
+                  class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <option value="1">Kelahiran</option>
+                  <option value="2">Pembelian</option>
+                  <option value="3">Barter</option>
+                  <option value="4">Hibah</option>
+                  <option value="5">Peminjaman</option>
+                </select>
                 <InputError :message="form.errors.origin" />
               </div>
               <div v-if="form.origin == 2">

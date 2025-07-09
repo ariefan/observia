@@ -26,7 +26,7 @@ class LivestockFactory extends Factory
             'sex' => $this->faker->randomElement(['M', 'F']),
             'origin' => '1',
             'status' => '1',
-            'tag_id' => $this->faker->unique()->randomNumber(8),
+            'tag_id' => (string) $this->faker->unique()->randomNumber(8),
             'birth_weight' => $this->faker->randomFloat(2, 1, 5),
             'weight' => $this->faker->randomFloat(2, 20, 100),
         ];

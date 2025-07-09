@@ -16,6 +16,7 @@ class CityFactory extends Factory
     {
         return [
             'province_id' => Province::factory(),
+            'code' => $this->faker->unique()->numerify('####'),
             'name' => $this->faker->city(),
         ];
     }

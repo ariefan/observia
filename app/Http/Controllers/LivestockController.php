@@ -13,9 +13,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\LivestockWeight;
 use App\Models\LivestockMilking;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class LivestockController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
@@ -61,10 +63,14 @@ class LivestockController extends Controller
         $validated = $request->validated();
         $validated['farm_id'] = auth()->user()->current_farm_id;
 
+        // Remove photo from validated data before filling the model
+        $photos = [];
+        if (isset($validated['photo'])) {
+            unset($validated['photo']);
+        }
+
         $livestock = new Livestock();
         $livestock->fill($validated);
-
-        $photos = [];
 
         if (! is_null($request->photo) && ! empty($request->photo)) {
             foreach ($request->photo as $photo) {
@@ -91,6 +97,8 @@ class LivestockController extends Controller
      */
     public function show(Livestock $livestock)
     {
+        $this->authorize('view', $livestock);
+        
         $livestock->load('breed.species', 'maleParent', 'femaleParent');
 
         // Get weight history for the last 12 months
@@ -231,16 +239,26 @@ class LivestockController extends Controller
      */
     public function update(UpdateLivestockRequest $request, Livestock $livestock)
     {
+        $this->authorize('update', $livestock);
+        
         $validated = $request->validated();
+        
+        // Remove photo from validated data before filling the model
+        if (isset($validated['photo'])) {
+            unset($validated['photo']);
+        }
+        
         $livestock->fill($validated);
 
-        $photos = $livestock->photo ?? [];
+        $photos = [];
 
         if (! is_null($request->photo) && ! empty($request->photo)) {
             foreach ($request->photo as $photo) {
                 if (is_string($photo)) {
+                    // Existing photo path
                     $photos[] = $photo;
                 } else {
+                    // New uploaded file
                     $path = $photo->store('livestocks', 'public');
                     $photos[] = $path;
                 }
@@ -248,6 +266,7 @@ class LivestockController extends Controller
         }
 
         $livestock->photo = $photos;
+        
         $livestock->save();
         return redirect()->route('livestocks.show', $livestock);
     }
@@ -257,6 +276,8 @@ class LivestockController extends Controller
      */
     public function destroy(Livestock $livestock)
     {
+        $this->authorize('delete', $livestock);
+        
         $livestock->delete();
         return redirect()->route('livestocks.index');
     }
