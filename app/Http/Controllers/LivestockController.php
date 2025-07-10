@@ -182,7 +182,11 @@ class LivestockController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        $livestock->update(['weight' => $validated['weight']]);
+        // Update only if the new date is greater than or equal to the latest weight date
+        $latestWeight = $livestock->weights()->orderByDesc('date')->first();
+        if (!$latestWeight || $validated['date'] >= $latestWeight->date) {
+            $livestock->update(['weight' => $validated['weight']]);
+        }
 
         return redirect()->route('livestocks.show', $livestock);
     }

@@ -14,7 +14,13 @@ class LivestockWeight extends Model
     protected static function booted()
     {
         static::created(function ($weight) {
-            $weight->livestock()->update(['weight' => $weight->weight]);
+            $latestWeight = self::where('livestock_id', $weight->livestock_id)
+            ->orderByDesc('date')
+            ->first();
+
+            if ($latestWeight && $weight->date >= $latestWeight->date) {
+                $weight->livestock()->update(['weight' => $weight->weight]);
+            }
         });
     }
 
