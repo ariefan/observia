@@ -49,7 +49,7 @@ const validateFile = (file: File): boolean => {
 
 const resizeAndCropImage = (file: File): Promise<File> => {
     console.log(`Starting resize for: ${file.name}, Original size: ${(file.size / 1024 / 1024).toFixed(2)}MB, Dimensions will be calculated...`)
-    
+
     return new Promise((resolve, reject) => {
         const img = new Image()
         const canvas = document.createElement('canvas')
@@ -62,7 +62,7 @@ const resizeAndCropImage = (file: File): Promise<File> => {
 
         img.onload = () => {
             console.log(`Image loaded: ${file.name}, Original dimensions: ${img.width}x${img.height}`)
-            
+
             // Calculate dimensions for 16:9 aspect ratio
             let { width, height } = img
 
@@ -76,7 +76,7 @@ const resizeAndCropImage = (file: File): Promise<File> => {
                 targetHeight = height
                 targetWidth = targetHeight * ASPECT_RATIO
             }
-            
+
             console.log(`Target dimensions: ${targetWidth}x${targetHeight}`)
 
             // Calculate crop area (center crop)
@@ -118,7 +118,7 @@ const resizeAndCropImage = (file: File): Promise<File> => {
                             // Check if the blob size exceeds 20MB
                             if (blob.size > MAX_FILE_SIZE) {
                                 console.warn(`File size ${(blob.size / 1024 / 1024).toFixed(2)}MB exceeds 20MB limit, reducing quality...`)
-                                
+
                                 // If still too large and quality can be reduced, try lower quality
                                 if (quality > 0.3) {
                                     createOptimizedFile(quality - 0.1).then(resolve).catch(reject)
@@ -128,7 +128,7 @@ const resizeAndCropImage = (file: File): Promise<File> => {
                                     return
                                 }
                             }
-                            
+
                             const resizedFile = new File([blob], file.name, {
                                 type: file.type,
                                 lastModified: Date.now()
@@ -141,7 +141,7 @@ const resizeAndCropImage = (file: File): Promise<File> => {
                     }, file.type, quality)
                 })
             }
-            
+
             createOptimizedFile().then(resolve).catch(reject)
         }
 
@@ -219,7 +219,7 @@ const processExistingImage = async (imageUrl: string, fileName: string): Promise
                             // Check if the blob size exceeds 20MB
                             if (blob.size > MAX_FILE_SIZE) {
                                 console.warn(`Existing image file size ${(blob.size / 1024 / 1024).toFixed(2)}MB exceeds 20MB limit, reducing quality...`)
-                                
+
                                 // If still too large and quality can be reduced, try lower quality
                                 if (quality > 0.3) {
                                     createOptimizedFile(quality - 0.1).then(resolve).catch(reject)
@@ -229,7 +229,7 @@ const processExistingImage = async (imageUrl: string, fileName: string): Promise
                                     return
                                 }
                             }
-                            
+
                             const resizedFile = new File([blob], fileName, {
                                 type: 'image/jpeg', // Default to JPEG
                                 lastModified: Date.now()
@@ -242,7 +242,7 @@ const processExistingImage = async (imageUrl: string, fileName: string): Promise
                     }, 'image/jpeg', quality)
                 })
             }
-            
+
             createOptimizedFile().then(resolve).catch(reject)
         }
 
@@ -259,7 +259,7 @@ const getAllImagesAsFiles = async (): Promise<File[]> => {
         url: img.url,
         isString: typeof img.file === 'string'
     })))
-    
+
     const processedFiles: File[] = []
 
     for (let i = 0; i < uploadedImages.value.length; i++) {
@@ -281,9 +281,9 @@ const getAllImagesAsFiles = async (): Promise<File[]> => {
             // Check if this File object is actually too large and needs re-processing
             const fileSize = image.file.size
             const fileSizeMB = fileSize / 1024 / 1024
-            
+
             console.log(`Checking file: ${image.file.name}, Size: ${fileSizeMB.toFixed(2)}MB`)
-            
+
             if (fileSize > MAX_FILE_SIZE) {
                 console.log(`File ${image.file.name} (${fileSizeMB.toFixed(2)}MB) exceeds 20MB, re-processing...`)
                 try {
@@ -304,7 +304,7 @@ const getAllImagesAsFiles = async (): Promise<File[]> => {
     }
 
     console.log('Final processed files count:', processedFiles.length)
-    
+
     // Final validation: ensure all files are under 20MB
     const oversizedFiles = processedFiles.filter(file => file.size > MAX_FILE_SIZE)
     if (oversizedFiles.length > 0) {
@@ -314,12 +314,12 @@ const getAllImagesAsFiles = async (): Promise<File[]> => {
         })))
         throw new Error(`${oversizedFiles.length} file(s) still exceed 20MB after processing`)
     }
-    
+
     console.log('All files validated - sizes:', processedFiles.map(f => ({
         name: f.name,
         size: `${(f.size / 1024 / 1024).toFixed(2)}MB`
     })))
-    
+
     return processedFiles
 }
 
@@ -341,13 +341,13 @@ const addImages = async (files: FileList | null) => {
 
     for (const originalFile of fileArray) {
         console.log(`Processing new upload: ${originalFile.name}, Size: ${(originalFile.size / 1024 / 1024).toFixed(2)}MB`)
-        
+
         if (validateFile(originalFile)) {
             try {
                 const resizedFile = await resizeAndCropImage(originalFile)
                 const imageUrl = URL.createObjectURL(resizedFile)
                 console.log(`Resized ${originalFile.name} from ${(originalFile.size / 1024 / 1024).toFixed(2)}MB to ${(resizedFile.size / 1024 / 1024).toFixed(2)}MB`)
-                
+
                 uploadedImages.value.push({
                     file: resizedFile,
                     originalFile,
