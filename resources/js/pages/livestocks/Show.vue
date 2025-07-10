@@ -167,9 +167,13 @@ const processWeightData = () => {
     });
   }
 
-  // Create data points, using 0 for months without data
+  // Create data points, using last value for months without data
+  let lastValue = 0;
   last12Months.forEach(month => {
-    weightDataPoints.push(weightMap.get(month.key) || 0);
+    if (weightMap.has(month.key)) {
+      lastValue = weightMap.get(month.key) || 0;
+    }
+    weightDataPoints.push(lastValue);
   });
 
   return {
