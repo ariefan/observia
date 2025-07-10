@@ -38,15 +38,18 @@ const validateFile = (file: File): boolean => {
         return false
     }
 
+    // Note: We check original file size here, but the processed file will be optimized to stay under 20MB
     if (file.size > MAX_FILE_SIZE) {
-        errorMessage.value = 'Ukuran file maksimal 20MB'
-        return false
+        console.warn(`Original file size ${(file.size / 1024 / 1024).toFixed(2)}MB exceeds 20MB, but will be processed and optimized`)
+        // Don't reject here - let the processing handle size optimization
     }
 
     return true
 }
 
 const resizeAndCropImage = (file: File): Promise<File> => {
+    console.log(`Starting resize for: ${file.name}, Original size: ${(file.size / 1024 / 1024).toFixed(2)}MB, Dimensions will be calculated...`)
+    
     return new Promise((resolve, reject) => {
         const img = new Image()
         const canvas = document.createElement('canvas')
@@ -58,6 +61,8 @@ const resizeAndCropImage = (file: File): Promise<File> => {
         }
 
         img.onload = () => {
+            console.log(`Image loaded: ${file.name}, Original dimensions: ${img.width}x${img.height}`)
+            
             // Calculate dimensions for 16:9 aspect ratio
             let { width, height } = img
 
@@ -71,6 +76,8 @@ const resizeAndCropImage = (file: File): Promise<File> => {
                 targetHeight = height
                 targetWidth = targetHeight * ASPECT_RATIO
             }
+            
+            console.log(`Target dimensions: ${targetWidth}x${targetHeight}`)
 
             // Calculate crop area (center crop)
             const sourceAspectRatio = width / height
@@ -90,6 +97,8 @@ const resizeAndCropImage = (file: File): Promise<File> => {
                 sourceY = (height - sourceHeight) / 2
             }
 
+            console.log(`Crop area: ${sourceX}, ${sourceY}, ${sourceWidth}x${sourceHeight}`)
+
             // Set canvas dimensions
             canvas.width = targetWidth
             canvas.height = targetHeight
@@ -101,21 +110,45 @@ const resizeAndCropImage = (file: File): Promise<File> => {
                 0, 0, targetWidth, targetHeight
             )
 
-            // Convert canvas to blob and then to file
-            canvas.toBlob((blob) => {
-                if (blob) {
-                    const resizedFile = new File([blob], file.name, {
-                        type: file.type,
-                        lastModified: Date.now()
-                    })
-                    resolve(resizedFile)
-                } else {
-                    reject(new Error('Failed to create blob'))
-                }
-            }, file.type, 0.9) // 90% quality
+            // Convert canvas to blob and then to file with size optimization
+            const createOptimizedFile = (quality: number = 0.9): Promise<File> => {
+                return new Promise((resolve, reject) => {
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            // Check if the blob size exceeds 20MB
+                            if (blob.size > MAX_FILE_SIZE) {
+                                console.warn(`File size ${(blob.size / 1024 / 1024).toFixed(2)}MB exceeds 20MB limit, reducing quality...`)
+                                
+                                // If still too large and quality can be reduced, try lower quality
+                                if (quality > 0.3) {
+                                    createOptimizedFile(quality - 0.1).then(resolve).catch(reject)
+                                    return
+                                } else {
+                                    reject(new Error(`Unable to reduce file size below 20MB even at lowest quality`))
+                                    return
+                                }
+                            }
+                            
+                            const resizedFile = new File([blob], file.name, {
+                                type: file.type,
+                                lastModified: Date.now()
+                            })
+                            console.log(`Processed file: ${resizedFile.name}, Size: ${(resizedFile.size / 1024 / 1024).toFixed(2)}MB, Quality: ${(quality * 100).toFixed(0)}%`)
+                            resolve(resizedFile)
+                        } else {
+                            reject(new Error('Failed to create blob'))
+                        }
+                    }, file.type, quality)
+                })
+            }
+            
+            createOptimizedFile().then(resolve).catch(reject)
         }
 
-        img.onerror = () => reject(new Error('Failed to load image'))
+        img.onerror = (error) => {
+            console.error('Error loading image for resize:', file.name, error)
+            reject(new Error(`Failed to load image: ${file.name}`))
+        }
         img.src = URL.createObjectURL(file)
     })
 }
@@ -178,18 +211,39 @@ const processExistingImage = async (imageUrl: string, fileName: string): Promise
                 0, 0, targetWidth, targetHeight
             )
 
-            // Convert canvas to blob and then to file
-            canvas.toBlob((blob) => {
-                if (blob) {
-                    const resizedFile = new File([blob], fileName, {
-                        type: 'image/jpeg', // Default to JPEG
-                        lastModified: Date.now()
-                    })
-                    resolve(resizedFile)
-                } else {
-                    reject(new Error('Failed to create blob'))
-                }
-            }, 'image/jpeg', 0.9) // 90% quality
+            // Convert canvas to blob and then to file with size optimization
+            const createOptimizedFile = (quality: number = 0.9): Promise<File> => {
+                return new Promise((resolve, reject) => {
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            // Check if the blob size exceeds 20MB
+                            if (blob.size > MAX_FILE_SIZE) {
+                                console.warn(`Existing image file size ${(blob.size / 1024 / 1024).toFixed(2)}MB exceeds 20MB limit, reducing quality...`)
+                                
+                                // If still too large and quality can be reduced, try lower quality
+                                if (quality > 0.3) {
+                                    createOptimizedFile(quality - 0.1).then(resolve).catch(reject)
+                                    return
+                                } else {
+                                    reject(new Error(`Unable to reduce existing image file size below 20MB even at lowest quality`))
+                                    return
+                                }
+                            }
+                            
+                            const resizedFile = new File([blob], fileName, {
+                                type: 'image/jpeg', // Default to JPEG
+                                lastModified: Date.now()
+                            })
+                            console.log(`Processed existing image: ${fileName}, Size: ${(resizedFile.size / 1024 / 1024).toFixed(2)}MB, Quality: ${(quality * 100).toFixed(0)}%`)
+                            resolve(resizedFile)
+                        } else {
+                            reject(new Error('Failed to create blob'))
+                        }
+                    }, 'image/jpeg', quality)
+                })
+            }
+            
+            createOptimizedFile().then(resolve).catch(reject)
         }
 
         img.onerror = () => reject(new Error('Failed to load existing image'))
@@ -200,6 +254,12 @@ const processExistingImage = async (imageUrl: string, fileName: string): Promise
 // Function to get all images as File objects (processing existing ones if needed)
 const getAllImagesAsFiles = async (): Promise<File[]> => {
     console.log('Processing all images for submission...')
+    console.log('Current uploadedImages:', uploadedImages.value.map(img => ({
+        file: typeof img.file === 'string' ? img.file : `File: ${img.file.name} (${(img.file.size / 1024 / 1024).toFixed(2)}MB)`,
+        url: img.url,
+        isString: typeof img.file === 'string'
+    })))
+    
     const processedFiles: File[] = []
 
     for (let i = 0; i < uploadedImages.value.length; i++) {
@@ -218,13 +278,48 @@ const getAllImagesAsFiles = async (): Promise<File[]> => {
                 // Skip this image if processing fails
             }
         } else {
-            // Already a File object (new upload)
-            console.log('Using already processed file:', image.file.name)
-            processedFiles.push(image.file)
+            // Check if this File object is actually too large and needs re-processing
+            const fileSize = image.file.size
+            const fileSizeMB = fileSize / 1024 / 1024
+            
+            console.log(`Checking file: ${image.file.name}, Size: ${fileSizeMB.toFixed(2)}MB`)
+            
+            if (fileSize > MAX_FILE_SIZE) {
+                console.log(`File ${image.file.name} (${fileSizeMB.toFixed(2)}MB) exceeds 20MB, re-processing...`)
+                try {
+                    // Re-process the large file
+                    const reprocessedFile = await resizeAndCropImage(image.file)
+                    processedFiles.push(reprocessedFile)
+                    console.log(`Successfully re-processed large file: ${image.file.name}`)
+                } catch (error) {
+                    console.error('Error re-processing large file:', error)
+                    // Skip this image if processing fails
+                }
+            } else {
+                // File is already within size limits
+                console.log('Using already processed file:', image.file.name)
+                processedFiles.push(image.file)
+            }
         }
     }
 
     console.log('Final processed files count:', processedFiles.length)
+    
+    // Final validation: ensure all files are under 20MB
+    const oversizedFiles = processedFiles.filter(file => file.size > MAX_FILE_SIZE)
+    if (oversizedFiles.length > 0) {
+        console.error('Some processed files still exceed 20MB:', oversizedFiles.map(f => ({
+            name: f.name,
+            size: `${(f.size / 1024 / 1024).toFixed(2)}MB`
+        })))
+        throw new Error(`${oversizedFiles.length} file(s) still exceed 20MB after processing`)
+    }
+    
+    console.log('All files validated - sizes:', processedFiles.map(f => ({
+        name: f.name,
+        size: `${(f.size / 1024 / 1024).toFixed(2)}MB`
+    })))
+    
     return processedFiles
 }
 
@@ -245,17 +340,21 @@ const addImages = async (files: FileList | null) => {
     }
 
     for (const originalFile of fileArray) {
+        console.log(`Processing new upload: ${originalFile.name}, Size: ${(originalFile.size / 1024 / 1024).toFixed(2)}MB`)
+        
         if (validateFile(originalFile)) {
             try {
                 const resizedFile = await resizeAndCropImage(originalFile)
                 const imageUrl = URL.createObjectURL(resizedFile)
+                console.log(`Resized ${originalFile.name} from ${(originalFile.size / 1024 / 1024).toFixed(2)}MB to ${(resizedFile.size / 1024 / 1024).toFixed(2)}MB`)
+                
                 uploadedImages.value.push({
                     file: resizedFile,
                     originalFile,
                     url: imageUrl
                 })
             } catch (error) {
-                console.error('Error processing image:', error)
+                console.error('Error processing image:', originalFile.name, error)
                 errorMessage.value = 'Gagal memproses gambar'
             }
         }
@@ -374,7 +473,7 @@ onMounted(async () => {
                     <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
                         <li>Foto dari dari berbagai sisi: depan, belakang, samping.</li>
                         <li>Pastikan pencahayaan cukup dan gambar tidak buram.</li>
-                        <li>Ukuran file maksimal 20MB per foto.</li>
+                        <li>Ukuran file akan otomatis dioptimalkan maksimal 20MB per foto.</li>
                         <li>Format file yang diizinkan: .jpg, .jpeg, .png.</li>
                         <li>Anda dapat mengunggah maksimal 5 foto.</li>
                         <li>Gambar akan otomatis diubah ke rasio 16:9 dengan lebar maksimal 1080px.</li>
