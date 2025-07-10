@@ -172,10 +172,14 @@ class LivestockController extends Controller
             })
             ->values();
 
+        // Calculate unique lactation days
+        $lactationDays = $livestock->milkings()->distinct('date')->count('date');
+
         return Inertia::render('livestocks/Show', [
             'livestock' => $livestock,
             'weightHistory' => $weightHistory,
             'milkingHistory' => $milkingHistory,
+            'lactationDays' => $lactationDays,
         ]);
     }
 

@@ -58,6 +58,7 @@ const props = defineProps<{
   livestock: any;
   weightHistory: any[];
   milkingHistory: any[];
+  lactationDays: number;
 }>();
 
 // Breadcrumb navigation
@@ -398,12 +399,8 @@ const milkingTrend = computed(() => {
           <!-- Big fat number -->
           <div
             class="bg-white dark:bg-zinc-800 dark:text-white text-teal-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-            <template v-if="livestock.age_in_year > 0">
-              {{ livestock.age_in_year }} <span class="text-sm font-normal">Tahun</span>
-            </template>
-            <template v-else>
-              {{ livestock.age_in_month }} <span class="text-sm font-normal">Bulan</span>
-            </template>
+            {{ livestock.age_in_year }} <span class="text-xl font-normal">th</span>
+            {{ livestock.age_in_month % 12 }} <span class="text-xl font-normal">bl</span>
           </div>
         </div>
 
@@ -434,7 +431,10 @@ const milkingTrend = computed(() => {
           <div
             class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
             {{props.milkingHistory.reduce((sum, val) => sum + (val.total_volume || 0), 0).toFixed(1)}} <span
-              class="text-sm font-normal">Liter</span>
+              class="text-sm font-normal">
+              Liter
+              <div class="text-sm font-semibold mt-2">{{ lactationDays }} hari laktasi</div>
+            </span>
           </div>
         </div>
 
