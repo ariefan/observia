@@ -303,7 +303,7 @@ const milkingTrend = computed(() => {
       <!-- Header Section -->
       <div class="flex items-start justify-between space-x-4">
         <div class="flex items-start space-x-4">
-          <Button @click="back" variant="outline" size="icon" class="h-10 w-10 shrink-0">
+          <Button @click="router.get('/livestocks')" variant="outline" size="icon" class="h-10 w-10 shrink-0">
             <ArrowLeft class="h-5 w-5" />
           </Button>
           <div class="space-y-1">

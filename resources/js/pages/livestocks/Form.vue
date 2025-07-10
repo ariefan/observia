@@ -37,6 +37,7 @@ const selected_male_parent = ref(null);
 const selected_female_parent = ref(null);
 
 const form_1 = ref(null)
+const livestockUploaderRef = ref(null)
 
 const form = useForm({
   name: props.livestock.name,
@@ -66,27 +67,69 @@ const form = useForm({
   entry_date: props.livestock.entry_date,
 });
 
-const submitStep1 = (nextStep) => {
-  const options = {
-    onSuccess: () => {
-      nextStep();
-    },
-  };
-  if (props.livestock.id) {
-    form.put(route('livestocks.update', props.livestock.id), options);
-  } else {
-    form.post(route('livestocks.store'), options);
+const submitStep1 = async (nextStep) => {
+  try {
+    // Process all images to ensure they are resized to 16:9 aspect ratio
+    if (livestockUploaderRef.value) {
+      const processedImages = await livestockUploaderRef.value.getAllImagesAsFiles()
+      form.photo = processedImages
+    }
+    
+    const options = {
+      onSuccess: () => {
+        nextStep();
+      },
+    };
+    
+    if (props.livestock.id) {
+      form.put(route('livestocks.update', props.livestock.id), options);
+    } else {
+      form.post(route('livestocks.store'), options);
+    }
+  } catch (error) {
+    console.error('Error processing images before submission:', error)
+    // Continue with original photos if processing fails
+    const options = {
+      onSuccess: () => {
+        nextStep();
+      },
+    };
+    
+    if (props.livestock.id) {
+      form.put(route('livestocks.update', props.livestock.id), options);
+    } else {
+      form.post(route('livestocks.store'), options);
+    }
   }
 };
 
-const saveAction = () => {
-  if (props.livestock.id) {
-    form.transform((data) => ({
-      ...data,
-      _method: 'put',
-    })).post(route('livestocks.update', props.livestock.id));
-  } else {
-    form.post(route('livestocks.store'));
+const saveAction = async () => {
+  try {
+    // Process all images to ensure they are resized to 16:9 aspect ratio
+    if (livestockUploaderRef.value) {
+      const processedImages = await livestockUploaderRef.value.getAllImagesAsFiles()
+      form.photo = processedImages
+    }
+    
+    if (props.livestock.id) {
+      form.transform((data) => ({
+        ...data,
+        _method: 'put',
+      })).post(route('livestocks.update', props.livestock.id));
+    } else {
+      form.post(route('livestocks.store'));
+    }
+  } catch (error) {
+    console.error('Error processing images before submission:', error)
+    // Continue with original photos if processing fails
+    if (props.livestock.id) {
+      form.transform((data) => ({
+        ...data,
+        _method: 'put',
+      })).post(route('livestocks.update', props.livestock.id));
+    } else {
+      form.post(route('livestocks.store'));
+    }
   }
 };
 
@@ -250,7 +293,7 @@ const meta = { valid: true }
               <h3 class="text-primary font-semibold">Data Ternak</h3>
             </div>
             <div class="mt-2">
-              <LivestockUploader v-model="form.photo" />
+              <LivestockUploader ref="livestockUploaderRef" v-model="form.photo" />
               <InputError :message="form.errors.photo" />
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

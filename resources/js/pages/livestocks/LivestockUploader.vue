@@ -120,6 +120,119 @@ const resizeAndCropImage = (file: File): Promise<File> => {
     })
 }
 
+// Function to convert existing image URLs to resized File objects
+const processExistingImage = async (imageUrl: string, fileName: string): Promise<File> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image()
+        img.crossOrigin = 'anonymous' // Handle CORS if needed
+
+        img.onload = () => {
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+
+            if (!ctx) {
+                reject(new Error('Canvas context not available'))
+                return
+            }
+
+            // Use the same resizing logic as new uploads
+            let { width, height } = img
+
+            // Calculate the target width (max 1080px but maintain aspect ratio)
+            let targetWidth = Math.min(width, MAX_WIDTH)
+            let targetHeight = targetWidth / ASPECT_RATIO
+
+            // If the calculated height exceeds the original image height,
+            // use the original height and adjust width accordingly
+            if (targetHeight > height) {
+                targetHeight = height
+                targetWidth = targetHeight * ASPECT_RATIO
+            }
+
+            // Calculate crop area (center crop)
+            const sourceAspectRatio = width / height
+            let sourceWidth, sourceHeight, sourceX, sourceY
+
+            if (sourceAspectRatio > ASPECT_RATIO) {
+                // Source is wider than 16:9, crop width
+                sourceHeight = height
+                sourceWidth = height * ASPECT_RATIO
+                sourceX = (width - sourceWidth) / 2
+                sourceY = 0
+            } else {
+                // Source is taller than 16:9, crop height
+                sourceWidth = width
+                sourceHeight = width / ASPECT_RATIO
+                sourceX = 0
+                sourceY = (height - sourceHeight) / 2
+            }
+
+            // Set canvas dimensions
+            canvas.width = targetWidth
+            canvas.height = targetHeight
+
+            // Draw and crop the image
+            ctx.drawImage(
+                img,
+                sourceX, sourceY, sourceWidth, sourceHeight,
+                0, 0, targetWidth, targetHeight
+            )
+
+            // Convert canvas to blob and then to file
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    const resizedFile = new File([blob], fileName, {
+                        type: 'image/jpeg', // Default to JPEG
+                        lastModified: Date.now()
+                    })
+                    resolve(resizedFile)
+                } else {
+                    reject(new Error('Failed to create blob'))
+                }
+            }, 'image/jpeg', 0.9) // 90% quality
+        }
+
+        img.onerror = () => reject(new Error('Failed to load existing image'))
+        img.src = imageUrl
+    })
+}
+
+// Function to get all images as File objects (processing existing ones if needed)
+const getAllImagesAsFiles = async (): Promise<File[]> => {
+    console.log('Processing all images for submission...')
+    const processedFiles: File[] = []
+    
+    for (let i = 0; i < uploadedImages.value.length; i++) {
+        const image = uploadedImages.value[i]
+        
+        if (typeof image.file === 'string') {
+            // Process existing image URL to File object
+            try {
+                console.log('Processing existing image:', image.file)
+                const fileName = `image_${i + 1}.jpg`
+                const processedFile = await processExistingImage(image.url, fileName)
+                processedFiles.push(processedFile)
+                console.log('Successfully processed existing image:', fileName)
+            } catch (error) {
+                console.error('Error processing existing image:', error)
+                // Skip this image if processing fails
+            }
+        } else {
+            // Already a File object (new upload)
+            console.log('Using already processed file:', image.file.name)
+            processedFiles.push(image.file)
+        }
+    }
+    
+    console.log('Final processed files count:', processedFiles.length)
+    return processedFiles
+}
+
+// Expose the function to parent component
+defineExpose({
+    getAllImagesAsFiles
+})
+
 const addImages = async (files: FileList | null) => {
     if (!files) return
 
