@@ -74,13 +74,13 @@ const submitStep1 = async (nextStep) => {
       const processedImages = await livestockUploaderRef.value.getAllImagesAsFiles()
       form.photo = processedImages
     }
-    
+
     const options = {
       onSuccess: () => {
         nextStep();
       },
     };
-    
+
     if (props.livestock.id) {
       form.put(route('livestocks.update', props.livestock.id), options);
     } else {
@@ -94,7 +94,7 @@ const submitStep1 = async (nextStep) => {
         nextStep();
       },
     };
-    
+
     if (props.livestock.id) {
       form.put(route('livestocks.update', props.livestock.id), options);
     } else {
@@ -110,7 +110,7 @@ const saveAction = async () => {
       const processedImages = await livestockUploaderRef.value.getAllImagesAsFiles()
       form.photo = processedImages
     }
-    
+
     if (props.livestock.id) {
       form.transform((data) => ({
         ...data,

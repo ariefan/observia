@@ -201,10 +201,10 @@ const processExistingImage = async (imageUrl: string, fileName: string): Promise
 const getAllImagesAsFiles = async (): Promise<File[]> => {
     console.log('Processing all images for submission...')
     const processedFiles: File[] = []
-    
+
     for (let i = 0; i < uploadedImages.value.length; i++) {
         const image = uploadedImages.value[i]
-        
+
         if (typeof image.file === 'string') {
             // Process existing image URL to File object
             try {
@@ -223,7 +223,7 @@ const getAllImagesAsFiles = async (): Promise<File[]> => {
             processedFiles.push(image.file)
         }
     }
-    
+
     console.log('Final processed files count:', processedFiles.length)
     return processedFiles
 }
