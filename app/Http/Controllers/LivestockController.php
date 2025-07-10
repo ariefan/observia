@@ -89,6 +89,17 @@ class LivestockController extends Controller
         $livestock->aifarm_id = Livestock::generateAifarmId($countLivestock);
         $livestock->save();
 
+        // Automatically create initial weight record
+        if (isset($validated['weight'])) {
+            $livestock->weights()->create([
+                'weight' => $validated['weight'],
+                'date' => now(),
+                'user_id' => auth()->id(),
+            ]);
+            // Update livestock's current weight
+            $livestock->update(['weight' => $validated['weight']]);
+        }
+
         return redirect()->route('livestocks.show', $livestock);
     }
 

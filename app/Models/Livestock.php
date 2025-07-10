@@ -181,7 +181,17 @@ class Livestock extends Model
         parent::boot();
 
         static::creating(function ($model) {
-            $model->aifarm_id = generateAifarmId();
+            $model->aifarm_id = Livestock::generateAifarmId(Livestock::query()->count());
+        });
+
+        static::created(function ($model) {
+            if ($model->weight) {
+                $model->weights()->create([
+                    'weight' => $model->weight,
+                    'date' => now(),
+                    'user_id' => auth()->id(),
+                ]);
+            }
         });
     }
 }

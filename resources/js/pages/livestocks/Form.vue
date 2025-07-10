@@ -516,7 +516,7 @@ const meta = { valid: true }
               </div>
               <div>
                 <Label for="weight">Bobot Sekarang (kg)</Label>
-                <Input id="weight" v-model="form.weight" type="number" step="0.01" />
+                <Input id="weight" v-model="form.weight" type="number" step="0.01" :disabled="form.weight" />
                 <InputError :message="form.errors.weight" />
               </div>
             </div>
