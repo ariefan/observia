@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { Plus, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
@@ -7,12 +7,13 @@ import Example3 from '@/assets/example-3.jpg';
 import Example4 from '@/assets/example-4.jpg';
 
 interface UploadedImage {
-    file: File
+    file: File | string
+    originalFile: File | string
     url: string
 }
 
 const props = defineProps<{
-    modelValue: File[]
+    modelValue: (File | string)[]
 }>()
 
 const emit = defineEmits(['update:modelValue'])
@@ -24,6 +25,8 @@ const errorMessage = ref('')
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB
 const MAX_FILES = 5
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png']
+const MAX_WIDTH = 1080
+const ASPECT_RATIO = 16 / 9 // 16:9 aspect ratio
 
 const triggerFileInput = () => {
     fileInput.value?.click()
@@ -43,7 +46,81 @@ const validateFile = (file: File): boolean => {
     return true
 }
 
-const addImages = (files: FileList | null) => {
+const resizeAndCropImage = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image()
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+
+        if (!ctx) {
+            reject(new Error('Canvas context not available'))
+            return
+        }
+
+        img.onload = () => {
+            // Calculate dimensions for 16:9 aspect ratio
+            let { width, height } = img
+
+            // Calculate the target width (max 1080px but maintain aspect ratio)
+            let targetWidth = Math.min(width, MAX_WIDTH)
+            let targetHeight = targetWidth / ASPECT_RATIO
+
+            // If the calculated height exceeds the original image height,
+            // use the original height and adjust width accordingly
+            if (targetHeight > height) {
+                targetHeight = height
+                targetWidth = targetHeight * ASPECT_RATIO
+            }
+
+            // Calculate crop area (center crop)
+            const sourceAspectRatio = width / height
+            let sourceWidth, sourceHeight, sourceX, sourceY
+
+            if (sourceAspectRatio > ASPECT_RATIO) {
+                // Source is wider than 16:9, crop width
+                sourceHeight = height
+                sourceWidth = height * ASPECT_RATIO
+                sourceX = (width - sourceWidth) / 2
+                sourceY = 0
+            } else {
+                // Source is taller than 16:9, crop height
+                sourceWidth = width
+                sourceHeight = width / ASPECT_RATIO
+                sourceX = 0
+                sourceY = (height - sourceHeight) / 2
+            }
+
+            // Set canvas dimensions
+            canvas.width = targetWidth
+            canvas.height = targetHeight
+
+            // Draw and crop the image
+            ctx.drawImage(
+                img,
+                sourceX, sourceY, sourceWidth, sourceHeight,
+                0, 0, targetWidth, targetHeight
+            )
+
+            // Convert canvas to blob and then to file
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    const resizedFile = new File([blob], file.name, {
+                        type: file.type,
+                        lastModified: Date.now()
+                    })
+                    resolve(resizedFile)
+                } else {
+                    reject(new Error('Failed to create blob'))
+                }
+            }, file.type, 0.9) // 90% quality
+        }
+
+        img.onerror = () => reject(new Error('Failed to load image'))
+        img.src = URL.createObjectURL(file)
+    })
+}
+
+const addImages = async (files: FileList | null) => {
     if (!files) return
 
     errorMessage.value = ''
@@ -54,40 +131,122 @@ const addImages = (files: FileList | null) => {
         return
     }
 
-    fileArray.forEach(file => {
-        if (validateFile(file)) {
-            const imageUrl = URL.createObjectURL(file)
-            uploadedImages.value.push({
-                file,
-                url: imageUrl
-            })
+    for (const originalFile of fileArray) {
+        if (validateFile(originalFile)) {
+            try {
+                const resizedFile = await resizeAndCropImage(originalFile)
+                const imageUrl = URL.createObjectURL(resizedFile)
+                uploadedImages.value.push({
+                    file: resizedFile,
+                    originalFile,
+                    url: imageUrl
+                })
+            } catch (error) {
+                console.error('Error processing image:', error)
+                errorMessage.value = 'Gagal memproses gambar'
+            }
         }
-    })
+    }
 
     emit('update:modelValue', uploadedImages.value.map(img => img.file))
 }
 
-const handleFileSelect = (event: Event) => {
+const handleFileSelect = async (event: Event) => {
     const target = event.target as HTMLInputElement
-    addImages(target.files)
+    await addImages(target.files)
     target.value = '' // Reset input
 }
 
-const handleDrop = (event: DragEvent) => {
-    addImages(event.dataTransfer?.files || null)
+const handleDrop = async (event: DragEvent) => {
+    await addImages(event.dataTransfer?.files || null)
 }
 
 const removeImage = (index: number) => {
-    // Revoke object URL to prevent memory leaks
-    URL.revokeObjectURL(uploadedImages.value[index].url)
+    const image = uploadedImages.value[index]
+
+    // Only revoke object URL if it was created from a File object
+    if (typeof image.file !== 'string') {
+        URL.revokeObjectURL(image.url)
+    }
+
     uploadedImages.value.splice(index, 1)
     emit('update:modelValue', uploadedImages.value.map(img => img.file))
 }
 
-watch(() => props.modelValue, (newVal) => {
-    if (!newVal || newVal.length === 0) {
-        uploadedImages.value.forEach(img => URL.revokeObjectURL(img.url))
+const initializeExistingImages = async (files: (File | string)[]) => {
+    console.log('Initializing existing images:', files)
+
+    // Clear existing images first
+    uploadedImages.value.forEach(img => {
+        if (typeof img.file !== 'string') {
+            URL.revokeObjectURL(img.url)
+        }
+    })
+    uploadedImages.value = []
+
+    for (const file of files) {
+        try {
+            let imageUrl: string
+
+            if (typeof file === 'string') {
+                // Existing photo path from database
+                imageUrl = `/storage/${file}`
+                console.log('Adding existing photo:', file, 'URL:', imageUrl)
+                uploadedImages.value.push({
+                    file,
+                    originalFile: file,
+                    url: imageUrl
+                })
+            } else {
+                // File object (new upload)
+                imageUrl = URL.createObjectURL(file)
+                console.log('Adding file object:', file.name, 'URL:', imageUrl)
+                uploadedImages.value.push({
+                    file,
+                    originalFile: file,
+                    url: imageUrl
+                })
+            }
+        } catch (error) {
+            console.error('Error initializing existing image:', error)
+        }
+    }
+
+    console.log('Final uploadedImages:', uploadedImages.value)
+}
+
+watch(() => props.modelValue, async (newVal, oldVal) => {
+    // Only process if the modelValue actually changed and is not just an internal update
+    if (newVal && newVal.length > 0 && newVal !== oldVal) {
+        // Check if this is different from our current uploadedImages
+        const currentFiles = uploadedImages.value.map(img => img.file)
+        const filesAreDifferent = newVal.length !== currentFiles.length ||
+            newVal.some((file, index) => file !== currentFiles[index])
+
+        if (filesAreDifferent) {
+            console.log('ModelValue has changed, reinitializing images.')
+            await initializeExistingImages(newVal)
+        }
+    } else if (!newVal || newVal.length === 0) {
+        console.warn('ModelValue is empty, clearing uploaded images.')
+        uploadedImages.value.forEach(img => {
+            // Only revoke object URL if it was created from a File object
+            if (typeof img.file !== 'string') {
+                URL.revokeObjectURL(img.url)
+            }
+        })
         uploadedImages.value = []
+    }
+})
+
+onMounted(async () => {
+    console.log('LivestockUploader mounted. Props modelValue:', props.modelValue)
+
+    // Initialize with existing images if any
+    if (props.modelValue && props.modelValue.length > 0) {
+        await initializeExistingImages(props.modelValue);
+    } else {
+        console.warn('No existing images found in modelValue during initialization.');
     }
 })
 </script>
@@ -105,6 +264,7 @@ watch(() => props.modelValue, (newVal) => {
                         <li>Ukuran file maksimal 20MB per foto.</li>
                         <li>Format file yang diizinkan: .jpg, .jpeg, .png.</li>
                         <li>Anda dapat mengunggah maksimal 5 foto.</li>
+                        <li>Gambar akan otomatis diubah ke rasio 16:9 dengan lebar maksimal 1080px.</li>
                     </ul>
                 </div>
 
@@ -134,7 +294,7 @@ watch(() => props.modelValue, (newVal) => {
                             Seret & Lepas atau
                             <span class="font-semibold text-primary">Klik untuk Unggah</span>
                         </p>
-                        <p class="text-xs mt-1">JPG, JPEG, PNG (Maks. 20MB)</p>
+                        <p class="text-xs mt-1">JPG, JPEG, PNG (Maks. 20MB) - Otomatis diubah ke 16:9</p>
                     </div>
                 </div>
 
@@ -144,19 +304,22 @@ watch(() => props.modelValue, (newVal) => {
                         <CarouselContent>
                             <CarouselItem v-for="(image, index) in uploadedImages" :key="index" class="relative">
                                 <div class="p-1">
-                                    <img :src="image.url" alt="Uploaded image"
-                                        class="rounded-lg object-cover w-full h-80">
-                                    <Button variant="destructive" size="icon"
-                                        class="absolute top-2 right-2 h-7 w-7 rounded-full" @click="removeImage(index)">
-                                        <X class="h-4 w-4" />
-                                    </Button>
+                                    <div class="relative w-full" style="aspect-ratio: 16/9;">
+                                        <img :src="image.url" alt="Uploaded image"
+                                            class="rounded-lg object-cover w-full h-full">
+                                        <Button type="button" variant="destructive" size="icon"
+                                            class="absolute top-2 right-2 h-7 w-7 rounded-full"
+                                            @click="removeImage(index)">
+                                            <X class="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
                             </CarouselItem>
                         </CarouselContent>
-                        <CarouselPrevious class="ml-10" v-if="uploadedImages.length > 1" />
-                        <CarouselNext class="mr-10" v-if="uploadedImages.length > 1" />
+                        <CarouselPrevious type="button" class="ml-10" v-if="uploadedImages.length > 1" />
+                        <CarouselNext type="button" class="mr-10" v-if="uploadedImages.length > 1" />
                     </Carousel>
-                    <Button v-if="uploadedImages.length < MAX_FILES" variant="outline" class="w-full"
+                    <Button type="button" v-if="uploadedImages.length < MAX_FILES" variant="outline" class="w-full"
                         @click="triggerFileInput">
                         <Plus class="mr-2 h-4 w-4" />
                         Tambah Foto

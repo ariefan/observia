@@ -53,7 +53,7 @@ const form = useForm({
   purchase_date: props.livestock.purchase_date,
   birth_weight: props.livestock.birth_weight,
   weight: props.livestock.weight,
-  photo: [],
+  photo: props.livestock.photo || [],
   barter_livestock_id: props.livestock.barter_livestock_id,
   barter_from: props.livestock.barter_from,
   barter_date: props.livestock.barter_date,
@@ -186,6 +186,9 @@ watch(selectedFemaleParent, (val) => {
 });
 
 onMounted(() => {
+  console.log('Form mounted. Props livestock:', props.livestock)
+  console.log('Form photo field:', form.photo)
+
   if (props.livestock.breed) {
     form.species_id = props.livestock.breed.species.id;
     fetchBreeds();
