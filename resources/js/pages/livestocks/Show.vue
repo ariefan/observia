@@ -157,13 +157,11 @@ const processWeightData = () => {
     });
   }
 
-  // Map weight history to months
+  // Map weight history to months using average_weight and month
   const weightMap = new Map<string, number>();
   if (props.weightHistory && props.weightHistory.length > 0) {
     props.weightHistory.forEach((weight: any) => {
-      const date = new Date(weight.date);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      weightMap.set(monthKey, parseFloat(weight.weight));
+      weightMap.set(weight.month, parseFloat(weight.average_weight));
     });
   }
 

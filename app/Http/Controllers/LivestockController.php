@@ -112,19 +112,39 @@ class LivestockController extends Controller
         
         $livestock->load('breed.species', 'maleParent', 'femaleParent');
 
-        // Get weight history for the last 12 months
-        $weightHistory = $livestock->weights()
-            ->where('date', '>=', now()->subMonths(12))
+        // Get weight history for the last 12 months (average per month, fill missing with last known)
+        $now = now();
+        $weights = $livestock->weights()
+            ->where('date', '>=', $now->copy()->subMonths(12)->startOfMonth())
             ->orderBy('date')
-            ->get()
-            ->groupBy(function($weight) {
-                return \Carbon\Carbon::parse($weight->date)->format('Y-m');
-            })
-            ->map(function($monthWeights) {
-                // Get the latest weight for each month
-                return $monthWeights->sortByDesc('date')->first();
-            })
-            ->values();
+            ->get();
+
+        $weightByMonth = $weights->groupBy(function($weight) {
+            return \Carbon\Carbon::parse($weight->date)->format('Y-m');
+        })->map(function($monthWeights) {
+            // Calculate average weight for the month
+            return [
+                'average' => $monthWeights->avg('weight'),
+                'date' => $monthWeights->first()->date,
+            ];
+        });
+
+        $weightHistory = collect();
+        $lastAvg = 0;
+        for ($i = 11; $i >= 0; $i--) {
+            $month = $now->copy()->subMonths($i)->format('Y-m');
+            if (isset($weightByMonth[$month])) {
+                $lastAvg = round($weightByMonth[$month]['average'], 2);
+                $date = $weightByMonth[$month]['date'];
+            } else {
+                $date = $now->copy()->subMonths($i)->endOfMonth()->toDateString();
+            }
+            $weightHistory->push([
+                'month' => $month,
+                'average_weight' => $lastAvg,
+                'date' => $date,
+            ]);
+        }
 
         // Get milking history for the last 12 months
         $milkingHistory = $livestock->milkings()
