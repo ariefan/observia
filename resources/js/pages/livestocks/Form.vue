@@ -72,14 +72,30 @@ const submitStep1 = async (nextStep) => {
     // Process all images to ensure they are resized to 16:9 aspect ratio
     if (livestockUploaderRef.value) {
       const processedImages = await livestockUploaderRef.value.getAllImagesAsFiles()
+      console.log('Processed images for submission:', processedImages.map(f => ({
+        name: f.name,
+        size: `${(f.size / 1024 / 1024).toFixed(2)}MB`
+      })))
       form.photo = processedImages
     }
 
     const options = {
-      onSuccess: () => {
+      onSuccess: (page) => {
+        console.log('Form submission successful:', page)
         nextStep();
       },
+      onError: (errors) => {
+        console.error('Form submission errors:', errors)
+      },
+      onFinish: () => {
+        console.log('Form submission finished')
+      }
     };
+
+    console.log('Submitting form with data:', {
+      ...form.data(),
+      photo: form.photo ? `${form.photo.length} files` : 'no files'
+    })
 
     if (props.livestock.id) {
       form.put(route('livestocks.update', props.livestock.id), options);
@@ -90,9 +106,13 @@ const submitStep1 = async (nextStep) => {
     console.error('Error processing images before submission:', error)
     // Continue with original photos if processing fails
     const options = {
-      onSuccess: () => {
+      onSuccess: (page) => {
+        console.log('Form submission successful (fallback):', page)
         nextStep();
       },
+      onError: (errors) => {
+        console.error('Form submission errors (fallback):', errors)
+      }
     };
 
     if (props.livestock.id) {
@@ -104,31 +124,81 @@ const submitStep1 = async (nextStep) => {
 };
 
 const saveAction = async () => {
+  console.log('SaveAction called')
+  console.log('Form processing state:', form.processing)
+  console.log('Form errors:', form.errors)
+
   try {
     // Process all images to ensure they are resized to 16:9 aspect ratio
     if (livestockUploaderRef.value) {
+      console.log('Getting processed images...')
       const processedImages = await livestockUploaderRef.value.getAllImagesAsFiles()
+      console.log('Processed images for save action:', processedImages.map(f => ({
+        name: f.name,
+        size: `${(f.size / 1024 / 1024).toFixed(2)}MB`,
+        type: f.type,
+        lastModified: f.lastModified,
+        constructor: f.constructor.name,
+        webkitRelativePath: f.webkitRelativePath,
+        // Show all enumerable properties
+        allProperties: Object.getOwnPropertyNames(f).reduce((acc, prop) => {
+          try {
+            acc[prop] = f[prop]
+          } catch (e) {
+            acc[prop] = '[Error accessing property]'
+          }
+          return acc
+        }, {})
+      })))
       form.photo = processedImages
+    }
+
+    console.log('Save action - submitting form with data:', {
+      ...form.data(),
+      photo: form.photo ? `${form.photo.length} files` : 'no files'
+    })
+
+    const options = {
+      onSuccess: (page) => {
+        console.log('Save action successful:', page)
+      },
+      onError: (errors) => {
+        console.error('Save action errors:', errors)
+      },
+      onFinish: () => {
+        console.log('Save action finished')
+      },
+      onStart: () => {
+        console.log('Save action started')
+      }
+    }
+
+    if (props.livestock.id) {
+      console.log('Updating livestock with ID:', props.livestock.id)
+      form.transform((data) => ({
+        ...data,
+        _method: 'put',
+      })).post(route('livestocks.update', props.livestock.id), options);
+    } else {
+      console.log('Creating new livestock')
+      form.post(route('livestocks.store'), options);
+    }
+  } catch (error) {
+    console.error('Error processing images before save action:', error)
+    // Continue with original photos if processing fails
+    const options = {
+      onError: (errors) => {
+        console.error('Save action errors (fallback):', errors)
+      }
     }
 
     if (props.livestock.id) {
       form.transform((data) => ({
         ...data,
         _method: 'put',
-      })).post(route('livestocks.update', props.livestock.id));
+      })).post(route('livestocks.update', props.livestock.id), options);
     } else {
-      form.post(route('livestocks.store'));
-    }
-  } catch (error) {
-    console.error('Error processing images before submission:', error)
-    // Continue with original photos if processing fails
-    if (props.livestock.id) {
-      form.transform((data) => ({
-        ...data,
-        _method: 'put',
-      })).post(route('livestocks.update', props.livestock.id));
-    } else {
-      form.post(route('livestocks.store'));
+      form.post(route('livestocks.store'), options);
     }
   }
 };

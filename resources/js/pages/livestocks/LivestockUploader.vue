@@ -129,16 +129,30 @@ const resizeAndCropImage = (file: File): Promise<File> => {
                                 }
                             }
 
-                            const resizedFile = new File([blob], file.name, {
-                                type: file.type,
+                            // Ensure we use a valid image MIME type and filename
+                            let mimeType = 'image/jpeg'
+                            let fileName = file.name
+
+                            // Ensure the filename has the correct extension
+                            if (!fileName.toLowerCase().endsWith('.jpg') && !fileName.toLowerCase().endsWith('.jpeg')) {
+                                // Remove existing extension and add .jpg
+                                fileName = fileName.replace(/\.[^/.]+$/, '') + '.jpg'
+                            }
+
+                            const resizedFile = new File([blob], fileName, {
+                                type: mimeType,
                                 lastModified: Date.now()
                             })
-                            console.log(`Processed file: ${resizedFile.name}, Size: ${(resizedFile.size / 1024 / 1024).toFixed(2)}MB, Quality: ${(quality * 100).toFixed(0)}%`)
+
+                            // Add properties that Laravel expects for file validation
+                            Object.defineProperty(resizedFile, 'webkitRelativePath', { value: '' })
+
+                            console.log(`Processed file: ${resizedFile.name}, Size: ${(resizedFile.size / 1024 / 1024).toFixed(2)}MB, Quality: ${(quality * 100).toFixed(0)}%, Type: ${resizedFile.type}`)
                             resolve(resizedFile)
                         } else {
                             reject(new Error('Failed to create blob'))
                         }
-                    }, file.type, quality)
+                    }, 'image/jpeg', quality) // Always use JPEG for consistency
                 })
             }
 
@@ -230,11 +244,21 @@ const processExistingImage = async (imageUrl: string, fileName: string): Promise
                                 }
                             }
 
-                            const resizedFile = new File([blob], fileName, {
+                            // Ensure the filename has .jpg extension
+                            let processedFileName = fileName
+                            if (!processedFileName.toLowerCase().endsWith('.jpg') && !processedFileName.toLowerCase().endsWith('.jpeg')) {
+                                processedFileName = processedFileName.replace(/\.[^/.]+$/, '') + '.jpg'
+                            }
+
+                            const resizedFile = new File([blob], processedFileName, {
                                 type: 'image/jpeg', // Default to JPEG
                                 lastModified: Date.now()
                             })
-                            console.log(`Processed existing image: ${fileName}, Size: ${(resizedFile.size / 1024 / 1024).toFixed(2)}MB, Quality: ${(quality * 100).toFixed(0)}%`)
+
+                            // Add properties that Laravel expects for file validation
+                            Object.defineProperty(resizedFile, 'webkitRelativePath', { value: '' })
+
+                            console.log(`Processed existing image: ${processedFileName}, Size: ${(resizedFile.size / 1024 / 1024).toFixed(2)}MB, Quality: ${(quality * 100).toFixed(0)}%, Type: ${resizedFile.type}`)
                             resolve(resizedFile)
                         } else {
                             reject(new Error('Failed to create blob'))
@@ -278,27 +302,20 @@ const getAllImagesAsFiles = async (): Promise<File[]> => {
                 // Skip this image if processing fails
             }
         } else {
-            // Check if this File object is actually too large and needs re-processing
+            // Always re-process uploaded files to ensure they have correct MIME type and properties
             const fileSize = image.file.size
             const fileSizeMB = fileSize / 1024 / 1024
 
-            console.log(`Checking file: ${image.file.name}, Size: ${fileSizeMB.toFixed(2)}MB`)
+            console.log(`Processing uploaded file: ${image.file.name}, Size: ${fileSizeMB.toFixed(2)}MB`)
 
-            if (fileSize > MAX_FILE_SIZE) {
-                console.log(`File ${image.file.name} (${fileSizeMB.toFixed(2)}MB) exceeds 20MB, re-processing...`)
-                try {
-                    // Re-process the large file
-                    const reprocessedFile = await resizeAndCropImage(image.file)
-                    processedFiles.push(reprocessedFile)
-                    console.log(`Successfully re-processed large file: ${image.file.name}`)
-                } catch (error) {
-                    console.error('Error re-processing large file:', error)
-                    // Skip this image if processing fails
-                }
-            } else {
-                // File is already within size limits
-                console.log('Using already processed file:', image.file.name)
-                processedFiles.push(image.file)
+            try {
+                // Always process uploaded files to ensure standardization
+                const processedFile = await resizeAndCropImage(image.file)
+                processedFiles.push(processedFile)
+                console.log(`Successfully processed uploaded file: ${image.file.name} -> ${processedFile.name}`)
+            } catch (error) {
+                console.error('Error processing uploaded file:', error)
+                // Skip this image if processing fails
             }
         }
     }

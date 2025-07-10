@@ -37,7 +37,7 @@ class StoreLivestockRequest extends FormRequest
             'male_parent_id' => ['nullable', 'uuid', 'exists:livestocks,id'],
             'female_parent_id' => ['nullable', 'uuid', 'exists:livestocks,id'],
             'photo' => ['nullable', 'array'],
-            'photo.*' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+            'photo.*' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:20480'], // 20MB in KB
             'barter_livestock_id' => ['nullable', 'string', 'max:255'],
             'barter_from' => ['nullable', 'string', 'max:255'],
             'barter_date' => ['nullable', 'date'],
