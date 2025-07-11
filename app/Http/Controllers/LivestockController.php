@@ -175,11 +175,36 @@ class LivestockController extends Controller
         // Calculate unique lactation days
         $lactationDays = $livestock->milkings()->distinct('date')->count('date');
 
+        // --- Calculate ranking by average litre per day for same species ---
+        $speciesId = $livestock->breed->species->id;
+        $allLivestocks = \App\Models\Livestock::whereHas('breed', function($q) use ($speciesId) {
+            $q->where('species_id', $speciesId);
+        })->with(['milkings'])->get();
+
+        $livestockAverages = $allLivestocks->map(function($ls) {
+            $lactationDays = $ls->milkings->unique('date')->count('date');
+            $totalVolume = $ls->milkings->sum('milk_volume');
+            $avg = $lactationDays > 0 ? $totalVolume / $lactationDays : 0;
+            return [
+                'id' => $ls->id,
+                'average_litre_per_day' => $avg,
+            ];
+        })->sortByDesc('average_litre_per_day')->values();
+
+        $rank = $livestockAverages->search(function($item) use ($livestock) {
+            return $item['id'] == $livestock->id;
+        });
+        $rank = $rank !== false ? $rank + 1 : null;
+        $totalRanked = $livestockAverages->count();
+        // --- End ranking ---
+
         return Inertia::render('livestocks/Show', [
             'livestock' => $livestock,
             'weightHistory' => $weightHistory,
             'milkingHistory' => $milkingHistory,
             'lactationDays' => $lactationDays,
+            'rank' => $rank,
+            'totalRanked' => $totalRanked,
         ]);
     }
 

@@ -59,6 +59,8 @@ const props = defineProps<{
   weightHistory: any[];
   milkingHistory: any[];
   lactationDays: number;
+  rank?: number;
+  totalRanked?: number;
 }>();
 
 // Breadcrumb navigation
@@ -426,35 +428,39 @@ const milkingTrend = computed(() => {
           </div>
         </div>
 
-        <!-- LACTATION -->
-        <div class="rounded-lg flex flex-col border border-primary/20 dark:border-primary/80">
-          <!-- Header -->
-          <div class="bg-primary text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
-            <ChartNoAxesColumnIncreasing class="text-white" />
-            <span class="text-white">Hari Laktasi</span>
-          </div>
-
-          <!-- Big fat number -->
-          <div
-            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-            {{ lactationDays }} <span class="text-sm font-normal">
-              hari
-            </span>
-          </div>
-        </div>
-
         <!-- MILK SECTION -->
         <div class="rounded-lg flex flex-col border border-primary/20 dark:border-primary/80">
           <!-- Header -->
           <div class="bg-primary text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
             <ChartNoAxesColumnIncreasing class="text-white" />
-            <span class="text-white">Index</span>
+            <span class="text-white text-sm">Rata-rata Produksi</span>
           </div>
 
           <!-- Big fat number -->
           <div
             class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-            {{ 0.0 }} <span class="text-sm font-normal"></span>
+            {{(props.milkingHistory.reduce((sum, val) => sum + (val.total_volume || 0), 0) / lactationDays).toFixed(1)
+            }} <span class="text-sm font-normal">Liter/hari</span>
+          </div>
+        </div>
+
+        <!-- Ranking -->
+        <div class="rounded-lg flex flex-col border border-primary/20 dark:border-primary/80">
+          <!-- Header -->
+          <div class="bg-primary text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
+            <ChartNoAxesColumnIncreasing class="text-white" />
+            <span class="text-white">Ranking</span>
+          </div>
+
+          <!-- Big fat number -->
+          <div
+            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
+            <template v-if="rank">
+              {{ rank }}<span class="text-base font-normal">/{{ totalRanked }}</span>
+            </template>
+            <template v-else>
+              -
+            </template>
           </div>
         </div>
 
@@ -476,18 +482,20 @@ const milkingTrend = computed(() => {
           </div>
         </div>
 
-        <!-- Ranking -->
+        <!-- LACTATION -->
         <div class="rounded-lg flex flex-col border border-primary/20 dark:border-primary/80">
           <!-- Header -->
           <div class="bg-primary text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
             <ChartNoAxesColumnIncreasing class="text-white" />
-            <span class="text-white">Ranking</span>
+            <span class="text-white">Hari Laktasi</span>
           </div>
 
           <!-- Big fat number -->
           <div
             class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-            00 <span class="text-sm font-normal">Liter</span>
+            {{ lactationDays }} <span class="text-sm font-normal">
+              hari
+            </span>
           </div>
         </div>
       </div>
