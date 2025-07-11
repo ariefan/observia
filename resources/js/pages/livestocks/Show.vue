@@ -363,31 +363,38 @@ const milkingTrend = computed(() => {
 
       <!-- Population Stats Card -->
       <Card class="border-0 bg-primary">
-        <CardContent class="pt-4 flex justify-center">
-          <div v-if="props.livestock.photo && props.livestock.photo.length > 0" class="relative w-full max-w-2xl">
-            <Carousel class="relative w-full" :opts="{ align: 'center' }">
+        <CardContent class="p-2 pt-4 flex justify-center">
+          <div v-if="props.livestock.photo && props.livestock.photo.length > 0" class="relative w-full max-w-7xl">
+            <Carousel class="relative w-full mx-auto" :opts="{
+              align: 'start',
+            }">
               <CarouselContent>
-                <CarouselItem v-for="(photo, index) in props.livestock.photo" :key="index">
+                <CarouselItem v-for="(photo, index) in props.livestock.photo" :key="index" class="lg:basis-1/2">
                   <div class="p-1">
-                    <img :src="getPhotoUrl(photo)" alt="Livestock photo" class="rounded-lg object-cover w-full h-96">
+                    <div class="p-1">
+                      <img :src="getPhotoUrl(photo)" alt="Livestock photo" class="rounded-lg object-cover w-full h-96">
+                    </div>
                   </div>
                 </CarouselItem>
               </CarouselContent>
-              <CarouselPrevious v-if="props.livestock.photo.length > 1" />
-              <CarouselNext v-if="props.livestock.photo.length > 1" />
+              <CarouselPrevious class="ml-10" v-if="props.livestock.photo.length > 1" />
+              <CarouselNext class="mr-10" v-if="props.livestock.photo.length > 1" />
             </Carousel>
           </div>
           <div v-else
-            class="flex flex-col items-center justify-center w-full max-w-2xl h-96 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            class="flex flex-col items-center justify-center w-full max-w-7xl h-96 bg-gray-100 dark:bg-gray-800 rounded-lg">
             <ImageOff class="h-16 w-16 text-gray-400 dark:text-gray-600 mb-4" />
             <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">Tidak ada foto</p>
             <p class="text-gray-400 dark:text-gray-500 text-sm">Foto ternak belum tersedia</p>
+            <Button @click="router.get(route('livestocks.edit', livestock.id))" variant="outline" class="mt-4">
+              Tambah Foto
+            </Button>
           </div>
         </CardContent>
       </Card>
 
       <!-- Grid Section -->
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 text-white font-sans">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 text-white font-sans">
         <!-- GOAT SECTION -->
         <div class="rounded-lg flex flex-col border border-primary/20 dark:border-primary/80">
           <!-- Header -->
@@ -424,17 +431,30 @@ const milkingTrend = computed(() => {
           <!-- Header -->
           <div class="bg-primary text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
             <ChartNoAxesColumnIncreasing class="text-white" />
-            <span class="text-white">Hasil Susu</span>
+            <span class="text-white">Hari Laktasi</span>
           </div>
 
           <!-- Big fat number -->
           <div
             class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-            {{props.milkingHistory.reduce((sum, val) => sum + (val.total_volume || 0), 0).toFixed(1)}} <span
-              class="text-sm font-normal">
-              Liter
-              <div class="text-sm font-semibold mt-2">{{ lactationDays }} hari laktasi</div>
+            {{ lactationDays }} <span class="text-sm font-normal">
+              hari
             </span>
+          </div>
+        </div>
+
+        <!-- MILK SECTION -->
+        <div class="rounded-lg flex flex-col border border-primary/20 dark:border-primary/80">
+          <!-- Header -->
+          <div class="bg-primary text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
+            <ChartNoAxesColumnIncreasing class="text-white" />
+            <span class="text-white">Index</span>
+          </div>
+
+          <!-- Big fat number -->
+          <div
+            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
+            {{ 0.0 }} <span class="text-sm font-normal"></span>
           </div>
         </div>
 
@@ -527,10 +547,10 @@ const milkingTrend = computed(() => {
                     perkembangan.
                   </template>
                   <template v-else>
-                    Perkembangan bobot ternak {{ weightTrend.isIncreasing ? 'meningkat' : 'menurun' }}
+                    Perkembangan bobot ternak bulan ini {{ weightTrend.isIncreasing ? 'meningkat' : 'menurun' }}
                     {{ Math.abs(parseFloat(weightTrend.difference)) }}kg atau {{
                       Math.abs(parseFloat(weightTrend.percentage)) }}%
-                    dari bobot sebelumnya
+                    dari bobot bulan sebelumnya
                   </template>
                 </template>
                 <template v-else>
