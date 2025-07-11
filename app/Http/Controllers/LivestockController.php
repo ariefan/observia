@@ -119,29 +119,25 @@ class LivestockController extends Controller
             ->orderBy('date')
             ->get();
 
+        // Group weights by month for the current livestock
         $weightByMonth = $weights->groupBy(function($weight) {
             return \Carbon\Carbon::parse($weight->date)->format('Y-m');
         })->map(function($monthWeights) {
-            // Calculate average weight for the month
-            return [
-                'average' => $monthWeights->avg('weight'),
-                'date' => $monthWeights->first()->date,
-            ];
+            // Average only for weights in this month
+            return round($monthWeights->avg('weight'), 2);
         });
 
         $weightHistory = collect();
-        $lastAvg = 0;
+        $lastAvg = null;
         for ($i = 11; $i >= 0; $i--) {
             $month = $now->copy()->subMonths($i)->format('Y-m');
-            if (isset($weightByMonth[$month])) {
-                $lastAvg = round($weightByMonth[$month]['average'], 2);
-                $date = $weightByMonth[$month]['date'];
-            } else {
-                $date = $now->copy()->subMonths($i)->endOfMonth()->toDateString();
+            $date = $now->copy()->subMonths($i)->endOfMonth()->toDateString();
+            if (isset($weightByMonth[$month]) && $weightByMonth[$month] !== null) {
+                $lastAvg = $weightByMonth[$month];
             }
             $weightHistory->push([
                 'month' => $month,
-                'average_weight' => $lastAvg,
+                'average_weight' => $lastAvg !== null ? $lastAvg : 0,
                 'date' => $date,
             ]);
         }

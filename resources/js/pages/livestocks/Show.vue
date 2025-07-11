@@ -572,7 +572,7 @@ const milkingTrend = computed(() => {
                     perkembangan.
                   </template>
                   <template v-else>
-                    Perkembangan bobot ternak bulan ini {{ weightTrend.isIncreasing ? 'meningkat' : 'menurun' }}
+                    Perkembangan bobot ternakmu bulan ini {{ weightTrend.isIncreasing ? 'meningkat' : 'menurun' }}
                     {{ Math.abs(parseFloat(weightTrend.difference)) }}kg atau {{
                       Math.abs(parseFloat(weightTrend.percentage)) }}%
                     dari bobot bulan sebelumnya
