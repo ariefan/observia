@@ -387,7 +387,7 @@ const milkingTrend = computed(() => {
       </Card>
 
       <!-- Grid Section -->
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-white font-sans">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 text-white font-sans">
         <!-- GOAT SECTION -->
         <div class="rounded-lg flex flex-col border border-primary/20 dark:border-primary/80">
           <!-- Header -->
@@ -434,6 +434,23 @@ const milkingTrend = computed(() => {
               class="text-sm font-normal">
               Liter
               <div class="text-sm font-semibold mt-2">{{ lactationDays }} hari laktasi</div>
+            </span>
+          </div>
+        </div>
+
+        <!-- MILK SECTION -->
+        <div class="rounded-lg flex flex-col border border-primary/20 dark:border-primary/80">
+          <!-- Header -->
+          <div class="bg-primary text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
+            <ChartNoAxesColumnIncreasing class="text-white" />
+            <span class="text-white">Hari Laktasi</span>
+          </div>
+
+          <!-- Big fat number -->
+          <div
+            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
+            {{ lactationDays }} <span class="text-sm font-normal">
+              hari
             </span>
           </div>
         </div>
