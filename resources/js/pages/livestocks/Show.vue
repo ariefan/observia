@@ -426,7 +426,7 @@ const milkingTrend = computed(() => {
           </div>
         </div>
 
-        <!-- MILK SECTION -->
+        <!-- LACTATION -->
         <div class="rounded-lg flex flex-col border border-primary/20 dark:border-primary/80">
           <!-- Header -->
           <div class="bg-primary text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
@@ -463,19 +463,20 @@ const milkingTrend = computed(() => {
           <!-- Header -->
           <div class="bg-primary text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
             <ChartNoAxesColumnIncreasing class="text-white" />
-            <span class="text-white">Hari Laktasi</span>
+            <span class="text-white">Produksi Susu</span>
           </div>
 
           <!-- Big fat number -->
           <div
             class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
-            {{ lactationDays }} <span class="text-sm font-normal">
-              hari
+            {{props.milkingHistory.reduce((sum, val) => sum + (val.total_volume || 0), 0).toFixed(1)}} <span
+              class="text-sm font-normal">
+              Liter
             </span>
           </div>
         </div>
 
-        <!-- MILK SECTION -->
+        <!-- Ranking -->
         <div class="rounded-lg flex flex-col border border-primary/20 dark:border-primary/80">
           <!-- Header -->
           <div class="bg-primary text-white dark:text-black rounded-t-lg px-4 py-2 flex items-center gap-2">
