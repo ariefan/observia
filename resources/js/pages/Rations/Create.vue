@@ -64,8 +64,9 @@ const submit = () => {
                                 Komposisi
                             </h3>
 
-                            <div v-for="(item, index) in form.items" :key="index" class="mt-4 p-4 border rounded-md">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="mt-4 p-4 border rounded-md" v-if="form.items.length > 0">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4" v-for="(item, index) in form.items"
+                                    :key="index">
                                     <div>
                                         <Label :for="'feed_id_' + index">Jenis Pakan</Label>
                                         <Input :id="'feed_id_' + index" v-model="item.feed_id_" type="number"
@@ -81,10 +82,10 @@ const submit = () => {
                                         <Input :id="'price_' + index" v-model="item.price" type="number"
                                             class="mt-1 block w-full" required />
                                     </div>
-                                </div>
-                                <div class="flex justify-end mt-4">
-                                    <button type="button" @click="removeItem(index)"
-                                        class="text-red-600 dark:text-red-500 hover:underline">Hapus</button>
+                                    <div class="pt-1">
+                                        <Button variant="destructive" type="button" @click="removeItem(index)"
+                                            class="mt-6">Hapus</Button>
+                                    </div>
                                 </div>
                             </div>
 
