@@ -32,6 +32,14 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -271,112 +279,107 @@ const back = () => window.history.back();
                                 </ul>
                             </div>
 
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-sm text-left border-t">
-                                    <thead class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
-                                        <tr>
-                                            <th class="px-4 py-2">Nama lengkap</th>
-                                            <th class="px-4 py-2">No Hp</th>
-                                            <th class="px-4 py-2">Email</th>
-                                            <th class="px-4 py-2">Role</th>
-                                            <th class="px-4 py-2">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="user in farm.users" :key="user.email"
-                                            class="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                                            <td class="flex items-center gap-3 px-4 py-3">
-                                                <Avatar class="size-8 overflow-hidden rounded-full">
-                                                    <AvatarImage v-if="user.avatar" :src="user.avatar"
-                                                        :alt="user.name" />
-                                                    <AvatarFallback
-                                                        class="rounded-lg font-semibold text-black dark:text-white">
-                                                        {{ getInitials(user?.name) }}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                {{ user.name }}
-                                            </td>
-                                            <td class="px-4 py-3">{{ user.phone }}</td>
-                                            <td class="px-4 py-3">{{ user.email }}</td>
-                                            <td class="px-4 py-3 gap-2">
-                                                <DropdownMenu
-                                                    v-if="user.pivot.role !== 'owner' &&
-                                                        ['owner', 'admin'].includes($page.props.auth.user.current_farm.role)">
-                                                    <DropdownMenuTrigger>
-                                                        <Button variant="secondary" size="sm">
-                                                            {{
-                                                                user.pivot.role.charAt(0).toUpperCase() +
-                                                                user.pivot.role.slice(1)
-                                                            }}
-                                                            <ChevronDown class="ml-1 w-4 h-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent>
-                                                        <DropdownMenuItem @click="updateRole(user, 'admin')">
-                                                            Admin
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem @click="updateRole(user, 'abk')">
-                                                            ABK
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem @click="updateRole(user, 'investor')">
-                                                            Investor
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                                <span class="font-semibold" v-else>{{ user.pivot.role }}</span>
-                                            </td>
-                                            <td class="px-4 py-3">
-                                                <Button
-                                                    v-if="user.pivot.role !== 'owner' &&
-                                                        ['owner', 'admin'].includes($page.props.auth.user.current_farm.role)"
-                                                    variant="destructive" size="sm" @click="removeUser(user)">
-                                                    <Trash2 class="w-4 h-4 mr-1" /> Keluarkan
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                        <tr v-for="user in invites" :key="user.email"
-                                            class="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                                            <td class="flex items-center gap-3 px-4 py-3 italic">
-                                                Menunggu konfirmasi
-                                            </td>
-                                            <td class="px-4 py-3"></td>
-                                            <td class="px-4 py-3">{{ user.email }}</td>
-                                            <td class="px-4 py-3 gap-2">
-                                                <DropdownMenu v-if="user.role !== 'owner'">
-                                                    <DropdownMenuTrigger>
-                                                        <Button variant="secondary" size="sm">
-                                                            {{
-                                                                user.role.charAt(0).toUpperCase() +
-                                                                user.role.slice(1)
-                                                            }}
-                                                            <ChevronDown class="ml-1 w-4 h-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent>
-                                                        <DropdownMenuItem
-                                                            @click="updateRoleInvite(user.email, 'admin')">
-                                                            Admin
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem @click="updateRoleInvite(user.email, 'abk')">
-                                                            ABK
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            @click="updateRoleInvite(user.email, 'investor')">
-                                                            Investor
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                                <span class="font-semibold" v-else>{{ user.role }}</span>
-                                            </td>
-                                            <td class="px-4 py-3">
-                                                <Button v-if="user.role !== 'owner'" variant="destructive" size="sm"
-                                                    @click="removeUserInvite(user.email)">
-                                                    <Trash2 class="w-4 h-4 mr-1" /> Keluarkan
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div class="rounded-md border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Nama lengkap</TableHead>
+                                            <TableHead>No Hp</TableHead>
+                                            <TableHead>Email</TableHead>
+                                            <TableHead>Role</TableHead>
+                                            <TableHead>Action</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        <template v-for="user in farm.users" :key="user.email">
+                                            <TableRow>
+                                                <TableCell>
+                                                    <Avatar class="size-8 overflow-hidden rounded-full">
+                                                        <AvatarImage v-if="user.avatar" :src="user.avatar"
+                                                            :alt="user.name" />
+                                                        <AvatarFallback
+                                                            class="rounded-lg font-semibold text-black dark:text-white">
+                                                            {{ getInitials(user?.name) }}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    {{ user.name }}
+                                                </TableCell>
+                                                <TableCell>{{ user.phone }}</TableCell>
+                                                <TableCell>{{ user.email }}</TableCell>
+                                                <TableCell>
+                                                    <DropdownMenu
+                                                        v-if="user.pivot.role !== 'owner' &&
+                                                            ['owner', 'admin'].includes($page.props.auth.user.current_farm.role)">
+                                                        <DropdownMenuTrigger>
+                                                            <Button variant="secondary" size="sm">
+                                                                {{
+                                                                    user.pivot.role.charAt(0).toUpperCase() +
+                                                                    user.pivot.role.slice(1)
+                                                                }}
+                                                                <ChevronDown class="ml-1 w-4 h-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent>
+                                                            <DropdownMenuItem @click="updateRole(user, 'admin')">Admin
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem @click="updateRole(user, 'abk')">ABK
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem @click="updateRole(user, 'investor')">
+                                                                Investor</DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                    <span class="font-semibold" v-else>{{ user.pivot.role }}</span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button
+                                                        v-if="user.pivot.role !== 'owner' &&
+                                                            ['owner', 'admin'].includes($page.props.auth.user.current_farm.role)"
+                                                        variant="destructive" size="sm" @click="removeUser(user)">
+                                                        <Trash2 class="w-4 h-4 mr-1" /> Keluarkan
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        </template>
+                                        <template v-for="user in invites" :key="user.email">
+                                            <TableRow>
+                                                <TableCell class="italic">Menunggu konfirmasi</TableCell>
+                                                <TableCell></TableCell>
+                                                <TableCell>{{ user.email }}</TableCell>
+                                                <TableCell>
+                                                    <DropdownMenu v-if="user.role !== 'owner'">
+                                                        <DropdownMenuTrigger>
+                                                            <Button variant="secondary" size="sm">
+                                                                {{
+                                                                    user.role.charAt(0).toUpperCase() +
+                                                                    user.role.slice(1)
+                                                                }}
+                                                                <ChevronDown class="ml-1 w-4 h-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent>
+                                                            <DropdownMenuItem
+                                                                @click="updateRoleInvite(user.email, 'admin')">Admin
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                @click="updateRoleInvite(user.email, 'abk')">ABK
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                @click="updateRoleInvite(user.email, 'investor')">
+                                                                Investor</DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                    <span class="font-semibold" v-else>{{ user.role }}</span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button v-if="user.role !== 'owner'" variant="destructive" size="sm"
+                                                        @click="removeUserInvite(user.email)">
+                                                        <Trash2 class="w-4 h-4 mr-1" /> Keluarkan
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        </template>
+                                    </TableBody>
+                                </Table>
                             </div>
                         </form>
                     </CardContent>

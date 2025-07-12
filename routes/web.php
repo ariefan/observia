@@ -10,6 +10,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Api\SpeciesController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\RationController;
+use \App\Http\Controllers\HerdController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -40,7 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
 
-    // Farms
+    // Herds
     Route::get('/farms.logout', [HomeController::class, 'farmLogout'])->name('farms.logout');
     Route::get('/farms/{farm}/switch', [FarmController::class, 'switch'])->name('farms.switch');
     Route::post('/farms/{farm}/invite', [FarmController::class, 'inviteMember'])->name('farms.invite');
@@ -61,9 +62,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resources([
         'farms' => FarmController::class,
         'livestocks' => LivestockController::class,
+        'herds' => HerdController::class,
+        'rations' => RationController::class,
+        'feeds' => FeedController::class,
     ]);
-    Route::resource('rations', RationController::class);
-    Route::resource('feeds', FeedController::class);
 });
 
 Route::get('/livestocks/photo/{path}', [LivestockController::class, 'showPhoto'])->where('path', '.*')->name('livestocks.photo');

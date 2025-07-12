@@ -13,7 +13,10 @@ class HerdController extends Controller
      */
     public function index()
     {
-        //
+        $herds = Herd::all();
+        return inertia('herds/Index', [
+            'herds' => $herds,
+        ]);
     }
 
     /**
@@ -21,7 +24,7 @@ class HerdController extends Controller
      */
     public function create()
     {
-        //
+        return inertia('herds/Form');
     }
 
     /**
@@ -29,7 +32,8 @@ class HerdController extends Controller
      */
     public function store(StoreHerdRequest $request)
     {
-        //
+        $herd = Herd::create($request->validated());
+        return redirect()->route('herds.index')->with('success', 'Kandang berhasil ditambahkan.');
     }
 
     /**
@@ -37,7 +41,9 @@ class HerdController extends Controller
      */
     public function show(Herd $herd)
     {
-        //
+        return inertia('herds/Form', [
+            'herd' => $herd,
+        ]);
     }
 
     /**
@@ -45,7 +51,9 @@ class HerdController extends Controller
      */
     public function edit(Herd $herd)
     {
-        //
+        return inertia('herds/Form', [
+            'herd' => $herd,
+        ]);
     }
 
     /**
@@ -53,7 +61,8 @@ class HerdController extends Controller
      */
     public function update(UpdateHerdRequest $request, Herd $herd)
     {
-        //
+        $herd->update($request->validated());
+        return redirect()->route('herds.index')->with('success', 'Kandang berhasil diupdate.');
     }
 
     /**
@@ -61,6 +70,7 @@ class HerdController extends Controller
      */
     public function destroy(Herd $herd)
     {
-        //
+        $herd->delete();
+        return redirect()->route('herds.index')->with('success', 'Kandang berhasil dihapus.');
     }
 }

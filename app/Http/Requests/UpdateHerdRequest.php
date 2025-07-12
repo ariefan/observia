@@ -11,7 +11,7 @@ class UpdateHerdRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,12 @@ class UpdateHerdRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:100',
+            'description' => 'nullable|string',
+            'status' => 'nullable|string',
+            'type' => 'nullable|string',
+            'capacity' => 'nullable|integer|min:0',
+            'farm_id' => 'required|uuid',
         ];
     }
 }

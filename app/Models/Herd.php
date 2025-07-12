@@ -12,6 +12,6 @@ class Herd extends Model
     use HasUuids;
 
     protected $fillable = [
-        'name', 'description',
+        'farm_id', 'name', 'description', 'status', 'type', 'capacity',
     ];
 }
