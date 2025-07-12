@@ -4,29 +4,22 @@ import YoutubePlayer from '@/components/YoutubePlayer.vue';
 import Example1 from '@/assets/example-1.jpg';
 
 const products = ref([
-    { id: 'dQw4w9WgXcQ', title: 'Rick Astley - Never Gonna Give You Up' },
-    { id: '9bZkp7q19f0', title: 'PSY - GANGNAM STYLE(강남스타일)' },
-    { id: '3JZ_D3ELwOQ', title: 'Charlie Puth - Attention' },
-    { id: 'hTWKbfoikeg', title: 'Nirvana - Smells Like Teen Spirit' },
-    { id: 'e-ORhEE9VVg', title: 'Taylor Swift - Blank Space' },
-    { id: 'fLexgOxsZu0', title: 'Bruno Mars - 24K Magic' },
-    { id: 'L_jWHffIx5E', title: 'Beastie Boys - Sabotage' },
-    { id: 'RgKAFK5djSk', title: 'Wiz Khalifa - See You Again' },
-    { id: 'YykjpeuMNEk', title: 'Maroon 5 - Don’t Wanna Know' },
-    { id: 'uelHwf8o7_U', title: 'Eminem - Love The Way You Lie ft. Rihanna' }
+    { id: '2L4dQcAhHOw' },
+    { id: 'poD6VPc1JmQ' },
+    { id: 'o8uRaaZR1Ew' },
 ]);
 
 const articles = ref([
-    { id: 'dQw4w9WgXcQ', title: 'Rick Astley - Never Gonna Give You Up' },
-    { id: '9bZkp7q19f0', title: 'PSY - GANGNAM STYLE(강남스타일)' },
-    { id: '3JZ_D3ELwOQ', title: 'Charlie Puth - Attention' },
-    { id: 'hTWKbfoikeg', title: 'Nirvana - Smells Like Teen Spirit' },
-    { id: 'e-ORhEE9VVg', title: 'Taylor Swift - Blank Space' },
-    { id: 'fLexgOxsZu0', title: 'Bruno Mars - 24K Magic' },
-    { id: 'L_jWHffIx5E', title: 'Beastie Boys - Sabotage' },
-    { id: 'RgKAFK5djSk', title: 'Wiz Khalifa - See You Again' },
-    { id: 'YykjpeuMNEk', title: 'Maroon 5 - Don’t Wanna Know' },
-    { id: 'uelHwf8o7_U', title: 'Eminem - Love The Way You Lie ft. Rihanna' }
+    { id: 'dQw4w9WgXcQ' },
+    { id: '9bZkp7q19f0' },
+    { id: '3JZ_D3ELwOQ' },
+    { id: 'hTWKbfoikeg' },
+    { id: 'e-ORhEE9VVg' },
+    { id: 'fLexgOxsZu0' },
+    { id: 'L_jWHffIx5E' },
+    { id: 'RgKAFK5djSk' },
+    { id: 'YykjpeuMNEk' },
+    { id: 'uelHwf8o7_U' }
 ]);
 
 const responsiveOptions = ref([
