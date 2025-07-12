@@ -11,13 +11,15 @@ const props = defineProps({
     herd: Object,
 });
 
+// You must set farm_id to the current farm's id. Replace 'CURRENT_FARM_ID' with the actual farm id from your app context/store.
+const farmId = props.herd?.farm_id || (typeof window !== 'undefined' && window.currentFarmId ? window.currentFarmId : '');
 const form = useForm({
     name: props.herd?.name || '',
     description: props.herd?.description || '',
     status: props.herd?.status || '',
     type: props.herd?.type || '',
     capacity: props.herd?.capacity || 0,
-    farm_id: props.herd?.farm_id || '', // You may want to set this dynamically
+    farm_id: farmId,
 });
 
 const isEdit = !!props.herd;
@@ -44,6 +46,7 @@ const submit = () => {
             <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
                     <form @submit.prevent="submit">
+                        <input type="hidden" v-model="form.farm_id" />
                         <div class="mb-4">
                             <Label for="name">Nama Kandang</Label>
                             <Input id="name" v-model="form.name" />

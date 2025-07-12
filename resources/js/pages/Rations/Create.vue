@@ -49,6 +49,9 @@ const submit = () => {
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
                     <form @submit.prevent="submit">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            Nama Ransum
+                        </h3>
                         <div>
                             <Label for="name" value="Nama Ransum" />
                             <Input id="name" v-model="form.name" type="text" class="mt-1 block w-full" required
@@ -57,7 +60,7 @@ const submit = () => {
                         </div>
 
                         <div class="mt-4">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            <h3 class="font-medium text-gray-900 dark:text-gray-100">
                                 Komposisi
                             </h3>
 
@@ -65,13 +68,8 @@ const submit = () => {
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <Label :for="'feed_id_' + index">Jenis Pakan</Label>
-                                        <select v-model="item.feed_id" :id="'feed_id_' + index"
-                                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                            <option value="">Pilih Pakan</option>
-                                            <option v-for="feed in feeds" :key="feed.id" :value="feed.id">
-                                                {{ feed.name }}
-                                            </option>
-                                        </select>
+                                        <Input :id="'feed_id_' + index" v-model="item.feed_id_" type="number"
+                                            class="mt-1 block w-full" required />
                                     </div>
                                     <div>
                                         <Label :for="'quantity_' + index">Jumlah (Kg)</Label>
