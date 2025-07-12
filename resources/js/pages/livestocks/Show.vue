@@ -407,7 +407,7 @@ const milkingTrend = computed(() => {
 
           <!-- Big fat number -->
           <div
-            class="bg-white dark:bg-zinc-800 dark:text-white text-teal-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
+            class="bg-white dark:bg-zinc-800 dark:text-white text-teal-800 text-center py-4 rounded-b-lg text-3xl font-semibold">
             {{ livestock.age_in_year }} <span class="text-xl font-normal">th</span>
             {{ livestock.age_in_month % 12 }} <span class="text-xl font-normal">bl</span>
           </div>
@@ -423,7 +423,7 @@ const milkingTrend = computed(() => {
 
           <!-- Big fat number -->
           <div
-            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
+            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-3xl font-semibold">
             {{ livestock.weight }} <span class="text-sm font-normal">Kg</span>
           </div>
         </div>
@@ -438,7 +438,7 @@ const milkingTrend = computed(() => {
 
           <!-- Big fat number -->
           <div
-            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
+            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-3xl font-semibold">
             <template v-if="lactationDays > 0">
               {{(props.milkingHistory.reduce((sum, val) => sum + (val.total_volume || 0), 0) /
                 lactationDays).toFixed(1)}}
@@ -460,7 +460,7 @@ const milkingTrend = computed(() => {
 
           <!-- Big fat number -->
           <div
-            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
+            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-3xl font-semibold">
             <template v-if="rank && livestock.sex !== 'M'">
               {{ rank }}<span class="text-base font-normal">/{{ totalRanked }}</span>
             </template>
@@ -480,7 +480,7 @@ const milkingTrend = computed(() => {
 
           <!-- Big fat number -->
           <div
-            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
+            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-3xl font-semibold">
             <template v-if="livestock.sex !== 'M'">
               {{props.milkingHistory.reduce((sum, val) => sum + (val.total_volume || 0), 0).toFixed(1)}} <span
                 class="text-sm font-normal">
@@ -503,7 +503,7 @@ const milkingTrend = computed(() => {
 
           <!-- Big fat number -->
           <div
-            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-5xl font-semibold">
+            class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-3xl font-semibold">
             <template v-if="livestock.sex !== 'M'">
               {{ lactationDays }} <span class="text-sm font-normal">
                 hari
