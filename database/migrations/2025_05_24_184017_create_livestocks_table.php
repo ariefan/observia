@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('farm_id');
             $table->foreignUuid('breed_id')->nullable();
+            $table->foreignUuid('herd_id')->nullable()->after('breed_id');
             $table->string('aifarm_id')->unique()->nullable(); 
             $table->string('name')->nullable();
             $table->dateTime('birthdate')->nullable();

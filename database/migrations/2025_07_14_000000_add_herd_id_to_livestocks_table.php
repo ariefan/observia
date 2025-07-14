@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('livestocks', function (Blueprint $table) {
-            $table->foreignUuid('herd_id')->nullable()->after('breed_id');
+            // $table->foreignUuid('herd_id')->nullable()->after('breed_id');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('livestocks', function (Blueprint $table) {
-            $table->dropColumn('herd_id');
+            // $table->dropColumn('herd_id');
         });
     }
 };
