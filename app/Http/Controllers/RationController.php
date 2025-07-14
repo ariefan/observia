@@ -29,7 +29,7 @@ class RationController extends Controller
     public function create()
     {
         $feeds = Feed::where('farm_id', auth()->user()->current_farm_id)->get();
-        return Inertia::render('Rations/Index', [
+        return Inertia::render('Rations/Form', [
             'feeds' => $feeds,
         ]);
     }
