@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('ration_items', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('ration_id')->constrained()->onDelete('cascade');
-            $table->foreignUuid('feed_id')->constrained()->onDelete('cascade');
+            $table->text('feed')->after('ration_id');
             $table->decimal('quantity', 8, 2);
             $table->decimal('price', 15, 2);
             $table->foreignUuid('farm_id')->constrained()->onDelete('cascade');
