@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Herd;
 use App\Http\Requests\StoreHerdRequest;
 use App\Http\Requests\UpdateHerdRequest;
+use Illuminate\Http\Request;
 
 class HerdController extends Controller
 {
@@ -13,7 +14,13 @@ class HerdController extends Controller
      */
     public function index()
     {
-        $herds = Herd::where('farm_id', auth()->user()->current_farm_id)->get();
+        $herds = Herd::where('farm_id', auth()->user()->current_farm_id)
+            ->withCount('livestocks')
+            ->get()
+            ->map(function ($herd) {
+                $herd->current_capacity = $herd->livestocks_count;
+                return $herd;
+            });
         return inertia('herds/Index', [
             'herds' => $herds,
         ]);
@@ -72,5 +79,23 @@ class HerdController extends Controller
     {
         $herd->delete();
         return redirect()->route('herds.index')->with('success', 'Kandang berhasil dihapus.');
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('q');
+        $id = $request->input('id');
+
+        $herds = Herd::query()
+            ->where('farm_id', auth()->user()->current_farm_id)
+            ->when($id, fn ($q) => $q->where('id', $id))
+            ->when(!$id && $query, function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%");
+            })
+            ->select('id', 'name', 'capacity')
+            ->limit(10)
+            ->get();
+
+        return response()->json($herds);
     }
 }

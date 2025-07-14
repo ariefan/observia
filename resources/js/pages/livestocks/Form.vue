@@ -3,6 +3,7 @@ import { Head, Link, useForm } from "@inertiajs/vue3";
 import AppLayout from '@/layouts/AppLayout.vue';
 import { ref, onMounted, watch } from "vue";
 import _, { map } from "underscore";
+import axios from "axios";
 
 import { Check, Circle, Dot, ArrowLeft, ChevronsUpDown } from 'lucide-vue-next'
 
@@ -29,10 +30,6 @@ const props = defineProps({
 });
 
 const breeds = ref([]);
-const male_livestocks = ref([]);
-const male_livestock = ref(props.male_livestock);
-const female_livestocks = ref([]);
-const female_livestock = ref(props.female_livestock);
 const selected_male_parent = ref(null);
 const selected_female_parent = ref(null);
 
@@ -45,6 +42,7 @@ const form = useForm({
   status: props.livestock.status,
   species_id: props.livestock.breed?.species_id || props.livestock.species_id,
   breed_id: props.livestock.breed_id,
+  herd_id: props.livestock.herd_id,
   male_parent_id: props.livestock.male_parent_id,
   female_parent_id: props.livestock.female_parent_id,
   sex: props.livestock.sex,
@@ -64,64 +62,8 @@ const form = useForm({
   grant_date: props.livestock.grant_date,
   borrowed_from: props.livestock.borrowed_from,
   borrowed_date: props.livestock.borrowed_date,
-  entry_date: props.livestock.entry_date,
+  entry_date: props.livestock.entry_date || new Date().toISOString().slice(0, 10),
 });
-
-const submitStep1 = async (nextStep) => {
-  try {
-    // Process all images to ensure they are resized to 16:9 aspect ratio
-    if (livestockUploaderRef.value) {
-      const processedImages = await livestockUploaderRef.value.getAllImagesAsFiles()
-      console.log('Processed images for submission:', processedImages.map(f => ({
-        name: f.name,
-        size: `${(f.size / 1024 / 1024).toFixed(2)}MB`
-      })))
-      form.photo = processedImages
-    }
-
-    const options = {
-      onSuccess: (page) => {
-        console.log('Form submission successful:', page)
-        nextStep();
-      },
-      onError: (errors) => {
-        console.error('Form submission errors:', errors)
-      },
-      onFinish: () => {
-        console.log('Form submission finished')
-      }
-    };
-
-    console.log('Submitting form with data:', {
-      ...form.data(),
-      photo: form.photo ? `${form.photo.length} files` : 'no files'
-    })
-
-    if (props.livestock.id) {
-      form.put(route('livestocks.update', props.livestock.id), options);
-    } else {
-      form.post(route('livestocks.store'), options);
-    }
-  } catch (error) {
-    console.error('Error processing images before submission:', error)
-    // Continue with original photos if processing fails
-    const options = {
-      onSuccess: (page) => {
-        console.log('Form submission successful (fallback):', page)
-        nextStep();
-      },
-      onError: (errors) => {
-        console.error('Form submission errors (fallback):', errors)
-      }
-    };
-
-    if (props.livestock.id) {
-      form.put(route('livestocks.update', props.livestock.id), options);
-    } else {
-      form.post(route('livestocks.store'), options);
-    }
-  }
-};
 
 const saveAction = async () => {
   console.log('SaveAction called')
@@ -212,37 +154,6 @@ async function fetchBreeds() {
   }
 }
 
-const filterParentlivestocks = _.debounce((query, sex) => {
-  fetchLivestocks(query, sex);
-}, 500);
-
-const selectLivestock = (livestock, sex) => {
-  if (sex === "M") {
-    male_livestock.value = livestock.name;
-    form.male_parent_id = livestock.id;
-    male_livestocks.value = [];
-    selected_male_parent.value = livestock;
-  } else {
-    female_livestock.value = livestock.name;
-    form.female_parent_id = livestock.id;
-    female_livestocks.value = [];
-    selected_female_parent.value = livestock;
-  }
-};
-
-async function fetchLivestocks(query, sex) {
-  if (query.length > 2) {
-    const response = await fetch(
-      route("livestocks.search", { q: query, sex: sex })
-    );
-    if (sex === "M") {
-      male_livestocks.value = await response.json();
-    } else {
-      female_livestocks.value = await response.json();
-    }
-  }
-}
-
 // --- Combobox state for parent selection ---
 const maleParentQuery = ref('');
 const femaleParentQuery = ref('');
@@ -298,18 +209,20 @@ watch(selectedFemaleParent, (val) => {
   }
 });
 
-onMounted(() => {
+onMounted(async () => {
   console.log('Form mounted. Props livestock:', props.livestock)
   console.log('Form photo field:', form.photo)
 
   if (props.livestock.breed) {
     form.species_id = props.livestock.breed.species.id;
-    fetchBreeds();
+    await fetchBreeds();
   }
 
   // Fetch top 10 male and female parents on mount
-  fetchParentOptions('', 'M');
-  fetchParentOptions('', 'F');
+  await fetchParentOptions('', 'M');
+  await fetchParentOptions('', 'F');
+
+  loadHerds();
 
   if (props.livestock.male_parent) {
     selectedMaleParent.value = props.livestock.male_parent;
@@ -318,27 +231,68 @@ onMounted(() => {
   if (props.livestock.female_parent) {
     selectedFemaleParent.value = props.livestock.female_parent;
   }
-});
 
-watch(() => form.origin, (newOrigin) => {
-  if (newOrigin == 1) {
-    form.entry_date = form.birthdate;
+  // 💥 New logic: set selected herd from props if it exists
+  if (props.livestock.herd_id) {
+    try {
+      const response = await axios.get(`/api/herds?id=${props.livestock.herd_id}`);
+      const herd = response.data[0]; // Get first row if exists
+      console.log('Herd response:', herd)
+      if (herd) {
+        selectedHerd.value = herd;
+        form.herd_id = herd.id;
+      } else {
+        console.warn('🟠 Herd not found for ID:', props.livestock.herd_id);
+      }
+    } catch (error) {
+      console.error('🔥 Error fetching herd by ID:', error);
+    }
   }
+
 });
 
-watch(() => form.birthdate, (newBirthdate) => {
-  if (form.origin == 1) {
-    form.entry_date = newBirthdate;
-  }
-});
 
-const back = () => window.history.back();
 
-function onSubmit(values) {
-  console.log('submitted', values)
+
+
+
+
+const selectedHerd = ref(null)
+const searchQuery = ref('')
+const searchResults = ref([])
+
+const getDisplayValue = (herd) => {
+  return herd ? `${herd.name} (Kapasitas: ${herd.capacity})` : ''
 }
 
-const meta = { valid: true }
+const loadHerds = async (query = '') => {
+  try {
+    const response = await axios.get(route('herds.search', { q: query }))
+    searchResults.value = response.data
+  } catch (error) {
+    console.error('🚨 Error fetching herds:', error)
+    searchResults.value = []
+  }
+}
+
+watch(selectedHerd, (newValue) => {
+  if (newValue) {
+    form.herd_id = newValue.id;
+  }
+});
+
+// Watch search query and fetch
+watch(searchQuery, (newQuery) => {
+  loadHerds(newQuery)
+})
+
+
+
+
+
+
+
+const back = () => window.history.back();
 
 </script>
 
@@ -371,6 +325,35 @@ const meta = { valid: true }
                 <Label for="tag_id">ID Ternak</Label>
                 <Input id="tag_id" v-model="form.tag_id" type="text" />
                 <InputError :message="form.errors.tag_id" />
+              </div>
+              <div></div>
+              <div></div>
+              <div>
+                <Label for="herd_id">Kandang</Label>
+                <Combobox v-model="selectedHerd" v-model:search-term="searchQuery" :display-value="getDisplayValue">
+                  <ComboboxAnchor as-child>
+                    <ComboboxTrigger as-child>
+                      <Button variant="outline" class="justify-between w-full">
+                        {{ selectedHerd ? getDisplayValue(selectedHerd) : 'Pilih Kandang' }}
+                        <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </ComboboxTrigger>
+                  </ComboboxAnchor>
+
+                  <ComboboxList class="w-full">
+                    <ComboboxInput v-model="searchQuery" placeholder="Cari kandang..." />
+                    <ComboboxEmpty>Kandang tidak ditemukan.</ComboboxEmpty>
+                    <ComboboxGroup>
+                      <ComboboxItem v-for="result in searchResults" :key="result.id" :value="result">
+                        {{ `${result.name} (${result.capacity})` }}
+                        <ComboboxItemIndicator>
+                          <Check class="ml-auto h-4 w-4" />
+                        </ComboboxItemIndicator>
+                      </ComboboxItem>
+                    </ComboboxGroup>
+                  </ComboboxList>
+                </Combobox>
+                <InputError :message="form.errors.herd_id" />
               </div>
               <div>
                 <Label for="name">Nama</Label>

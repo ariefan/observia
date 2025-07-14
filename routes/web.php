@@ -58,6 +58,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/api/species/{species}/breeds', [SpeciesController::class, 'breeds']);
     Route::get('/api/livestocks', [LivestockController::class, 'search'])->name('livestocks.search');
+    Route::get('/api/herds', [HerdController::class, 'search'])->name('herds.search');
 
     Route::resources([
         'farms' => FarmController::class,

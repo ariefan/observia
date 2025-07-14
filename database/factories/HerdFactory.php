@@ -19,6 +19,7 @@ class HerdFactory extends Factory
         return [
             'name' => $this->faker->unique()->word(),
             'description' => $this->faker->sentence(),
+            'capacity' => $this->faker->numberBetween(10, 100),
             'created_at' => now(),
             'updated_at' => now(),
         ];

@@ -13,8 +13,11 @@ import { ref, reactive } from 'vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/InputError.vue';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 
 const showDialog = ref(false);
+const showDeleteDialog = ref(false);
+const herdToDelete = ref(null);
 const isEdit = ref(false);
 const form = reactive({
     id: null,
@@ -91,6 +94,29 @@ function submitForm() {
         });
     }
 }
+
+function openDeleteDialog(herd) {
+    herdToDelete.value = herd;
+    showDeleteDialog.value = true;
+}
+
+function closeDeleteDialog() {
+    showDeleteDialog.value = false;
+    herdToDelete.value = null;
+}
+
+function confirmDelete() {
+    if (herdToDelete.value) {
+        router.delete(route('herds.destroy', herdToDelete.value.id), {
+            onSuccess: () => {
+                closeDeleteDialog();
+            },
+            onError: () => {
+                closeDeleteDialog();
+            }
+        });
+    }
+}
 </script>
 
 <template>
@@ -137,18 +163,21 @@ function submitForm() {
                         <div
                             class="bg-card h-40 hover:border hover:border-primary/50 dark:hover:border-primary/50 rounded-lg shadow p-4 flex flex-col justify-between">
                             <div>
-                                <h3 class="text-lg font-bold">{{ herd.name }}</h3>
+                                <h3 class="text-lg font-bold">
+                                    {{ herd.name }}
+                                    <span class="ml-4 text-sm">
+                                        ({{ herd.current_capacity + ' / ' + herd.capacity }})
+                                    </span>
+                                </h3>
                                 <p class="text-sm text-gray-600 dark:text-gray-300">{{ herd.description }}</p>
                                 <!-- <p class="text-xs text-gray-500">Status: {{ herd.status || '-' }}</p> -->
                                 <!-- <p class="text-xs text-gray-500">Tipe: {{ herd.type || '-' }}</p> -->
-                                <!-- <p class="text-xs text-gray-500">Kapasitas: {{ herd.capacity }}</p> -->
                             </div>
                             <div class="flex gap-1 justify-end">
                                 <Button size="icon" variant="ghost" @click="openEditDialog(herd)">
                                     <Edit class="size-4" /> <!-- Edit icon -->
                                 </Button>
-                                <Button size="icon" variant="ghost"
-                                    @click="() => router.delete(route('herds.destroy', herd.id))">
+                                <Button size="icon" variant="ghost" @click="() => openDeleteDialog(herd)">
                                     <Trash2 class="size-4" /> <!-- Delete icon -->
                                 </Button>
                             </div>
@@ -160,6 +189,23 @@ function submitForm() {
                         <div class="text-center font-semibold text-primary text-sm">Tambah Kandang</div>
                         <PlusCircle class="size-10 text-primary" />
                     </div>
+                    <!-- Delete Confirmation Dialog -->
+                    <Dialog v-model:open="showDeleteDialog">
+                        <DialogContent>
+                            <DialogHeader>
+                                <h3 class="text-lg font-semibold">Konfirmasi Hapus</h3>
+                            </DialogHeader>
+                            <div class="my-4">
+                                <p>Apakah Anda yakin ingin menghapus kandang <span class="font-bold">{{
+                                        herdToDelete?.name
+                                        }}</span>?</p>
+                            </div>
+                            <DialogFooter>
+                                <Button variant="outline" @click="closeDeleteDialog">Batal</Button>
+                                <Button variant="destructive" @click="confirmDelete">Hapus</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
                 <!-- Dialog/Modal for Herd Form -->
                 <div v-if="showDialog"
@@ -189,12 +235,12 @@ function submitForm() {
                                 <Label for="type">Tipe</Label>
                                 <Input id="type" v-model="form.type" />
                                 <InputError :message="form.errors.type" />
-                            </div>
+                            </div> -->
                             <div class="mb-4">
                                 <Label for="capacity">Kapasitas</Label>
                                 <Input id="capacity" type="number" v-model="form.capacity" />
                                 <InputError :message="form.errors.capacity" />
-                            </div> -->
+                            </div>
                             <div class="flex items-center justify-end mt-4">
                                 <Button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                                     Simpan

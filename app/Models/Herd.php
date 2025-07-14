@@ -14,4 +14,16 @@ class Herd extends Model
     protected $fillable = [
         'farm_id', 'name', 'description', 'status', 'type', 'capacity',
     ];
+
+    protected $appends = ['current_capacity'];
+
+    public function livestocks()
+    {
+        return $this->hasMany(Livestock::class);
+    }
+
+    public function getCurrentCapacityAttribute()
+    {
+        return $this->livestocks()->count();
+    }
 }

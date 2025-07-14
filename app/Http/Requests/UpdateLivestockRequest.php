@@ -34,6 +34,7 @@ class UpdateLivestockRequest extends FormRequest
             'birth_weight' => ['nullable', 'numeric'],
             'weight' => ['nullable', 'numeric'],
             'breed_id' => ['required', 'uuid', 'exists:breeds,id'],
+            'herd_id' => ['nullable', 'uuid', 'exists:herds,id'],
             'male_parent_id' => ['nullable', 'uuid', 'exists:livestocks,id'],
             'female_parent_id' => ['nullable', 'uuid', 'exists:livestocks,id'],
             'photo' => ['nullable', 'array'],
