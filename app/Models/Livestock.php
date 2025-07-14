@@ -21,7 +21,7 @@ class Livestock extends Model
     protected $appends = ['age_in_year', 'age_in_month'];
     protected $fillable = [
         'name', 'birthdate', 'sex', 'purchase_date', 'origin', 'status', 'tag_type',
-        'tag_id', 'birth_weight', 'weight', 'breed_id', 'male_parent_id', 'female_parent_id',
+        'tag_id', 'birth_weight', 'weight', 'breed_id', 'herd_d', 'male_parent_id', 'female_parent_id',
         'farm_id', 'barter_livestock_id', 'barter_from', 'barter_date', 'photo', 'purchase_price',
         'purchase_from', 'grant_from', 'grant_date', 'borrowed_from', 'borrowed_date', 'entry_date',
     ];

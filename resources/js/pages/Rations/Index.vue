@@ -17,6 +17,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Users, Building2 } from 'lucide-vue-next';
 
 const props = defineProps({
     rations: Object,
@@ -53,11 +54,11 @@ const totalCost = (rationItems) => {
                 <nav class="space-y-2">
                     <Link :href="route('rations.index')"
                         class="flex items-center gap-2 text-sm font-semibold text-white bg-primary rounded-full px-4 py-2 transition-colors">
-                    <Building2 class="size-4" /> Pakan
+                    Pakan
                     </Link>
                     <Link :href="route('herds.index')"
                         class="flex items-center gap-2 text-sm font-semibold hover:bg-primary hover:text-white rounded-full px-4 py-2 transition-colors">
-                    <Users class="size-4" /> Kandang
+                    Kandang
                     </Link>
                 </nav>
             </aside>
