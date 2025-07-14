@@ -13,5 +13,12 @@ class HerdSeeder extends Seeder
     public function run(): void
     {
         //
+        // Create 10 herds for each farm
+        $farms = \App\Models\Farm::all();
+        foreach ($farms as $farm) {
+            \App\Models\Herd::factory()
+                ->count(10)
+                ->create(['farm_id' => $farm->id]);
+        }
     }
 }

@@ -13,7 +13,7 @@ class HerdController extends Controller
      */
     public function index()
     {
-        $herds = Herd::all();
+        $herds = Herd::where('farm_id', auth()->user()->current_farm_id)->get();
         return inertia('herds/Index', [
             'herds' => $herds,
         ]);

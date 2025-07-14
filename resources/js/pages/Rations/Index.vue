@@ -47,18 +47,32 @@ const totalCost = (rationItems) => {
             </h2>
         </template>
 
-        <div class="py-4">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="flex min-h-screen">
+            <!-- Sidebar -->
+            <aside class="w-56 bg-teal-50 dark:bg-teal-950 p-2 shadow-xl -mt-2">
+                <nav class="space-y-2">
+                    <Link :href="route('rations.index')"
+                        class="flex items-center gap-2 text-sm font-semibold text-white bg-primary rounded-full px-4 py-2 transition-colors">
+                    <Building2 class="size-4" /> Pakan
+                    </Link>
+                    <Link :href="route('herds.index')"
+                        class="flex items-center gap-2 text-sm font-semibold hover:bg-primary hover:text-white rounded-full px-4 py-2 transition-colors">
+                    <Users class="size-4" /> Kandang
+                    </Link>
+                </nav>
+            </aside>
+
+            <div class="flex-1 flex flex-col gap-4 p-4 max-w-7xl mx-auto">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
                     <Tabs default-value="ration" class="w-full">
                         <TabsList class="grid w-full grid-cols-6">
-                            <TabsTrigger class="text-primary" value="ration">
+                            <TabsTrigger class="text-primary font-semibold" value="ration">
                                 Stok Ransum
                             </TabsTrigger>
-                            <TabsTrigger class="text-primary" value="history">
+                            <TabsTrigger class="text-primary font-semibold" value="history">
                                 Riwayat Ransum
                             </TabsTrigger>
-                            <TabsTrigger class="text-primary" value="feed">
+                            <TabsTrigger class="text-primary font-semibold" value="feed">
                                 Pakan
                             </TabsTrigger>
                         </TabsList>
@@ -67,7 +81,8 @@ const totalCost = (rationItems) => {
                                 <CardHeader>
                                     <CardTitle>Stok Ransum</CardTitle>
                                     <CardDescription>
-                                        Pastikan ketersediaan pakan selalu terjaga. Hindari kehabisan pakan yang dapat
+                                        Pastikan ketersediaan pakan selalu terjaga. Hindari kehabisan pakan yang
+                                        dapat
                                         mengganggu kesehatan ternak dan produktivitas peternakan
                                     </CardDescription>
                                 </CardHeader>
@@ -117,7 +132,7 @@ const totalCost = (rationItems) => {
                                                     </TableRow>
                                                 </template>
                                                 <TableRow v-if="rations.length === 0">
-                                                    <TableCell colspan="4" class="px-6 py-4 text-center">
+                                                    <TableCell colspan="5" class="px-6 py-4 text-center">
                                                         Belum ada data ransum.
                                                     </TableCell>
                                                 </TableRow>
@@ -132,7 +147,8 @@ const totalCost = (rationItems) => {
                                 <CardHeader>
                                     <CardTitle>Riwayat Ransum</CardTitle>
                                     <CardDescription>
-                                        Selalu dapatkan informasi akurat tentang ketersediaan stok pakan ternak Anda,
+                                        Selalu dapatkan informasi akurat tentang ketersediaan stok pakan ternak
+                                        Anda,
                                         sehingga Anda dapat membuat keputusan pembelian yang tepat.
                                     </CardDescription>
                                 </CardHeader>
@@ -158,7 +174,8 @@ const totalCost = (rationItems) => {
                                         </div>
                                     </CardTitle>
                                     <CardDescription>
-                                        Hindari pemborosan pakan dengan melacak sisa pakan secara detail, sehingga Anda
+                                        Hindari pemborosan pakan dengan melacak sisa pakan secara detail, sehingga
+                                        Anda
                                         dapat menghemat biaya dan meningkatkan efisiensi peternakan.
                                     </CardDescription>
                                 </CardHeader>

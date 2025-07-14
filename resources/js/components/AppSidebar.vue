@@ -26,6 +26,11 @@ const mainNavItems: NavItem[] = [
             href: '/livestocks',
             icon: PawPrint,
         },
+        {
+            title: 'Data',
+            href: '/rations',
+            icon: Database,
+        }
             // {
             //     title: 'Produktivitas',
             //     href: '/dashboard',
@@ -41,11 +46,6 @@ const mainNavItems: NavItem[] = [
             //     href: '/dashboard',
             //     icon: Heart,
             // },
-            // {
-            //     title: 'Data',
-            //     href: '/dashboard',
-            //     icon: Database,
-            // }
         ]
         :
         [{
