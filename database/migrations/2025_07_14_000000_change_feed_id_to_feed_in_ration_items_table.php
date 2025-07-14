@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ration_items', function (Blueprint $table) {
-            $table->dropForeign(['feed_id']);
-            $table->dropColumn('feed_id');
-            $table->text('feed')->after('ration_id');
+            // $table->dropForeign(['feed_id']);
+            // $table->dropColumn('feed_id');
+            // $table->text('feed')->after('ration_id');
         });
     }
 
@@ -24,8 +24,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ration_items', function (Blueprint $table) {
-            $table->dropColumn('feed');
-            $table->foreignUuid('feed_id')->constrained()->onDelete('cascade')->after('ration_id');
+            // $table->dropColumn('feed');
+            // $table->foreignUuid('feed_id')->constrained()->onDelete('cascade')->after('ration_id');
         });
     }
 };
