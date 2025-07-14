@@ -69,7 +69,7 @@ const submit = () => {
                                     :key="index">
                                     <div>
                                         <Label :for="'feed_id_' + index">Jenis Pakan</Label>
-                                        <Input :id="'feed_id_' + index" v-model="item.feed_id_" type="number"
+                                        <Input :id="'feed_id_' + index" v-model="item.feed_id_" type="text"
                                             class="mt-1 block w-full" required />
                                     </div>
                                     <div>

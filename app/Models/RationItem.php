@@ -18,10 +18,10 @@ class RationItem extends Model
         return $this->belongsTo(Ration::class);
     }
 
-    public function feed(): BelongsTo
-    {
-        return $this->belongsTo(Feed::class);
-    }
+    // public function feed(): BelongsTo
+    // {
+    //     return $this->belongsTo(Feed::class);
+    // }
 
     public function farm(): BelongsTo
     {
