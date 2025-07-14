@@ -19,8 +19,8 @@ class Feed extends Model
         return $this->belongsTo(Farm::class);
     }
 
-    public function rationItems(): HasMany
-    {
-        return $this->hasMany(RationItem::class);
-    }
+    // public function rationItems(): HasMany
+    // {
+    //     return $this->hasMany(RationItem::class);
+    // }
 }

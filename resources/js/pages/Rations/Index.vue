@@ -17,7 +17,18 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Users, Building2 } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import { Users, Building2, Pencil, Trash } from 'lucide-vue-next';
+
+import {
+    Dialog,
+    DialogTrigger,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogClose
+} from '@/components/ui/dialog';
 
 const props = defineProps({
     rations: Object,
@@ -27,11 +38,9 @@ const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
 };
 
-const totalFeeds = (rationItems) => {
-    return rationItems.length;
-};
+const totalFeeds = (rationItems = []) => rationItems.length;
 
-const totalCost = (rationItems) => {
+const totalCost = (rationItems = []) => {
     return rationItems.reduce((acc, item) => acc + (item.quantity * item.price), 0);
 };
 
@@ -120,15 +129,37 @@ const totalCost = (rationItems) => {
                                                             {{ formatCurrency(totalCost(ration.ration_items)) }}
                                                         </TableCell>
                                                         <TableCell class="text-right">
-                                                            <Link :href="route('rations.edit', ration.id)"
-                                                                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                                                            Edit
+                                                            <Link :href="route('rations.edit', ration.id)">
+                                                            <Button variant="ghost" size="icon">
+                                                                <Pencil class="w-4 h-4" />
+                                                            </Button>
                                                             </Link>
-                                                            <Link :href="route('rations.destroy', ration.id)"
-                                                                method="delete" as="button"
-                                                                class="font-medium text-red-600 dark:text-red-500 hover:underline ml-4">
-                                                            Hapus
-                                                            </Link>
+                                                            <Dialog>
+                                                                <DialogTrigger as-child>
+                                                                    <Button variant="destructive" size="icon">
+                                                                        <Trash class="w-4 h-4" />
+                                                                    </Button>
+                                                                </DialogTrigger>
+                                                                <DialogContent>
+                                                                    <DialogHeader>
+                                                                        <DialogTitle>Hapus Ransum?</DialogTitle>
+                                                                        <div class="text-sm text-muted-foreground">
+                                                                            Apakah Anda yakin ingin menghapus ransum
+                                                                            ini? Tindakan ini tidak dapat dibatalkan.
+                                                                        </div>
+                                                                    </DialogHeader>
+                                                                    <div class="flex justify-end gap-2">
+                                                                        <DialogClose as-child>
+                                                                            <Button variant="outline">Batal</Button>
+                                                                        </DialogClose>
+                                                                        <Link
+                                                                            :href="route('rations.destroy', ration.id)"
+                                                                            method="delete" as="button">
+                                                                        <Button variant="destructive">Hapus</Button>
+                                                                        </Link>
+                                                                    </div>
+                                                                </DialogContent>
+                                                            </Dialog>
                                                         </TableCell>
                                                     </TableRow>
                                                 </template>

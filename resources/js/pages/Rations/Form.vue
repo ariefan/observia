@@ -5,20 +5,26 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/InputError.vue';
-import { ref } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 const props = defineProps({
-    feeds: Object,
+    ration: Object, // optional for edit
 });
 
+const isEditMode = computed(() => !!props.ration);
+
 const form = useForm({
-    name: '',
-    items: [],
+    name: props.ration?.name || '',
+    items: props.ration?.ration_items?.map(item => ({
+        feed: item.feed,
+        quantity: item.quantity,
+        price: item.price,
+    })) || [],
 });
 
 const addItem = () => {
     form.items.push({
-        feed_id: '',
+        feed: '',
         quantity: 0,
         price: 0,
     });
@@ -29,19 +35,22 @@ const removeItem = (index) => {
 };
 
 const submit = () => {
-    form.post(route('rations.store'));
+    if (isEditMode.value) {
+        form.put(route('rations.update', props.ration.id));
+    } else {
+        form.post(route('rations.store'));
+    }
 };
-
 </script>
 
 <template>
 
-    <Head title="Buat Ransum" />
+    <Head :title="isEditMode ? 'Edit Ransum' : 'Buat Ransum'" />
 
     <AppLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Buat Catatan Ransum
+                {{ isEditMode ? 'Edit Catatan Ransum' : 'Buat Catatan Ransum' }}
             </h2>
         </template>
 
@@ -54,8 +63,7 @@ const submit = () => {
                         </h3>
                         <div>
                             <Label for="name" value="Nama Ransum" />
-                            <Input id="name" v-model="form.name" type="text" class="mt-1 block w-full" required
-                                autofocus autocomplete="name" />
+                            <Input id="name" v-model="form.name" type="text" class="mt-1 block w-full" required />
                             <InputError class="mt-2" :message="form.errors.name" />
                         </div>
 
@@ -65,29 +73,41 @@ const submit = () => {
                             </h3>
 
                             <div class="mt-4 p-4 border rounded-md" v-if="form.items.length > 0">
-                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4" v-for="(item, index) in form.items"
-                                    :key="index">
-                                    <div>
-                                        <Label :for="'feed_id_' + index">Jenis Pakan</Label>
-                                        <Input :id="'feed_id_' + index" v-model="item.feed_id_" type="text"
+                                <div
+                                    class="grid grid-cols-12 gap-4 font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2">
+                                    <div class="col-span-4">Jenis Pakan</div>
+                                    <div class="col-span-3">Jumlah (Kg)</div>
+                                    <div class="col-span-3">Harga</div>
+                                    <div class="col-span-2 text-right">Aksi</div>
+                                </div>
+
+                                <div v-for="(item, index) in form.items" :key="index"
+                                    class="grid grid-cols-12 gap-4 items-start mb-2">
+                                    <div class="col-span-4">
+                                        <Input :id="'feed_' + index" v-model="item.feed" type="text"
                                             class="mt-1 block w-full" required />
+                                        <InputError class="mt-1" :message="form.errors[`items.${index}.feed`]" />
                                     </div>
-                                    <div>
-                                        <Label :for="'quantity_' + index">Jumlah (Kg)</Label>
+
+                                    <div class="col-span-3">
                                         <Input :id="'quantity_' + index" v-model="item.quantity" type="number"
                                             class="mt-1 block w-full" required />
+                                        <InputError class="mt-1" :message="form.errors[`items.${index}.quantity`]" />
                                     </div>
-                                    <div>
-                                        <Label :for="'price_' + index">Harga</Label>
+
+                                    <div class="col-span-3">
                                         <Input :id="'price_' + index" v-model="item.price" type="number"
                                             class="mt-1 block w-full" required />
+                                        <InputError class="mt-1" :message="form.errors[`items.${index}.price`]" />
                                     </div>
-                                    <div class="pt-1">
-                                        <Button variant="destructive" type="button" @click="removeItem(index)"
-                                            class="mt-6">Hapus</Button>
+
+                                    <div class="col-span-2 flex justify-end pt-1">
+                                        <Button variant="destructive" type="button"
+                                            @click="removeItem(index)">Hapus</Button>
                                     </div>
                                 </div>
                             </div>
+
 
                             <div class="mt-4">
                                 <button type="button" @click="addItem"
@@ -100,7 +120,7 @@ const submit = () => {
                         <div class="flex items-center justify-end mt-4">
                             <Link :href="route('rations.index')" class="mr-4">Batal</Link>
                             <Button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                                Simpan
+                                {{ isEditMode ? 'Update' : 'Simpan' }}
                             </Button>
                         </div>
                     </form>
