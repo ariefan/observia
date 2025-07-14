@@ -185,7 +185,7 @@ class Livestock extends Model
         });
 
         static::created(function ($model) {
-            if ($model->weight) {
+            if ($model->weight && auth()->check()) {
                 $model->weights()->create([
                     'weight' => $model->weight,
                     'date' => now(),

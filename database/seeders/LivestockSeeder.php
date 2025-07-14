@@ -83,8 +83,11 @@ class LivestockSeeder extends Seeder
     /**
      * Create weight data for livestock for the last 3 months
      */
-    private function createWeightData(Livestock $livestock, string $userId): void
+    private function createWeightData(Livestock $livestock, $userId): void
     {
+        if (!$userId) {
+            throw new \Exception("userId is NULL for livestock {$livestock->id}");
+        }
         $startDate = Carbon::now()->subMonths(3);
         $endDate = Carbon::now();
         
@@ -118,7 +121,7 @@ class LivestockSeeder extends Seeder
     /**
      * Create milking data for female livestock for the last 3 months
      */
-    private function createMilkingData(Livestock $livestock, string $userId): void
+    private function createMilkingData(Livestock $livestock, $userId): void
     {
         $startDate = Carbon::now()->subMonths(3);
         $endDate = Carbon::now();
