@@ -43,6 +43,18 @@ class LivestockSeeder extends Seeder
 
             $user->farms()->attach($farm, ['role' => 'admin']);
 
+            // Create 10 herds for each farm
+            for ($h = 0; $h < 10; $h++) {
+                \App\Models\Herd::create([
+                    'farm_id' => $farm->id,
+                    'name' => 'Kandang ' . ($h + 1),
+                    'description' => 'Deskripsi kandang ' . ($h + 1),
+                    'capacity' => rand(10, 30),
+                    'status' => 'active',
+                    'type' => 'default',
+                ]);
+            }
+
             $livestocks = Livestock::factory()->count(8)->create([
                 'farm_id' => $farm->id,
                 'breed_id' => $breeds->random()->id,
@@ -71,7 +83,6 @@ class LivestockSeeder extends Seeder
             // Add weight and milking data for the last 3 months
             foreach ($livestocks as $livestock) {
                 $this->createWeightData($livestock, $user->id);
-                
                 // Only create milking data for female livestock
                 if ($livestock->sex === 'F') {
                     $this->createMilkingData($livestock, $user->id);
