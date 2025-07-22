@@ -48,8 +48,10 @@ class HerdController extends Controller
      */
     public function show(Herd $herd)
     {
-        return inertia('herds/Form', [
+        $herd->load('livestocks');
+        return inertia('herds/Show', [
             'herd' => $herd,
+            'livestocks' => $herd->livestocks,
         ]);
     }
 

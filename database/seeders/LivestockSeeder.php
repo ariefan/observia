@@ -43,9 +43,10 @@ class LivestockSeeder extends Seeder
 
             $user->farms()->attach($farm, ['role' => 'admin']);
 
-            // Create 10 herds for each farm
-            for ($h = 0; $h < 10; $h++) {
-                \App\Models\Herd::create([
+            // Create 3 herds for each farm
+            $herds = [];
+            for ($h = 0; $h < 3; $h++) {
+                $herds[] = \App\Models\Herd::create([
                     'farm_id' => $farm->id,
                     'name' => 'Kandang ' . ($h + 1),
                     'description' => 'Deskripsi kandang ' . ($h + 1),
@@ -55,10 +56,20 @@ class LivestockSeeder extends Seeder
                 ]);
             }
 
-            $livestocks = Livestock::factory()->count(8)->create([
+            $livestocks = Livestock::factory()->count(12)->create([
                 'farm_id' => $farm->id,
                 'breed_id' => $breeds->random()->id,
             ]);
+
+            // Assign 4 livestocks to each herd
+            foreach ($herds as $index => $herd) {
+                $start = $index * 4;
+                $end = $start + 4;
+                foreach ($livestocks->slice($start, 4) as $livestock) {
+                    $livestock->herd_id = $herd->id;
+                    $livestock->save();
+                }
+            }
 
             foreach ($livestocks as $livestock) {
                 $livestock->update(['aifarm_id' => generateAifarmId()]);

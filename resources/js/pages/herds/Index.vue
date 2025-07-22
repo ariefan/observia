@@ -163,8 +163,11 @@ function confirmDelete() {
                         <div
                             class="bg-card h-40 hover:border hover:border-primary/50 dark:hover:border-primary/50 rounded-lg shadow p-4 flex flex-col justify-between">
                             <div>
-                                <h3 class="text-lg font-bold">
-                                    {{ herd.name }}
+                                <h3 class="font-bold">
+                                    <Button variant="link" class="text-lg text-left px-0"
+                                        @click="() => router.visit(route('herds.show', herd.id))">
+                                        {{ herd.name }}
+                                    </Button>
                                     <span class="ml-4 text-sm">
                                         ({{ herd.current_capacity + ' / ' + herd.capacity }})
                                     </span>
@@ -197,7 +200,7 @@ function confirmDelete() {
                             </DialogHeader>
                             <div class="my-4">
                                 <p>Apakah Anda yakin ingin menghapus kandang <span class="font-bold">{{
-                                        herdToDelete?.name
+                                    herdToDelete?.name
                                         }}</span>?</p>
                             </div>
                             <DialogFooter>
