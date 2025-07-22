@@ -110,7 +110,7 @@ const totalCost = (rationItems = []) => {
                                                     <TableHead>Total Harga</TableHead>
                                                     <TableHead class="text-right">
                                                         <Link :href="route('rations.create')">
-                                                        <Button size="small">Tambah Ransum</Button>
+                                                        <Button>Tambah Ransum</Button>
                                                         </Link>
                                                     </TableHead>
                                                 </TableRow>
