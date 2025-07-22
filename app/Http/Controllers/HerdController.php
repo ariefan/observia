@@ -39,7 +39,9 @@ class HerdController extends Controller
      */
     public function store(StoreHerdRequest $request)
     {
-        $herd = Herd::create($request->validated());
+        $data = $request->validated();
+        $data['farm_id'] = auth()->user()->current_farm_id;
+        $herd = Herd::create($data);
         return redirect()->route('herds.index')->with('success', 'Kandang berhasil ditambahkan.');
     }
 

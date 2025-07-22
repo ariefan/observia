@@ -27,7 +27,7 @@ class UpdateHerdRequest extends FormRequest
             'status' => 'nullable|string',
             'type' => 'nullable|string',
             'capacity' => 'nullable|integer|min:0',
-            'farm_id' => 'required|uuid',
+            // 'farm_id' => 'required|uuid',
         ];
     }
 }
