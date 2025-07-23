@@ -24,5 +24,5 @@ return new class extends Migration
         Schema::table('livestocks', function (Blueprint $table) {
             // $table->dropColumn('herd_entry_date');
         });
-    }.
+    }
 };
