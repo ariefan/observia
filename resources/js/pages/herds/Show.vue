@@ -113,7 +113,12 @@ const getPhotoUrl = (photoPath) => {
                                                     </div>
                                                     <div>
                                                         <p>Tgl Masuk Kandang</p>
-                                                        <strong>{{ l.entry_date || '-' }}</strong>
+                                                        <strong>{{ l.herd_entry_date ? new
+                                                            Date(l.herd_entry_date).toLocaleDateString('id-ID', {
+                                                                day:
+                                                                    'numeric', month:
+                                                                    'long', year: 'numeric'
+                                                            }) : '-' }}</strong>
                                                     </div>
                                                 </div>
                                             </div>

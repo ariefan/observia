@@ -22,10 +22,10 @@ return new class extends Migration
             $table->string('sex')->default('F');
             $table->string('origin')->default(1);
             $table->string('status')->default(1);
-            $table->string('tag_type')->nullable();           
-            $table->string('tag_id');             
-            $table->decimal('birth_weight')->nullable();      
-            $table->decimal('weight')->nullable();            
+            $table->string('tag_type')->nullable();
+            $table->string('tag_id');
+            $table->decimal('birth_weight')->nullable();
+            $table->decimal('weight')->nullable();
             $table->json('photo')->nullable();
             $table->foreignUuid('male_parent_id')->nullable()->constrained('livestocks');
             $table->foreignUuid('female_parent_id')->nullable()->constrained('livestocks');

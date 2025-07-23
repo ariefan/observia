@@ -499,7 +499,7 @@ const back = () => window.history.back();
               </div>
               <div>
                 <Label for="weight">Bobot Sekarang (kg)</Label>
-                <Input id="weight" v-model="form.weight" type="number" step="0.01" :disabled="form.weight" />
+                <Input id="weight" v-model="form.weight" type="number" step="0.01" />
                 <InputError :message="form.errors.weight" />
               </div>
             </div>

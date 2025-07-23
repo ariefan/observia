@@ -84,9 +84,13 @@ class LivestockController extends Controller
         }
 
         $countLivestock = Livestock::query()->count();
-
         $livestock->photo = $photos;
         $livestock->aifarm_id = Livestock::generateAifarmId($countLivestock);
+
+        if (!empty($livestock->herd_id)) {
+            $livestock->herd_entry_date = now();
+        }
+
         $livestock->save();
 
         // Automatically create initial weight record
@@ -330,8 +334,12 @@ class LivestockController extends Controller
             }
         }
 
+        // If herd_id is changed, update herd_entry_date to now
+        if ($livestock->isDirty('herd_id')) {
+            $livestock->herd_entry_date = now();
+        }
+
         $livestock->photo = $photos;
-        
         $livestock->save();
         return redirect()->route('livestocks.show', $livestock);
     }

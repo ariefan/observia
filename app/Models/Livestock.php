@@ -23,7 +23,7 @@ class Livestock extends Model
         'name', 'birthdate', 'sex', 'purchase_date', 'origin', 'status', 'tag_type',
         'tag_id', 'birth_weight', 'weight', 'breed_id', 'herd_id', 'male_parent_id', 'female_parent_id',
         'farm_id', 'barter_livestock_id', 'barter_from', 'barter_date', 'photo', 'purchase_price',
-        'purchase_from', 'grant_from', 'grant_date', 'borrowed_from', 'borrowed_date', 'entry_date',
+        'purchase_from', 'grant_from', 'grant_date', 'borrowed_from', 'borrowed_date', 'entry_date', 'herd_entry_date',
     ];
 
     public function breed(): BelongsTo
