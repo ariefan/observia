@@ -40,6 +40,7 @@ return new class extends Migration
             $table->string('borrowed_from')->nullable();
             $table->date('borrowed_date')->nullable();
             $table->date('entry_date')->nullable();
+            $table->date('herd_entry_date')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
