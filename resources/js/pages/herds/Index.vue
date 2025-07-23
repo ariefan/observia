@@ -149,9 +149,8 @@ function confirmDelete() {
                     <div class="flex justify-between items-center">
                         <div>
                             <h3 class="text-lg font-semibold text-primary">Kandang</h3>
-                            <p class="text-sm">Temukan dan kelola informasi lengkap menegnai semua kandang yang ada
-                                dalam
-                                peternakan Anda.</p>
+                            <p class="text-sm">Temukan dan kelola informasi lengkap mengenai semua kandang yang ada
+                                dalam peternakan Anda.</p>
                         </div>
                         <!-- <Link :href="route('herds.create')">
                         <Button type="button">Tambah Kandang</Button>
