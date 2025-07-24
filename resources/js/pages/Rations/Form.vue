@@ -75,35 +75,50 @@ const submit = () => {
 
                             <div class="mt-4 p-4 border rounded-md" v-if="form.items.length > 0">
                                 <div
-                                    class="grid grid-cols-12 gap-4 font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2">
-                                    <div class="col-span-4">Jenis Pakan</div>
-                                    <div class="col-span-3">Jumlah (Kg)</div>
-                                    <div class="col-span-3">Harga</div>
-                                    <div class="col-span-2 text-right">Aksi</div>
+                                    class="grid grid-cols-5 gap-4 font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2">
+                                    <div>Jenis Pakan</div>
+                                    <div>Jumlah (Kg)</div>
+                                    <div>Harga Total</div>
+                                    <div class="text-right">Harga / kg</div>
+                                    <div class="text-right">Aksi</div>
                                 </div>
 
                                 <div v-for="(item, index) in form.items" :key="index"
-                                    class="grid grid-cols-12 gap-4 items-start mb-2">
-                                    <div class="col-span-4">
-                                        <Input :id="'feed_' + index" v-model="item.feed" type="text"
+                                    class="grid grid-cols-5 gap-4 items-start">
+                                    <div>
+                                        <Input :id="'feed_' + index" v-model="item.feed" type="text" size="sm"
                                             class="mt-1 block w-full" required />
                                         <InputError class="mt-1" :message="form.errors[`items.${index}.feed`]" />
                                     </div>
 
-                                    <div class="col-span-3">
-                                        <Input :id="'quantity_' + index" v-model="item.quantity" type="number"
-                                            class="mt-1 block w-full" required />
+                                    <div>
+                                        <Input :id="'quantity_' + index" v-model="item.quantity" type="number" size="sm"
+                                            class="mt-1 block w-full" required min="0" step="any" />
                                         <InputError class="mt-1" :message="form.errors[`items.${index}.quantity`]" />
                                     </div>
 
-                                    <div class="col-span-3">
-                                        <Input :id="'price_' + index" v-model="item.price" type="number"
-                                            class="mt-1 block w-full" required />
+                                    <div>
+                                        <Input :id="'price_' + index" v-model="item.price" type="number" size="sm"
+                                            class="mt-1 block w-full" required min="0" step="any" />
                                         <InputError class="mt-1" :message="form.errors[`items.${index}.price`]" />
                                     </div>
 
-                                    <div class="col-span-2 flex justify-end pt-1">
-                                        <Button variant="ghost" :size="icon" @click="removeItem(index)">
+                                    <div class="flex justify-end">
+                                        <span class="block w-full pt-2.5 rounded text-right">
+                                            {{
+                                                item.quantity > 0
+                                                    ? (item.price / item.quantity).toLocaleString('id-ID', {
+                                                        style: 'currency',
+                                                        currency: 'IDR',
+                                                        maximumFractionDigits: 2
+                                                    }) + ' / kg'
+                                                    : '-'
+                                            }}
+                                        </span>
+                                    </div>
+
+                                    <div class="flex justify-end mt-2">
+                                        <Button variant="ghost" size="icon" @click="removeItem(index)">
                                             <X class="size-4 font-bold" />
                                         </Button>
                                     </div>

@@ -41,7 +41,7 @@ const formatCurrency = (value) => {
 const totalFeeds = (rationItems = []) => rationItems.length;
 
 const totalCost = (rationItems = []) => {
-    return rationItems.reduce((acc, item) => acc + (item.quantity * item.price), 0);
+    return rationItems.reduce((acc, item) => acc + (item.price), 0);
 };
 
 </script>
@@ -219,11 +219,8 @@ const totalCost = (rationItems = []) => {
                                         <div class="flex items-center justify-between">
                                             Pakan
                                             <div>
-                                                <Link :href="route('herds.index')">
-                                                <Button size="small" class="mr-4">Kandang</Button>
-                                                </Link>
                                                 <Link :href="route('rations.create')">
-                                                <Button size="small">Catat sisa pakan</Button>
+                                                <Button size="sm">Catat sisa pakan</Button>
                                                 </Link>
                                             </div>
                                         </div>
