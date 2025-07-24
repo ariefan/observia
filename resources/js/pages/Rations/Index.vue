@@ -227,8 +227,7 @@ const totalCost = (rationItems = []) => {
                                     </CardTitle>
                                     <CardDescription>
                                         Hindari pemborosan pakan dengan melacak sisa pakan secara detail, sehingga
-                                        Anda
-                                        dapat menghemat biaya dan meningkatkan efisiensi peternakan.
+                                        Anda dapat menghemat biaya dan meningkatkan efisiensi peternakan.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-2">
