@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { Building2, Users, Edit, Trash2, Wheat, PlusCircle } from 'lucide-vue-next';
+import { Building2, Users, Edit, Trash2, Wheat, PlusCircle, X } from 'lucide-vue-next';
 defineProps({
     herds: Array,
 });
@@ -213,8 +213,9 @@ function confirmDelete() {
                 <div v-if="showDialog"
                     class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg relative">
-                        <button @click="closeDialog"
-                            class="absolute top-2 right-2 text-gray-500 hover:text-primary">&times;</button>
+                        <Button @click="closeDialog" size="icon" variant="ghost" class="absolute top-2 right-2">
+                            <X class="h-6 w-6" />
+                        </Button>
                         <h3 class="text-lg font-semibold mb-4">{{ isEdit ? 'Edit Kandang' : 'Tambah Kandang' }}</h3>
                         <form @submit.prevent="submitForm">
                             <input type="hidden" v-model="form.farm_id" />

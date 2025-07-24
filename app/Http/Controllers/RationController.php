@@ -16,7 +16,7 @@ class RationController extends Controller
      */
     public function index()
     {
-        $rations = Ration::where('farm_id', auth()->user()->current_farm_id)->get();
+        $rations = Ration::with('rationItems')->where('farm_id', auth()->user()->current_farm_id)->get();
 
         return Inertia::render('Rations/Index', [
             'rations' => $rations,

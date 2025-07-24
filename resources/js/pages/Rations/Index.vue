@@ -18,7 +18,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Building2, Pencil, Trash } from 'lucide-vue-next';
+import { Users, Building2, Pencil, Trash, Plus } from 'lucide-vue-next';
 
 import {
     Dialog,
@@ -123,12 +123,35 @@ const totalCost = (rationItems = []) => {
                                                             {{ ration.name }}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {{ totalFeeds(ration.ration_items) }} Jenis Pakan
+                                                            <div
+                                                                v-if="ration.ration_items && ration.ration_items.length">
+                                                                <ul class="ml-0">
+                                                                    <li v-for="item in ration.ration_items"
+                                                                        :key="item.id" style="list-style: none;">
+                                                                        {{ item.feed }}
+                                                                        <!-- {{ formatCurrency(item.price) }} -->
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                            <span v-else>Tidak ada komposisi</span>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {{
+                                                                ration.ration_items && ration.ration_items.length
+                                                                    ? ration.ration_items.reduce((sum, item) => sum +
+                                                                        (item.quantity || 0), 0)
+                                                                    : 0
+                                                            }} kg
                                                         </TableCell>
                                                         <TableCell>
                                                             {{ formatCurrency(totalCost(ration.ration_items)) }}
                                                         </TableCell>
-                                                        <TableCell class="text-right">
+                                                        <TableCell class="text-right text-primary">
+                                                            <Link :href="route('rations.edit', ration.id)">
+                                                            <Button variant="ghost">
+                                                                <Plus class="w-4 h-4" /> Restock
+                                                            </Button>
+                                                            </Link>
                                                             <Link :href="route('rations.edit', ration.id)">
                                                             <Button variant="ghost" size="icon">
                                                                 <Pencil class="w-4 h-4" />
@@ -136,7 +159,7 @@ const totalCost = (rationItems = []) => {
                                                             </Link>
                                                             <Dialog>
                                                                 <DialogTrigger as-child>
-                                                                    <Button variant="destructive" size="icon">
+                                                                    <Button variant="ghost" size="icon">
                                                                         <Trash class="w-4 h-4" />
                                                                     </Button>
                                                                 </DialogTrigger>

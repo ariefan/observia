@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/InputError.vue';
 import { ref, watch, computed } from 'vue';
+import { X, Plus } from 'lucide-vue-next';
 
 const props = defineProps({
     ration: Object, // optional for edit
@@ -102,18 +103,19 @@ const submit = () => {
                                     </div>
 
                                     <div class="col-span-2 flex justify-end pt-1">
-                                        <Button variant="destructive" type="button"
-                                            @click="removeItem(index)">Hapus</Button>
+                                        <Button variant="ghost" :size="icon" @click="removeItem(index)">
+                                            <X class="size-4 font-bold" />
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
 
 
-                            <div class="mt-4">
-                                <button type="button" @click="addItem"
+                            <div class="mt-4 flex justify-center">
+                                <Button variant="ghost" @click="addItem"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-                                    + Tambah Komposisi
-                                </button>
+                                    <Plus class="size-4 font-bold" /> Tambah Komposisi
+                                </Button>
                             </div>
                         </div>
 
