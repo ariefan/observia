@@ -35,7 +35,9 @@ const props = defineProps({
 });
 
 const formatCurrency = (value) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
+    const formatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
+    // Remove leading zero before the currency symbol if present (e.g., "Rp0" to "Rp")
+    return formatted.replace(/^Rp0\b/, 'Rp');
 };
 
 const totalFeeds = (rationItems = []) => rationItems.length;
@@ -147,7 +149,8 @@ const totalCost = (rationItems = []) => {
                                                             {{ formatCurrency(totalCost(ration.ration_items)) }}
                                                         </TableCell>
                                                         <TableCell class="text-right text-primary">
-                                                            <Link :href="route('rations.edit', ration.id)">
+                                                            <Link
+                                                                :href="`${route('rations.edit', ration.id)}?restock=1`">
                                                             <Button variant="ghost">
                                                                 <Plus class="w-4 h-4" /> Restock
                                                             </Button>

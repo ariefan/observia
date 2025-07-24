@@ -75,16 +75,18 @@ class RationController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Ration $ration)
+    public function edit(Request $request, Ration $ration)
     {
         if ($ration->farm_id !== Auth::user()->current_farm_id) {
             abort(403);
         }
 
         $ration->load('rationItems');
+        $restock = $request->query('restock', null) == "1" ? true : false;
 
         return Inertia::render('Rations/Form', [
             'ration' => $ration,
+            'restock' => $restock,
         ]);
     }
 

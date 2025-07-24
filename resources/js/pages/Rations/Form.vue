@@ -10,6 +10,7 @@ import { X, Plus } from 'lucide-vue-next';
 
 const props = defineProps({
     ration: Object, // optional for edit
+    restock: Boolean,
 });
 
 const isEditMode = computed(() => !!props.ration);
@@ -58,13 +59,15 @@ const submit = () => {
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
+                    <h3 class="text-md font-semibold mb-2">{{ restock ? 'Restock' : 'Buat' }} Ransum</h3>
                     <form @submit.prevent="submit">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
                             Nama Ransum
                         </h3>
                         <div>
                             <Label for="name" value="Nama Ransum" />
-                            <Input id="name" v-model="form.name" type="text" class="mt-1 block w-full" required />
+                            <Input id="name" v-model="form.name" type="text" class="mt-1 block w-full" required
+                                :disabled="restock" />
                             <InputError class="mt-2" :message="form.errors.name" />
                         </div>
 
@@ -80,14 +83,14 @@ const submit = () => {
                                     <div>Jumlah (Kg)</div>
                                     <div>Harga Total</div>
                                     <div class="text-right">Harga / kg</div>
-                                    <div class="text-right">Aksi</div>
+                                    <div class="text-right" v-if="!restock">Aksi</div>
                                 </div>
 
                                 <div v-for="(item, index) in form.items" :key="index"
                                     class="grid grid-cols-5 gap-4 items-start">
                                     <div>
                                         <Input :id="'feed_' + index" v-model="item.feed" type="text" size="sm"
-                                            class="mt-1 block w-full" required />
+                                            class="mt-1 block w-full" required :disabled="restock" />
                                         <InputError class="mt-1" :message="form.errors[`items.${index}.feed`]" />
                                     </div>
 
@@ -117,7 +120,7 @@ const submit = () => {
                                         </span>
                                     </div>
 
-                                    <div class="flex justify-end mt-2">
+                                    <div class="flex justify-end mt-2" v-if="!restock">
                                         <Button variant="ghost" size="icon" @click="removeItem(index)">
                                             <X class="size-4 font-bold" />
                                         </Button>
@@ -126,7 +129,7 @@ const submit = () => {
                             </div>
 
 
-                            <div class="mt-4 flex justify-center">
+                            <div class="mt-4 flex justify-center" v-if="!restock">
                                 <Button variant="ghost" @click="addItem"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
                                     <Plus class="size-4 font-bold" /> Tambah Komposisi
@@ -137,7 +140,7 @@ const submit = () => {
                         <div class="flex items-center justify-end mt-4">
                             <Link :href="route('rations.index')" class="mr-4">Batal</Link>
                             <Button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                                {{ isEditMode ? 'Update' : 'Simpan' }}
+                                {{ isEditMode ? (restock ? 'Restock' : 'Update') : 'Simpan' }}
                             </Button>
                         </div>
                     </form>
