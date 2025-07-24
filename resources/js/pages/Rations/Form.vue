@@ -110,7 +110,7 @@ const submit = () => {
                                                     ? (item.price / item.quantity).toLocaleString('id-ID', {
                                                         style: 'currency',
                                                         currency: 'IDR',
-                                                        maximumFractionDigits: 2
+                                                        maximumFractionDigits: 0
                                                     }) + ' / kg'
                                                     : '-'
                                             }}

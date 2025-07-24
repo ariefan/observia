@@ -128,7 +128,7 @@ const totalCost = (rationItems = []) => {
                                                                 <ul class="ml-0">
                                                                     <li v-for="item in ration.ration_items"
                                                                         :key="item.id" style="list-style: none;">
-                                                                        {{ item.feed }}
+                                                                        {{ item.feed }},
                                                                         <!-- {{ formatCurrency(item.price) }} -->
                                                                     </li>
                                                                 </ul>
