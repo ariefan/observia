@@ -228,7 +228,12 @@ const totalCost = (rationItems = []) => {
                                                             {{ ration.name }}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {{ ration.action }}
+                                                            <span v-if="ration.action === 'restock'">Restock</span>
+                                                            <span v-else-if="ration.action === 'create'">
+                                                                Stok Baru
+                                                            </span>
+                                                            <span v-else-if="ration.action === 'update'">Update</span>
+                                                            <span v-else>{{ ration.action }}</span>
                                                         </TableCell>
                                                         <TableCell>
                                                             <div
@@ -245,14 +250,21 @@ const totalCost = (rationItems = []) => {
                                                         </TableCell>
                                                         <TableCell>
                                                             {{
-                                                                ration.ration_items && ration.ration_items.length
-                                                                    ? ration.ration_items.reduce((sum, item) => sum +
+                                                                ration.history_ration_items &&
+                                                                    ration.history_ration_items.length
+                                                                    ? ration.history_ration_items.reduce((sum, item) => sum +
                                                                         (item.quantity || 0), 0)
                                                                     : 0
                                                             }} kg
                                                         </TableCell>
                                                         <TableCell>
-                                                            {{ formatCurrency(totalCost(ration.ration_items)) }}
+                                                            {{ formatCurrency(totalCost(ration.history_ration_items)) }}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <span v-if="ration.created_at">
+                                                                {{ new Date(ration.created_at).toLocaleString('id-ID', {
+                                                                dateStyle: 'long', timeStyle: 'short' }) }}
+                                                            </span>
                                                         </TableCell>
                                                     </TableRow>
                                                 </template>
