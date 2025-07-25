@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Herd;
+use App\Models\Ration;
 use App\Http\Requests\StoreHerdRequest;
 use App\Http\Requests\UpdateHerdRequest;
 use Illuminate\Http\Request;
@@ -108,6 +109,7 @@ class HerdController extends Controller
     {
         return Inertia::render('herds/Feeding', [
             'herd' => new Herd(),
+            'ration' => new Ration(),
         ]);
     }
 
@@ -115,11 +117,10 @@ class HerdController extends Controller
     {
         $validated = $request->validate([
             'herd_id' => 'required|exists:herds,id',
-            'ration_id' => 'required|exists:rations,id',
             'quantity' => 'required|numeric|min:0',
             'date' => 'required|date',
             'time' => 'nullable|date_format:H:i',
-            'session' => 'nullable|in:morning,evening,afternoon,night,midnight,dawn',
+            'session' => 'required|in:morning,afternoon',
             'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -133,7 +134,7 @@ class HerdController extends Controller
 
         if ($existingFeeding) {
             return back()->withErrors([
-                'session' => 'Data perahan untuk sesi ' . $validated['session'] . ' pada tanggal ini sudah ada. Setiap sesi hanya boleh dilakukan sekali per hari.'
+                'session' => 'Data pakan untuk sesi ' . $validated['session'] . ' pada tanggal ini sudah ada. Setiap sesi hanya boleh dilakukan sekali per hari.'
             ]);
         }
 
@@ -141,7 +142,7 @@ class HerdController extends Controller
             'quantity' => $validated['quantity'],
             'date' => $validated['date'],
             'time' => $validated['time'] ?? null,
-            'session' => $validated['session'] ?? null,
+            'session' => $validated['session'],
             'notes' => $validated['notes'] ?? null,
             'user_id' => auth()->id(),
         ]);

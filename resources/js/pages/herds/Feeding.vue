@@ -20,12 +20,18 @@ import { ArrowLeft, Check, ChevronsUpDown, Milk } from "lucide-vue-next";
 // Props
 const props = defineProps<{
     herd: any;
+    ration: any;
 }>();
 
 // Form state and handlers
 const getDisplayValue = (herd: any) => {
     if (!herd) return '';
     return `${herd.name}`;
+};
+
+const getRationDisplayValue = (ration: any) => {
+    if (!ration) return '';
+    return `${ration.name}`;
 };
 
 // Get current date and time
@@ -35,26 +41,45 @@ const currentSession = currentHour < 12 ? 'morning' : 'afternoon';
 
 const form = useForm({
     herd_id: props.herd.id,
-    milk_volume: 0,
+    ration_id: null,
+    quantity: 0,
     date: now.toISOString().slice(0, 10),
     time: now.toTimeString().slice(0, 5),
     session: currentSession,
     notes: '',
 });
 
-const selectedLivestock = ref<any>(props.herd.id ? props.herd : null);
+const selectedHerd = ref<any>(props.herd.id ? props.herd : null);
 const searchQuery = ref('');
 const searchResults = ref<any[]>([]);
 const isUpdatingAutomatically = ref(false);
 
+// Rations combobox state
+const selectedRation = ref<any>(null);
+const rationQuery = ref('');
+const rationResults = ref<any[]>([]);
+
 // Load initial herd data
-const loadLivestock = async (query: string = '') => {
+const loadHerd = async (query: string = '') => {
     try {
         const response = await axios.get(route('herds.search', { q: query, sex: 'F' }));
         searchResults.value = response.data;
+        console.log(response.data)
     } catch (error) {
         console.error(error);
         searchResults.value = [];
+    }
+};
+
+// Load rations data
+const loadRations = async (query: string = '') => {
+    try {
+        const response = await axios.get(route('rations.index'), { params: { q: query } });
+        rationResults.value = response.data;
+        console.log(response.data)
+    } catch (error) {
+        console.error(error);
+        rationResults.value = [];
     }
 };
 
@@ -62,7 +87,7 @@ const loadLivestock = async (query: string = '') => {
 watch(searchQuery, async (newQuery) => {
     if (!newQuery || newQuery.length === 0) {
         // Load all herd when search is empty
-        await loadLivestock();
+        await loadHerd();
         return;
     }
 
@@ -70,15 +95,34 @@ watch(searchQuery, async (newQuery) => {
         return; // Don't search for very short queries
     }
 
-    await loadLivestock(newQuery);
+    await loadHerd(newQuery);
 });
 
 // Load initial data on component mount
 onMounted(() => {
-    loadLivestock();
+    loadHerd();
+    loadRations();
+});
+// Watch for ration combobox search
+watch(rationQuery, async (newQuery) => {
+    if (!newQuery || newQuery.length === 0) {
+        await loadRations();
+        return;
+    }
+    if (newQuery.length < 2) {
+        return;
+    }
+    await loadRations(newQuery);
 });
 
-watch(selectedLivestock, (newValue) => {
+// Watch for ration selection
+watch(selectedRation, (newValue) => {
+    if (newValue) {
+        form.ration_id = newValue.id;
+    }
+});
+
+watch(selectedHerd, (newValue) => {
     if (newValue) {
         form.herd_id = newValue.id;
     }
@@ -159,13 +203,42 @@ const back = () => window.history.back();
             <form @submit.prevent="submit" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
+                        <Label for="ration_id">Ransum</Label>
+                        <Combobox v-model="selectedRation" v-model:search-term="rationQuery"
+                            :display-value="getRationDisplayValue">
+                            <ComboboxAnchor as-child>
+                                <ComboboxTrigger as-child>
+                                    <Button variant="outline" class="justify-between w-full">
+                                        {{ selectedRation ? getRationDisplayValue(selectedRation) : 'Pilih Ransum' }}
+                                        <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </ComboboxTrigger>
+                            </ComboboxAnchor>
+                            <ComboboxList class="w-full">
+                                <ComboboxInput v-model="rationQuery" placeholder="Cari ransum..." />
+                                <ComboboxEmpty>Ransum tidak ditemukan.</ComboboxEmpty>
+                                <ComboboxGroup>
+                                    <ComboboxItem v-for="ration in rationResults" :key="ration.id" :value="ration">
+                                        <div class="flex items-center">
+                                            <span>{{ ration.name }}</span>
+                                            <ComboboxItemIndicator>
+                                                <Check class="ml-auto h-4 w-4" />
+                                            </ComboboxItemIndicator>
+                                        </div>
+                                    </ComboboxItem>
+                                </ComboboxGroup>
+                            </ComboboxList>
+                        </Combobox>
+                        <InputError :message="form.errors.ration_id" />
+                    </div>
+                    <div>
                         <Label for="herd_id">Kandang</Label>
-                        <Combobox v-model="selectedLivestock" v-model:search-term="searchQuery"
+                        <Combobox v-model="selectedHerd" v-model:search-term="searchQuery"
                             :display-value="getDisplayValue">
                             <ComboboxAnchor as-child>
                                 <ComboboxTrigger as-child>
                                     <Button variant="outline" class="justify-between w-full">
-                                        {{ selectedLivestock ? getDisplayValue(selectedLivestock) : 'Pilih Ternak' }}
+                                        {{ selectedHerd ? getDisplayValue(selectedHerd) : 'Pilih Ternak' }}
                                         <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                     </Button>
                                 </ComboboxTrigger>
@@ -188,22 +261,22 @@ const back = () => window.history.back();
                     </div>
 
                     <div>
-                        <Label for="milk_volume">Volume Pakan</Label>
+                        <Label for="quantity">Volume Pakan</Label>
                         <div class="relative">
-                            <Input id="milk_volume" type="number" step="0.1" v-model="form.milk_volume" class="pr-16" />
+                            <Input id="quantity" type="number" step="0.1" v-model="form.quantity" class="pr-16" />
                             <div
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">
                                 kg
                             </div>
                         </div>
-                        <InputError :message="form.errors.milk_volume" />
+                        <InputError :message="form.errors.quantity" />
                     </div>
 
                     <div>
                         <Label for="session">Sesi Pakan</Label>
                         <Select v-model="form.session">
                             <SelectTrigger>
-                                <SelectValue placeholder="Pilih sesi perah" />
+                                <SelectValue placeholder="Pilih sesi pakan" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="morning">Pagi</SelectItem>

@@ -11,20 +11,20 @@ class HerdFeeding extends Model
     use HasFactory;
 
     protected $fillable = [
-        'herd_id', 
-        'ration_id', 
-        'quantity', 
-        'date', 
-        'time', 
-        'session', 
-        'user_id',
+        'herd_id',
+        'ration_id',
+        'quantity',
+        'date',
+        'time',
+        'session',
         'device_id',
-        'notes'
+        'user_id',
+        'notes',
     ];
 
-    public function livestock(): BelongsTo
+    public function herd(): BelongsTo
     {
-        return $this->belongsTo(Livestock::class);
+        return $this->belongsTo(Herd::class);
     }
 
     public function user(): BelongsTo

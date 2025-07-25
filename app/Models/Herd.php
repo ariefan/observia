@@ -27,8 +27,8 @@ class Herd extends Model
         return $this->livestocks()->count();
     }
 
-    public function feedings(): HasMany
+    public function feedings()
     {
-        return $this->hasMany(LivestockFeeding::class);
+        return $this->hasMany(HerdFeeding::class);
     }
 }

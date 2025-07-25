@@ -210,4 +210,22 @@ class RationController extends Controller
         $ration->delete();
         return redirect()->route('rations.index');
     }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('q');
+        $id = $request->input('id');
+
+        $rations = Ration::query()
+            ->where('farm_id', auth()->user()->current_farm_id)
+            ->when($id, fn ($q) => $q->where('id', $id))
+            ->when(!$id && $query, function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%");
+            })
+            ->select('id', 'name')
+            ->limit(10)
+            ->get();
+
+        return response()->json($rations);
+    }
 }
