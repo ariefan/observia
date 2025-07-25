@@ -17,6 +17,15 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
         });
+
+        Schema::create('history_rations', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('action')->default('feed');
+            $table->foreignUuid('ration_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('farm_id')->constrained()->cascadeOnDelete();
+            $table->string('name');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -25,5 +34,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('rations');
+        Schema::dropIfExists('history_rations');
     }
 };

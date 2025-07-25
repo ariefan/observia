@@ -19,9 +19,10 @@ const form = useForm({
     name: props.ration?.name || '',
     items: props.ration?.ration_items?.map(item => ({
         feed: item.feed,
-        quantity: item.quantity,
-        price: item.price,
+        quantity: props.restock ? 0 : item.quantity,
+        price: props.restock ? 0 : item.price,
     })) || [],
+    restock: props.restock ? '1' : '0',
 });
 
 const addItem = () => {
@@ -89,20 +90,20 @@ const submit = () => {
                                 <div v-for="(item, index) in form.items" :key="index"
                                     class="grid grid-cols-5 gap-4 items-start">
                                     <div>
-                                        <Input :id="'feed_' + index" v-model="item.feed" type="text" size="sm"
-                                            class="mt-1 block w-full" required :disabled="restock" />
+                                        <Input :id="'feed_' + index" v-model="item.feed" type="text"
+                                            class="mt-1 block w-full h-8" required :disabled="restock" />
                                         <InputError class="mt-1" :message="form.errors[`items.${index}.feed`]" />
                                     </div>
 
                                     <div>
-                                        <Input :id="'quantity_' + index" v-model="item.quantity" type="number" size="sm"
-                                            class="mt-1 block w-full" required min="0" step="any" />
+                                        <Input :id="'quantity_' + index" v-model="item.quantity" type="number"
+                                            class="mt-1 block w-full h-8" required min="0" step="any" />
                                         <InputError class="mt-1" :message="form.errors[`items.${index}.quantity`]" />
                                     </div>
 
                                     <div>
-                                        <Input :id="'price_' + index" v-model="item.price" type="number" size="sm"
-                                            class="mt-1 block w-full" required min="0" step="any" />
+                                        <Input :id="'price_' + index" v-model="item.price" type="number"
+                                            class="mt-1 block w-full h-8" required min="0" step="any" />
                                         <InputError class="mt-1" :message="form.errors[`items.${index}.price`]" />
                                     </div>
 

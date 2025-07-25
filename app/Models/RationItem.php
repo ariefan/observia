@@ -22,4 +22,8 @@ class RationItem extends Model
     {
         return $this->belongsTo(Farm::class);
     }
+    public function historyRationItems()
+    {
+        return $this->hasMany(HistoryRationItem::class, 'ration_item_id');
+    }
 }

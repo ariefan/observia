@@ -5,27 +5,32 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Ration extends Model
+class HistoryRation extends Model
 {
     use HasFactory, HasUuids;
-
-    protected $guarded = ['id'];
+    
+    protected $fillable = [
+        'id',
+        'action',
+        'ration_id',
+        'farm_id',
+        'name',
+    ];
 
     public function farm(): BelongsTo
     {
         return $this->belongsTo(Farm::class);
     }
 
-    public function rationItems(): HasMany
+    public function historyRationItems(): HasMany
     {
-        return $this->hasMany(RationItem::class);
+        return $this->hasMany(HistoryRationItem::class);
     }
 
-    public function historyRations(): HasMany
+    public function ration()
     {
-        return $this->hasMany(HistoryRation::class, 'ration_id');
+        return $this->belongsTo(Ration::class, 'ration_id');
     }
 }

@@ -13,9 +13,18 @@ return new class extends Migration
     {
         Schema::create('ration_items', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('farm_id')->constrained()->onDelete('cascade');
             $table->foreignUuid('ration_id')->constrained()->onDelete('cascade');
-            $table->text('feed')->after('ration_id');
+            $table->text('feed');
+            $table->decimal('quantity', 8, 2);
+            $table->decimal('price', 15, 2);
+            $table->timestamps();
+        });
+
+        Schema::create('history_ration_items', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->foreignUuid('history_ration_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('ration_id')->constrained()->onDelete('cascade');
+            $table->text('feed');
             $table->decimal('quantity', 8, 2);
             $table->decimal('price', 15, 2);
             $table->timestamps();
@@ -28,5 +37,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('ration_items');
+        Schema::dropIfExists('history_ration_items');
     }
 };

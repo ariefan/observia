@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Feed;
 use App\Models\Ration;
+use App\Models\HistoryRation;
+use App\Models\HistoryRationItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,9 +19,14 @@ class RationController extends Controller
     public function index()
     {
         $rations = Ration::with('rationItems')->where('farm_id', auth()->user()->current_farm_id)->get();
+        $historyRations = HistoryRation::with('historyRationItems')
+            ->where('farm_id', auth()->user()->current_farm_id)
+            ->orderBy('history_rations.created_at', 'desc')
+            ->get();
 
         return Inertia::render('Rations/Index', [
             'rations' => $rations,
+            'historyRations' => $historyRations,
         ]);
     }
 
@@ -55,7 +62,24 @@ class RationController extends Controller
                     'feed' => $item['feed'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
-                    'farm_id' => Auth::user()->current_farm_id,
+                ]);
+            }
+
+            // History
+            $historyRation = HistoryRation::create([
+                'action' => 'create',
+                'ration_id' => $ration->id,
+                'farm_id' => Auth::user()->current_farm_id,
+                'name' => $ration->name,
+            ]);
+
+            foreach ($request->items as $item) {
+                HistoryRationItem::create([
+                    'history_ration_id' => $historyRation->id,
+                    'ration_id' => $ration->id,
+                    'feed' => $item['feed'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
                 ]);
             }
         });
@@ -109,19 +133,47 @@ class RationController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $ration) {
+            $restock = $request->restock == "1" ? true : false;
+
             $ration->update([
                 'name' => $request->name,
             ]);
 
-            // Nuking the old ration items for lazy update, just like our social life
-            $ration->rationItems()->delete();
+            // Update quantity and price for existing items, add new ones if needed
+            $existingItems = $ration->rationItems()->get()->keyBy('feed');
+
+            // History
+            $historyRation = HistoryRation::create([
+                'action' => $restock ? 'restock' : 'update',
+                'ration_id' => $ration->id,
+                'farm_id' => Auth::user()->current_farm_id,
+                'name' => $ration->name,
+            ]);
 
             foreach ($request->items as $item) {
-                $ration->rationItems()->create([
+                if ($existingItems->has($item['feed'])) {
+                    // Update existing item
+                    $existingItem = $existingItems->get($item['feed']);
+                    $existingItem->update([
+                        'quantity' => $restock ? $existingItem->quantity + $item['quantity'] : $item['quantity'],
+                        'price' => $restock ? $existingItem->price + $item['price'] : $item['price'],
+                    ]);
+                } else {
+                    // Create new item
+                    $ration->rationItems()->create([
+                        'feed' => $item['feed'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                    ]);
+                }
+                
+                // History
+                HistoryRationItem::create([
+                    'history_ration_id' => $historyRation->id,
+                    'ration_id' => $ration->id,
                     'feed' => $item['feed'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'farm_id' => Auth::user()->current_farm_id,
+                    'quantity' => $restock ? $existingItem->quantity + $item['quantity'] : $item['quantity'],
+                    'price' => $restock ? $existingItem->price + $item['price'] : $item['price'],
                 ]);
             }
         });

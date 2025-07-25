@@ -32,6 +32,7 @@ import {
 
 const props = defineProps({
     rations: Object,
+    historyRations: Object,
 });
 
 const formatCurrency = (value) => {
@@ -99,9 +100,6 @@ const totalCost = (rationItems = []) => {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-2">
-                                    <div class="flex justify-end mb-4">
-
-                                    </div>
                                     <div class="relative overflow-x-auto sm:rounded-lg">
                                         <Table>
                                             <TableHeader>
@@ -206,12 +204,66 @@ const totalCost = (rationItems = []) => {
                                     <CardTitle>Riwayat Ransum</CardTitle>
                                     <CardDescription>
                                         Selalu dapatkan informasi akurat tentang ketersediaan stok pakan ternak
-                                        Anda,
-                                        sehingga Anda dapat membuat keputusan pembelian yang tepat.
+                                        Anda, sehingga Anda dapat membuat keputusan pembelian yang tepat.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-2">
-                                    Belum ada riwayat ransum.
+
+                                    <div class="relative overflow-x-auto sm:rounded-lg">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Ransum</TableHead>
+                                                    <TableHead>Aksi</TableHead>
+                                                    <TableHead>Komposisi</TableHead>
+                                                    <TableHead>Jumlah</TableHead>
+                                                    <TableHead>Total Harga</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                <template v-for="ration in historyRations" :key="ration.id">
+                                                    <TableRow>
+                                                        <TableCell
+                                                            class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                            {{ ration.name }}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {{ ration.action }}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div
+                                                                v-if="ration.history_ration_items && ration.history_ration_items.length">
+                                                                <ul class="ml-0">
+                                                                    <li v-for="item in ration.history_ration_items"
+                                                                        :key="item.id" style="list-style: none;">
+                                                                        {{ item.feed }},
+                                                                        <!-- {{ formatCurrency(item.price) }} -->
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                            <span v-else>Tidak ada komposisi</span>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {{
+                                                                ration.ration_items && ration.ration_items.length
+                                                                    ? ration.ration_items.reduce((sum, item) => sum +
+                                                                        (item.quantity || 0), 0)
+                                                                    : 0
+                                                            }} kg
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {{ formatCurrency(totalCost(ration.ration_items)) }}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </template>
+                                                <TableRow v-if="rations.length === 0">
+                                                    <TableCell colspan="5" class="px-6 py-4 text-center">
+                                                        Belum ada data ransum.
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                 </CardContent>
                             </Card>
                         </TabsContent>
