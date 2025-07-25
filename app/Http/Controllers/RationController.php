@@ -189,8 +189,8 @@ class RationController extends Controller
                     'history_ration_id' => $historyRation->id,
                     'ration_id' => $ration->id,
                     'feed' => $item['feed'],
-                    'quantity' => $restock ? $existingItem->quantity + $item['quantity'] : $item['quantity'],
-                    'price' => $restock ? $existingItem->price + $item['price'] : $item['price'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
                 ]);
             }
         });
