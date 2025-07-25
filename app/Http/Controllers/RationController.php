@@ -172,8 +172,8 @@ class RationController extends Controller
                     // Update existing item
                     $existingItem = $existingItems->get($item['feed']);
                     $existingItem->update([
-                        'quantity' => $item['quantity'],
-                        'price' => $item['price'],
+                        'quantity' => $restock ? $existingItem->quantity + $item['quantity'] : $item['quantity'],
+                        'price' => $restock ? $existingItem->price + $item['price'] : $item['price'],
                     ]);
                 } else {
                     // Create new item
