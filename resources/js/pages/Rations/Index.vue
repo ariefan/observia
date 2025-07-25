@@ -120,245 +120,240 @@ const months = [
             </aside>
 
             <div class="flex-1 flex flex-col gap-4 p-4 max-w-7xl mx-auto">
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
-                    <Tabs default-value="ration" class="w-full">
-                        <TabsList class="grid w-full grid-cols-6">
-                            <TabsTrigger class="text-primary font-semibold" value="ration">
-                                Stok Ransum
-                            </TabsTrigger>
-                            <TabsTrigger class="text-primary font-semibold" value="history">
-                                Riwayat Ransum
-                            </TabsTrigger>
-                            <TabsTrigger class="text-primary font-semibold" value="feed">
-                                Pakan
-                            </TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="ration">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Stok Ransum</CardTitle>
-                                    <CardDescription>
-                                        Pastikan ketersediaan pakan selalu terjaga. Hindari kehabisan pakan yang
-                                        dapat
-                                        mengganggu kesehatan ternak dan produktivitas peternakan
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent class="space-y-2">
-                                    <div class="relative overflow-x-auto sm:rounded-lg">
-                                        <Table>
-                                            <TableHeader>
+                <Tabs default-value="ration" class="w-full">
+                    <TabsList class="grid w-full grid-cols-6">
+                        <TabsTrigger class="text-primary font-semibold" value="ration">
+                            Stok Ransum
+                        </TabsTrigger>
+                        <TabsTrigger class="text-primary font-semibold" value="history">
+                            Riwayat Ransum
+                        </TabsTrigger>
+                        <TabsTrigger class="text-primary font-semibold" value="feed">
+                            Pakan
+                        </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="ration">
+                        <Card class="min-h-[600px]">
+                            <CardHeader>
+                                <CardTitle>Stok Ransum</CardTitle>
+                                <CardDescription>
+                                    Pastikan ketersediaan pakan selalu terjaga. Hindari kehabisan pakan yang
+                                    dapat
+                                    mengganggu kesehatan ternak dan produktivitas peternakan
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent class="space-y-2">
+                                <div class="relative overflow-x-auto sm:rounded-lg">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Ransum</TableHead>
+                                                <TableHead>Komposisi</TableHead>
+                                                <TableHead>Jumlah</TableHead>
+                                                <TableHead>Total Harga</TableHead>
+                                                <TableHead class="text-right">
+                                                    <Link :href="route('rations.create')">
+                                                    <Button>Tambah Ransum</Button>
+                                                    </Link>
+                                                </TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            <template v-for="ration in rations" :key="ration.id">
                                                 <TableRow>
-                                                    <TableHead>Ransum</TableHead>
-                                                    <TableHead>Komposisi</TableHead>
-                                                    <TableHead>Jumlah</TableHead>
-                                                    <TableHead>Total Harga</TableHead>
-                                                    <TableHead class="text-right">
-                                                        <Link :href="route('rations.create')">
-                                                        <Button>Tambah Ransum</Button>
+                                                    <TableCell
+                                                        class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                        {{ ration.name }}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div v-if="ration.ration_items && ration.ration_items.length">
+                                                            <ul class="ml-0">
+                                                                <li v-for="item in ration.ration_items" :key="item.id"
+                                                                    style="list-style: none;">
+                                                                    {{ item.feed }},
+                                                                    <!-- {{ formatCurrency(item.price) }} -->
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                        <span v-else>Tidak ada komposisi</span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {{
+                                                            ration.ration_items && ration.ration_items.length
+                                                                ? ration.ration_items.reduce((sum, item) => sum +
+                                                                    (item.quantity || 0), 0)
+                                                                : 0
+                                                        }} kg
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {{ formatCurrency(totalCost(ration.ration_items)) }}
+                                                    </TableCell>
+                                                    <TableCell class="text-right text-primary">
+                                                        <Link :href="`${route('rations.edit', ration.id)}?restock=1`">
+                                                        <Button variant="ghost">
+                                                            <Plus class="w-4 h-4" /> Restock
+                                                        </Button>
                                                         </Link>
-                                                    </TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                <template v-for="ration in rations" :key="ration.id">
-                                                    <TableRow>
-                                                        <TableCell
-                                                            class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {{ ration.name }}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div
-                                                                v-if="ration.ration_items && ration.ration_items.length">
-                                                                <ul class="ml-0">
-                                                                    <li v-for="item in ration.ration_items"
-                                                                        :key="item.id" style="list-style: none;">
-                                                                        {{ item.feed }},
-                                                                        <!-- {{ formatCurrency(item.price) }} -->
-                                                                    </li>
-                                                                </ul>
-                                                            </div>
-                                                            <span v-else>Tidak ada komposisi</span>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {{
-                                                                ration.ration_items && ration.ration_items.length
-                                                                    ? ration.ration_items.reduce((sum, item) => sum +
-                                                                        (item.quantity || 0), 0)
-                                                                    : 0
-                                                            }} kg
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {{ formatCurrency(totalCost(ration.ration_items)) }}
-                                                        </TableCell>
-                                                        <TableCell class="text-right text-primary">
-                                                            <Link
-                                                                :href="`${route('rations.edit', ration.id)}?restock=1`">
-                                                            <Button variant="ghost">
-                                                                <Plus class="w-4 h-4" /> Restock
-                                                            </Button>
-                                                            </Link>
-                                                            <Link :href="route('rations.edit', ration.id)">
-                                                            <Button variant="ghost" size="icon">
-                                                                <Pencil class="w-4 h-4" />
-                                                            </Button>
-                                                            </Link>
-                                                            <Dialog>
-                                                                <DialogTrigger as-child>
-                                                                    <Button variant="ghost" size="icon">
-                                                                        <Trash class="w-4 h-4" />
-                                                                    </Button>
-                                                                </DialogTrigger>
-                                                                <DialogContent>
-                                                                    <DialogHeader>
-                                                                        <DialogTitle>Hapus Ransum?</DialogTitle>
-                                                                        <div class="text-sm text-muted-foreground">
-                                                                            Apakah Anda yakin ingin menghapus ransum
-                                                                            ini? Tindakan ini tidak dapat dibatalkan.
-                                                                        </div>
-                                                                    </DialogHeader>
-                                                                    <div class="flex justify-end gap-2">
-                                                                        <DialogClose as-child>
-                                                                            <Button variant="outline">Batal</Button>
-                                                                        </DialogClose>
-                                                                        <Link
-                                                                            :href="route('rations.destroy', ration.id)"
-                                                                            method="delete" as="button">
-                                                                        <Button variant="destructive">Hapus</Button>
-                                                                        </Link>
+                                                        <Link :href="route('rations.edit', ration.id)">
+                                                        <Button variant="ghost" size="icon">
+                                                            <Pencil class="w-4 h-4" />
+                                                        </Button>
+                                                        </Link>
+                                                        <Dialog>
+                                                            <DialogTrigger as-child>
+                                                                <Button variant="ghost" size="icon">
+                                                                    <Trash class="w-4 h-4" />
+                                                                </Button>
+                                                            </DialogTrigger>
+                                                            <DialogContent>
+                                                                <DialogHeader>
+                                                                    <DialogTitle>Hapus Ransum?</DialogTitle>
+                                                                    <div class="text-sm text-muted-foreground">
+                                                                        Apakah Anda yakin ingin menghapus ransum
+                                                                        ini? Tindakan ini tidak dapat dibatalkan.
                                                                     </div>
-                                                                </DialogContent>
-                                                            </Dialog>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </template>
-                                                <TableRow v-if="rations.length === 0">
-                                                    <TableCell colspan="5" class="px-6 py-4 text-center">
-                                                        Belum ada data ransum.
+                                                                </DialogHeader>
+                                                                <div class="flex justify-end gap-2">
+                                                                    <DialogClose as-child>
+                                                                        <Button variant="outline">Batal</Button>
+                                                                    </DialogClose>
+                                                                    <Link :href="route('rations.destroy', ration.id)"
+                                                                        method="delete" as="button">
+                                                                    <Button variant="destructive">Hapus</Button>
+                                                                    </Link>
+                                                                </div>
+                                                            </DialogContent>
+                                                        </Dialog>
                                                     </TableCell>
                                                 </TableRow>
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                        <TabsContent value="history">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Riwayat Ransum</CardTitle>
-                                    <CardDescription>
-                                        Selalu dapatkan informasi akurat tentang ketersediaan stok pakan ternak
-                                        Anda, sehingga Anda dapat membuat keputusan pembelian yang tepat.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent class="space-y-2">
-                                    <div class="flex items-center gap-4 mb-4">
-                                        <label>Bulan</label>
-                                        <select
-                                            class="w-32 rounded-md border border-gray-300 bg-white dark:bg-gray-900 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
-                                            v-model="selectedMonth">
-                                            <option v-for="month in months" :key="month.value" :value="month.value">
-                                                {{ month.label }}
-                                            </option>
-                                        </select>
-                                        <Input type="number" v-model="selectedYear" class="w-24" />
-                                    </div>
-                                    <div class="relative overflow-x-auto sm:rounded-lg">
-                                        <Table>
-                                            <TableHeader>
+                                            </template>
+                                            <TableRow v-if="rations.length === 0">
+                                                <TableCell colspan="5" class="px-6 py-4 text-center">
+                                                    Belum ada data ransum.
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="history">
+                        <Card class="min-h-[600px]">
+                            <CardHeader>
+                                <CardTitle>Riwayat Ransum</CardTitle>
+                                <CardDescription>
+                                    Selalu dapatkan informasi akurat tentang ketersediaan stok pakan ternak
+                                    Anda, sehingga Anda dapat membuat keputusan pembelian yang tepat.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent class="space-y-2">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <label>Bulan</label>
+                                    <select
+                                        class="w-32 rounded-md border border-gray-300 bg-white dark:bg-gray-900 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                        v-model="selectedMonth">
+                                        <option v-for="month in months" :key="month.value" :value="month.value">
+                                            {{ month.label }}
+                                        </option>
+                                    </select>
+                                    <Input type="number" v-model="selectedYear" class="w-24" />
+                                </div>
+                                <div class="relative overflow-x-auto sm:rounded-lg">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Ransum</TableHead>
+                                                <TableHead>Aksi</TableHead>
+                                                <TableHead>Komposisi</TableHead>
+                                                <TableHead>Jumlah</TableHead>
+                                                <TableHead>Total Harga</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            <template v-for="ration in historyRations" :key="ration.id">
                                                 <TableRow>
-                                                    <TableHead>Ransum</TableHead>
-                                                    <TableHead>Aksi</TableHead>
-                                                    <TableHead>Komposisi</TableHead>
-                                                    <TableHead>Jumlah</TableHead>
-                                                    <TableHead>Total Harga</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                <template v-for="ration in historyRations" :key="ration.id">
-                                                    <TableRow>
-                                                        <TableCell
-                                                            class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {{ ration.name }}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <span v-if="ration.action === 'restock'">Restock</span>
-                                                            <span v-else-if="ration.action === 'create'">
-                                                                Stok Baru
-                                                            </span>
-                                                            <span v-else-if="ration.action === 'update'">Update</span>
-                                                            <span v-else>{{ ration.action }}</span>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div
-                                                                v-if="ration.history_ration_items && ration.history_ration_items.length">
-                                                                <ul class="ml-0">
-                                                                    <li v-for="item in ration.history_ration_items"
-                                                                        :key="item.id" style="list-style: none;">
-                                                                        {{ item.feed }},
-                                                                        <!-- {{ formatCurrency(item.price) }} -->
-                                                                    </li>
-                                                                </ul>
-                                                            </div>
-                                                            <span v-else>Tidak ada komposisi</span>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {{
-                                                                ration.history_ration_items &&
-                                                                    ration.history_ration_items.length
-                                                                    ? ration.history_ration_items.reduce((sum, item) => sum +
-                                                                        (item.quantity || 0), 0)
-                                                                    : 0
-                                                            }} kg
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {{ formatCurrency(totalCost(ration.history_ration_items)) }}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <span v-if="ration.created_at">
-                                                                {{ new Date(ration.created_at).toLocaleString('id-ID', {
-                                                                    dateStyle: 'long', timeStyle: 'short'
-                                                                }) }}
-                                                            </span>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </template>
-                                                <TableRow v-if="rations.length === 0">
-                                                    <TableCell colspan="5" class="px-6 py-4 text-center">
-                                                        Belum ada data ransum.
+                                                    <TableCell
+                                                        class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                        {{ ration.name }}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span v-if="ration.action === 'restock'">Restock</span>
+                                                        <span v-else-if="ration.action === 'create'">
+                                                            Stok Baru
+                                                        </span>
+                                                        <span v-else-if="ration.action === 'update'">Update</span>
+                                                        <span v-else>{{ ration.action }}</span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div
+                                                            v-if="ration.history_ration_items && ration.history_ration_items.length">
+                                                            <ul class="ml-0">
+                                                                <li v-for="item in ration.history_ration_items"
+                                                                    :key="item.id" style="list-style: none;">
+                                                                    {{ item.feed }},
+                                                                    <!-- {{ formatCurrency(item.price) }} -->
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                        <span v-else>Tidak ada komposisi</span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {{
+                                                            ration.history_ration_items &&
+                                                                ration.history_ration_items.length
+                                                                ? ration.history_ration_items.reduce((sum, item) => sum +
+                                                                    (item.quantity || 0), 0)
+                                                                : 0
+                                                        }} kg
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {{ formatCurrency(totalCost(ration.history_ration_items)) }}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span v-if="ration.created_at">
+                                                            {{ new Date(ration.created_at).toLocaleString('id-ID', {
+                                                                dateStyle: 'long', timeStyle: 'short'
+                                                            }) }}
+                                                        </span>
                                                     </TableCell>
                                                 </TableRow>
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                        <TabsContent value="feed">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        <div class="flex items-center justify-between">
-                                            Pakan
-                                            <div>
-                                                <Link :href="route('rations.create')">
-                                                <Button size="sm">Catat sisa pakan</Button>
-                                                </Link>
-                                            </div>
+                                            </template>
+                                            <TableRow v-if="rations.length === 0">
+                                                <TableCell colspan="5" class="px-6 py-4 text-center">
+                                                    Belum ada data ransum.
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="feed">
+                        <Card class="min-h-[600px]">
+                            <CardHeader>
+                                <CardTitle>
+                                    <div class="flex items-center justify-between">
+                                        Pakan
+                                        <div>
+                                            <Link :href="route('rations.create')">
+                                            <Button size="sm">Catat sisa pakan</Button>
+                                            </Link>
                                         </div>
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Hindari pemborosan pakan dengan melacak sisa pakan secara detail, sehingga
-                                        Anda dapat menghemat biaya dan meningkatkan efisiensi peternakan.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent class="space-y-2">
-                                    Belum ada Pakan.
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                    </Tabs>
-                </div>
+                                    </div>
+                                </CardTitle>
+                                <CardDescription>
+                                    Hindari pemborosan pakan dengan melacak sisa pakan secara detail, sehingga
+                                    Anda dapat menghemat biaya dan meningkatkan efisiensi peternakan.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent class="space-y-2">
+                                Belum ada Pakan.
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
             </div>
         </div>
     </AppLayout>

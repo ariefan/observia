@@ -23,7 +23,7 @@ class LivestockSeeder extends Seeder
         \DB::table('farms')->truncate();
         \DB::table('livestocks')->truncate();
         \DB::table('livestock_weights')->truncate();
-        \DB::table('livestock_milking')->truncate();
+        \DB::table('livestock_milkings')->truncate();
 
         $user = User::FirstOrCreate(
             [ 'email' => 'test@aifarm.id' ],

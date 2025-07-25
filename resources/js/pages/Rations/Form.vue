@@ -9,7 +9,7 @@ import { ref, watch, computed } from 'vue';
 import { X, Plus } from 'lucide-vue-next';
 
 const props = defineProps({
-    ration: Object, // optional for edit
+    ration: Object,
     restock: Boolean,
 });
 
@@ -130,7 +130,7 @@ const submit = () => {
                             </div>
 
 
-                            <div class="mt-4 flex justify-center" v-if="!restock">
+                            <div class="mt-4 flex justify-center" v-if="!restock && !isEditMode">
                                 <Button variant="ghost" @click="addItem"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
                                     <Plus class="size-4 font-bold" /> Tambah Komposisi

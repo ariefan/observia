@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class LivestockMilking extends Model
+class HerdFeeding extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'livestock_id', 
-        'milk_volume', 
+        'herd_id', 
+        'ration_id', 
+        'quantity', 
         'date', 
         'time', 
         'session', 

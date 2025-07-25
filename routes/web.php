@@ -33,8 +33,7 @@ Route::get('/google/callback', [GoogleLoginController::class, 'handleGoogleCallb
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/livestocks/weight', [LivestockController::class, 'weighting'])->name('livestocks.weighting');
-    Route::post('/livestocks/weight', [LivestockController::class, 'storeWeight'])->name('livestocks.weight.store');
-    
+    Route::post('/livestocks/weight', [LivestockController::class, 'storeWeight'])->name('livestocks.weight.store');    
     Route::get('/livestocks/milking', [LivestockController::class, 'milking'])->name('livestocks.milking');
     Route::post('/livestocks/milking', [LivestockController::class, 'storeMilking'])->name('livestocks.milking.store');
     
@@ -48,7 +47,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/farms/{farm}/users/{user}/role', [FarmController::class, 'updateRole'])->name('farms.user.role');
     Route::put('/farms/{farm}/email/{email}/role-invite', [FarmController::class, 'updateRoleInvite'])->name('farms.user.role-invite');
     Route::delete('/farms/{farm}/users/{user}', [FarmController::class, 'destroyMember'])->name('farms.user');
-    Route::delete('/farms/{farm}/email/{email}', [FarmController::class, 'destroyMemberInvite'])->name('farms.user.remove-invite');
+    Route::delete('/farms/{farm}/email/{email}', [FarmController::class, 'destroyMemberInvite'])->name('farms.user.remove-invite'); 
+    Route::get('/herds/feeding', [HerdController::class, 'feeding'])->name('herds.feeding');
+    Route::post('/herds/feeding', [HerdController::class, 'storeFeeding'])->name('herds.feeding.store');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);

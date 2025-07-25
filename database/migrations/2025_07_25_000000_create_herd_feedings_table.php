@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('herd_feeding', function (Blueprint $table) {
+        Schema::create('herd_feedings', function (Blueprint $table) {
             $table->id();
             $table->foreignUuid('herd_id')->constrained()->onDelete('cascade');
             $table->foreignUuid('ration_id')->constrained()->onDelete('cascade');
             $table->decimal('quantity', 8, 2);
             $table->date('date');
             $table->time('time')->nullable();
+            $table->string('session')->nullable();
+            $table->string('device_id')->nullable();
             $table->foreignUuid('user_id');
             $table->text('notes')->nullable();
             $table->timestamps();
