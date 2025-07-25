@@ -18,15 +18,32 @@ class RationController extends Controller
      */
     public function index()
     {
-        $rations = Ration::with('rationItems')->where('farm_id', auth()->user()->current_farm_id)->get();
-        $historyRations = HistoryRation::with('historyRationItems')
+        $month = request('month');
+        $year = request('year');
+
+        $rations = Ration::with('rationItems')
             ->where('farm_id', auth()->user()->current_farm_id)
+            ->get();
+
+        $historyRationsQuery = HistoryRation::with('historyRationItems')
+            ->where('farm_id', auth()->user()->current_farm_id);
+
+        if ($month) {
+            $historyRationsQuery->whereMonth('created_at', $month);
+        }
+        if ($year) {
+            $historyRationsQuery->whereYear('created_at', $year);
+        }
+
+        $historyRations = $historyRationsQuery
             ->orderBy('history_rations.created_at', 'desc')
             ->get();
 
         return Inertia::render('Rations/Index', [
             'rations' => $rations,
             'historyRations' => $historyRations,
+            'selectedMonth' => $month,
+            'selectedYear' => $year,
         ]);
     }
 

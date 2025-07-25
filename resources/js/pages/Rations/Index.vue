@@ -29,10 +29,38 @@ import {
     DialogDescription,
     DialogClose
 } from '@/components/ui/dialog';
+import { Select } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+
+
+import { ref, watch, onMounted } from 'vue';
+import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
     rations: Object,
     historyRations: Object,
+    selectedMonth: String,
+    selectedYear: String,
+});
+
+// Get current month and year
+const now = new Date();
+const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+const currentYear = String(now.getFullYear());
+
+const selectedMonth = ref(props.selectedMonth || currentMonth);
+const selectedYear = ref(props.selectedYear || currentYear);
+
+// Watch for changes and reload data
+watch([selectedMonth, selectedYear], ([month, year]) => {
+    router.get(route('rations.index'), { month, year }, { preserveState: true, preserveScroll: true });
+});
+
+onMounted(() => {
+    // If no initial filter, trigger load with default
+    if (!props.selectedMonth || !props.selectedYear) {
+        router.get(route('rations.index'), { month: selectedMonth.value, year: selectedYear.value }, { preserveState: true, preserveScroll: true });
+    }
 });
 
 const formatCurrency = (value) => {
@@ -47,6 +75,22 @@ const totalCost = (rationItems = []) => {
     return rationItems.reduce((acc, item) => acc + (item.price), 0);
 };
 
+
+
+const months = [
+    { value: '01', label: 'Januari' },
+    { value: '02', label: 'Februari' },
+    { value: '03', label: 'Maret' },
+    { value: '04', label: 'April' },
+    { value: '05', label: 'Mei' },
+    { value: '06', label: 'Juni' },
+    { value: '07', label: 'Juli' },
+    { value: '08', label: 'Agustus' },
+    { value: '09', label: 'September' },
+    { value: '10', label: 'Oktober' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'Desember' },
+]
 </script>
 
 <template>
@@ -208,7 +252,17 @@ const totalCost = (rationItems = []) => {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-2">
-
+                                    <div class="flex items-center gap-4 mb-4">
+                                        <label>Bulan</label>
+                                        <select
+                                            class="w-32 rounded-md border border-gray-300 bg-white dark:bg-gray-900 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                            v-model="selectedMonth">
+                                            <option v-for="month in months" :key="month.value" :value="month.value">
+                                                {{ month.label }}
+                                            </option>
+                                        </select>
+                                        <Input type="number" v-model="selectedYear" class="w-24" />
+                                    </div>
                                     <div class="relative overflow-x-auto sm:rounded-lg">
                                         <Table>
                                             <TableHeader>
@@ -263,7 +317,8 @@ const totalCost = (rationItems = []) => {
                                                         <TableCell>
                                                             <span v-if="ration.created_at">
                                                                 {{ new Date(ration.created_at).toLocaleString('id-ID', {
-                                                                dateStyle: 'long', timeStyle: 'short' }) }}
+                                                                    dateStyle: 'long', timeStyle: 'short'
+                                                                }) }}
                                                             </span>
                                                         </TableCell>
                                                     </TableRow>
