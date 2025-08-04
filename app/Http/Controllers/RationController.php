@@ -6,6 +6,8 @@ use App\Models\Feed;
 use App\Models\Ration;
 use App\Models\HistoryRation;
 use App\Models\HistoryRationItem;
+use App\Models\HerdFeeding;
+use App\Models\Herd;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -39,9 +41,28 @@ class RationController extends Controller
             ->orderBy('history_rations.created_at', 'desc')
             ->get();
 
+        // Get herd feedings for the current farm
+        $herdFeedingsQuery = HerdFeeding::with(['herd', 'ration'])
+            ->whereHas('herd', function ($query) {
+                $query->where('farm_id', auth()->user()->current_farm_id);
+            });
+
+        if ($month) {
+            $herdFeedingsQuery->whereMonth('date', $month);
+        }
+        if ($year) {
+            $herdFeedingsQuery->whereYear('date', $year);
+        }
+
+        $herdFeedings = $herdFeedingsQuery
+            ->orderBy('date', 'desc')
+            ->orderBy('time', 'desc')
+            ->get();
+
         return Inertia::render('Rations/Index', [
             'rations' => $rations,
             'historyRations' => $historyRations,
+            'herdFeedings' => $herdFeedings,
             'selectedMonth' => $month,
             'selectedYear' => $year,
         ]);

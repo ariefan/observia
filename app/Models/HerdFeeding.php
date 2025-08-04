@@ -27,6 +27,11 @@ class HerdFeeding extends Model
         return $this->belongsTo(Herd::class);
     }
 
+    public function ration(): BelongsTo
+    {
+        return $this->belongsTo(Ration::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

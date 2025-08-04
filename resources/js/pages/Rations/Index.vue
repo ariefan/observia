@@ -39,6 +39,7 @@ import { router } from '@inertiajs/vue3';
 const props = defineProps({
     rations: Object,
     historyRations: Object,
+    herdFeedings: Object,
     selectedMonth: String,
     selectedYear: String,
 });
@@ -337,15 +338,14 @@ const months = [
                                     <div class="flex items-center justify-between">
                                         Pakan
                                         <div>
-                                            <Link :href="route('rations.create')">
-                                            <Button size="sm">Catat sisa pakan</Button>
+                                            <Link :href="route('herds.feeding')">
+                                            <Button size="sm">Catat pemberian pakan</Button>
                                             </Link>
                                         </div>
                                     </div>
                                 </CardTitle>
                                 <CardDescription>
-                                    Hindari pemborosan pakan dengan melacak sisa pakan secara detail, sehingga
-                                    Anda dapat menghemat biaya dan meningkatkan efisiensi peternakan.
+                                    Pantau riwayat pemberian pakan pada setiap kandang untuk memastikan ternak mendapat nutrisi yang optimal dan konsisten setiap harinya.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-2">
@@ -372,57 +372,42 @@ const months = [
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            <template v-for="ration in historyRations" :key="ration.id">
+                                            <template v-for="feeding in herdFeedings" :key="feeding.id">
                                                 <TableRow>
                                                     <TableCell
                                                         class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                        {{ ration.name }}
+                                                        {{ feeding.herd ? feeding.herd.name : 'N/A' }}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <span v-if="ration.action === 'restock'">Restock</span>
-                                                        <span v-else-if="ration.action === 'create'">
-                                                            Stok Baru
+                                                        {{ feeding.ration ? feeding.ration.name : 'N/A' }}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {{ feeding.quantity }} kg
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {{ new Date(feeding.date).toLocaleDateString('id-ID', {
+                                                            dateStyle: 'medium'
+                                                        }) }}
+                                                        <span v-if="feeding.time" class="text-sm text-gray-500 ml-1">
+                                                            {{ feeding.time }}
                                                         </span>
-                                                        <span v-else-if="ration.action === 'update'">Update</span>
-                                                        <span v-else>{{ ration.action }}</span>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div
-                                                            v-if="ration.history_ration_items && ration.history_ration_items.length">
-                                                            <ul class="ml-0">
-                                                                <li v-for="item in ration.history_ration_items"
-                                                                    :key="item.id" style="list-style: none;">
-                                                                    {{ item.feed }},
-                                                                    <!-- {{ formatCurrency(item.price) }} -->
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-                                                        <span v-else>Tidak ada komposisi</span>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {{
-                                                            ration.history_ration_items &&
-                                                                ration.history_ration_items.length
-                                                                ? ration.history_ration_items.reduce((sum, item) => sum +
-                                                                    (item.quantity || 0), 0)
-                                                                : 0
-                                                        }} kg
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {{ formatCurrency(totalCost(ration.history_ration_items)) }}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <span v-if="ration.created_at">
-                                                            {{ new Date(ration.created_at).toLocaleString('id-ID', {
-                                                                dateStyle: 'long', timeStyle: 'short'
-                                                            }) }}
+                                                        <span v-if="feeding.session === 'morning'" class="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">
+                                                            Pagi
+                                                        </span>
+                                                        <span v-else-if="feeding.session === 'afternoon'" class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-800 bg-orange-100 rounded-full">
+                                                            Sore
+                                                        </span>
+                                                        <span v-else class="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded-full">
+                                                            {{ feeding.session }}
                                                         </span>
                                                     </TableCell>
                                                 </TableRow>
                                             </template>
-                                            <TableRow v-if="rations.length === 0">
+                                            <TableRow v-if="!herdFeedings || herdFeedings.length === 0">
                                                 <TableCell colspan="5" class="px-6 py-4 text-center">
-                                                    Belum ada data ransum.
+                                                    Belum ada data pemberian pakan.
                                                 </TableCell>
                                             </TableRow>
                                         </TableBody>
