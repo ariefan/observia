@@ -117,6 +117,7 @@ class HerdController extends Controller
     {
         $validated = $request->validate([
             'herd_id' => 'required|exists:herds,id',
+            'ration_id' => 'required|exists:rations,id',
             'quantity' => 'required|numeric|min:0',
             'date' => 'required|date',
             'time' => 'nullable|date_format:H:i',
@@ -139,6 +140,7 @@ class HerdController extends Controller
         }
 
         $herd->feedings()->create([
+            'ration_id' => $validated['ration_id'],
             'quantity' => $validated['quantity'],
             'date' => $validated['date'],
             'time' => $validated['time'] ?? null,
@@ -147,6 +149,6 @@ class HerdController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        return redirect()->route('herds.show', $herd);
+        return redirect()->route('rations.index');
     }
 }

@@ -74,7 +74,7 @@ const loadHerd = async (query: string = '') => {
 // Load rations data
 const loadRations = async (query: string = '') => {
     try {
-        const response = await axios.get(route('rations.index'), { params: { q: query } });
+        const response = await axios.get(route('rations.search', { q: query }));
         rationResults.value = response.data;
         console.log(response.data)
     } catch (error) {

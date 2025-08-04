@@ -349,7 +349,85 @@ const months = [
                                 </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-2">
-                                Belum ada Pakan.
+                                <div class="flex items-center gap-4 mb-4">
+                                    <label>Bulan</label>
+                                    <select
+                                        class="w-32 rounded-md border border-gray-300 bg-white dark:bg-gray-900 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                        v-model="selectedMonth">
+                                        <option v-for="month in months" :key="month.value" :value="month.value">
+                                            {{ month.label }}
+                                        </option>
+                                    </select>
+                                    <Input type="number" v-model="selectedYear" class="w-24" />
+                                </div>
+                                <div class="relative overflow-x-auto sm:rounded-lg">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Nama Kandang</TableHead>
+                                                <TableHead>Ransum</TableHead>
+                                                <TableHead>Jumlah Pemberian</TableHead>
+                                                <TableHead>Tanggal Pemberian</TableHead>
+                                                <TableHead>Sesi</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            <template v-for="ration in historyRations" :key="ration.id">
+                                                <TableRow>
+                                                    <TableCell
+                                                        class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                        {{ ration.name }}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span v-if="ration.action === 'restock'">Restock</span>
+                                                        <span v-else-if="ration.action === 'create'">
+                                                            Stok Baru
+                                                        </span>
+                                                        <span v-else-if="ration.action === 'update'">Update</span>
+                                                        <span v-else>{{ ration.action }}</span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div
+                                                            v-if="ration.history_ration_items && ration.history_ration_items.length">
+                                                            <ul class="ml-0">
+                                                                <li v-for="item in ration.history_ration_items"
+                                                                    :key="item.id" style="list-style: none;">
+                                                                    {{ item.feed }},
+                                                                    <!-- {{ formatCurrency(item.price) }} -->
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                        <span v-else>Tidak ada komposisi</span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {{
+                                                            ration.history_ration_items &&
+                                                                ration.history_ration_items.length
+                                                                ? ration.history_ration_items.reduce((sum, item) => sum +
+                                                                    (item.quantity || 0), 0)
+                                                                : 0
+                                                        }} kg
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {{ formatCurrency(totalCost(ration.history_ration_items)) }}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span v-if="ration.created_at">
+                                                            {{ new Date(ration.created_at).toLocaleString('id-ID', {
+                                                                dateStyle: 'long', timeStyle: 'short'
+                                                            }) }}
+                                                        </span>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </template>
+                                            <TableRow v-if="rations.length === 0">
+                                                <TableCell colspan="5" class="px-6 py-4 text-center">
+                                                    Belum ada data ransum.
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>
