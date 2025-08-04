@@ -345,7 +345,9 @@ const months = [
                                     </div>
                                 </CardTitle>
                                 <CardDescription>
-                                    Pantau riwayat pemberian pakan pada setiap kandang untuk memastikan ternak mendapat nutrisi yang optimal dan konsisten setiap harinya.
+                                    Pantau riwayat pemberian pakan pada setiap kandang untuk memastikan ternak mendapat
+                                    nutrisi
+                                    yang optimal dan konsisten setiap harinya.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-2">
@@ -393,13 +395,16 @@ const months = [
                                                         </span>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <span v-if="feeding.session === 'morning'" class="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">
+                                                        <span v-if="feeding.session === 'morning'"
+                                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">
                                                             Pagi
                                                         </span>
-                                                        <span v-else-if="feeding.session === 'afternoon'" class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-800 bg-orange-100 rounded-full">
+                                                        <span v-else-if="feeding.session === 'afternoon'"
+                                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-800 bg-orange-100 rounded-full">
                                                             Sore
                                                         </span>
-                                                        <span v-else class="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded-full">
+                                                        <span v-else
+                                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded-full">
                                                             {{ feeding.session }}
                                                         </span>
                                                     </TableCell>
