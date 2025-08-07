@@ -48,7 +48,6 @@ import LineChart from "./components/LineChart.vue";
 import HealthHistoryCard from "./components/HealthHistoryCard.vue";
 import FeedHistoryCard from "./components/FeedHistoryCard.vue";
 import FamilyTree from "./components/FamilyTree.vue";
-import OrgChart from "./components/OrgChart.vue";
 import PedigreeCard from "./components/PedigreeCard.vue";
 
 // Assets
@@ -598,12 +597,10 @@ const milkingTrend = computed(() => {
         <FeedHistoryCard :feed="feedData" :feedingHistory="feedingHistory" />
       </div>
 
-      <!-- Pedigree Section -->
-      <PedigreeCard :pedigreeData="pedigreeData" />
-
       <!-- <FamilyTree :goat="goatData" /> -->
 
-      <OrgChart />
+      <!-- Pedigree Section -->
+      <PedigreeCard :pedigreeData="pedigreeData" />
     </div>
   </AppLayout>
 </template>
