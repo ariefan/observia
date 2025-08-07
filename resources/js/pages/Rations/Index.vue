@@ -105,19 +105,18 @@ const saveLeftover = () => {
 
     isLoading.value = true;
 
-    leftoverForm.post(route('rations.leftover.store'), {
-        data: {
-            month: selectedMonth.value,
-            year: selectedYear.value,
-            tab: 'feed' // Keep the current tab
-        },
+    leftoverForm.transform((data) => ({
+        ...data,
+        month: selectedMonth.value,
+        year: selectedYear.value,
+        tab: 'feed'
+    })).post(route('rations.leftover.store'), {
         preserveState: false,
         preserveScroll: true,
         onSuccess: () => {
             editingLeftover.value = null;
             leftoverForm.reset();
             isLoading.value = false;
-            // Let Inertia handle the data refresh automatically
         },
         onError: (errors) => {
             console.error('Error saving leftover:', errors);

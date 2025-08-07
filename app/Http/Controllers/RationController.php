@@ -308,6 +308,9 @@ class RationController extends Controller
             'date' => 'required|date',
             'time' => 'nullable|date_format:H:i',
             'notes' => 'nullable|string|max:1000',
+            'month' => 'nullable|string',
+            'year' => 'nullable|string',
+            'tab' => 'nullable|string',
         ]);
 
         // Get the feeding to validate leftover quantity
@@ -333,9 +336,9 @@ class RationController extends Controller
             ]);
             
             return redirect()->route('rations.index', [
-                'month' => $request->get('month'),
-                'year' => $request->get('year'),
-                'tab' => $request->get('tab', 'feed')
+                'month' => $validated['month'] ?? $request->get('month'),
+                'year' => $validated['year'] ?? $request->get('year'),
+                'tab' => $validated['tab'] ?? $request->get('tab', 'feed')
             ])->with('success', 'Sisa pakan berhasil diperbarui!');
         } else {
             // Create new leftover record
@@ -349,9 +352,9 @@ class RationController extends Controller
             ]);
             
             return redirect()->route('rations.index', [
-                'month' => $request->get('month'),
-                'year' => $request->get('year'),
-                'tab' => $request->get('tab', 'feed')
+                'month' => $validated['month'] ?? $request->get('month'),
+                'year' => $validated['year'] ?? $request->get('year'),
+                'tab' => $validated['tab'] ?? $request->get('tab', 'feed')
             ])->with('success', 'Sisa pakan berhasil dicatat!');
         }
     }
