@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import LivestockDefault from "@/assets/livestock-default.png";
 
@@ -116,8 +116,10 @@ onMounted(() => {
                     <div v-if="topMilkProducers[1]"
                         class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
                         @click="viewLivestock(topMilkProducers[1].id)">
-                        <Avatar :image="getPhotoUrl(topMilkProducers[1])" class="border border-2 border-primary mr-2"
-                            size="xlarge" shape="circle" />
+                        <Avatar class="border-2 border-primary" shape="circle">
+                            <AvatarImage :src="getPhotoUrl(topMilkProducers[1])" :alt="topMilkProducers[1].name" />
+                            <AvatarFallback>{{ topMilkProducers[1].name.charAt(0).toUpperCase() }}</AvatarFallback>
+                        </Avatar>
                         <Badge class="!rounded-full">{{ topMilkProducers[1].aifarm_id }}</Badge>
                         <div class="text-xs">{{ topMilkProducers[1].name }}</div>
                         <div
@@ -131,8 +133,10 @@ onMounted(() => {
                     <div v-if="topMilkProducers[0]"
                         class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
                         @click="viewLivestock(topMilkProducers[0].id)">
-                        <Avatar :image="getPhotoUrl(topMilkProducers[0])" class="border border-2 border-primary mr-2"
-                            size="xlarge" shape="circle" />
+                        <Avatar class="border-2 border-primary" shape="circle">
+                            <AvatarImage :src="getPhotoUrl(topMilkProducers[0])" :alt="topMilkProducers[0].name" />
+                            <AvatarFallback>{{ topMilkProducers[0].name.charAt(0).toUpperCase() }}</AvatarFallback>
+                        </Avatar>
                         <Badge class="!rounded-full">{{ topMilkProducers[0].aifarm_id }}</Badge>
                         <div class="text-xs">{{ topMilkProducers[0].name }}</div>
                         <div
@@ -146,8 +150,10 @@ onMounted(() => {
                     <div v-if="topMilkProducers[2]"
                         class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
                         @click="viewLivestock(topMilkProducers[2].id)">
-                        <Avatar :image="getPhotoUrl(topMilkProducers[2])" class="border border-2 border-primary mr-2"
-                            size="xlarge" shape="circle" />
+                        <Avatar class="border-2 border-primary" shape="circle">
+                            <AvatarImage :src="getPhotoUrl(topMilkProducers[2])" :alt="topMilkProducers[2].name" />
+                            <AvatarFallback>{{ topMilkProducers[2].name.charAt(0).toUpperCase() }}</AvatarFallback>
+                        </Avatar>
                         <Badge class="!rounded-full">{{ topMilkProducers[2].aifarm_id }}</Badge>
                         <div class="text-xs">{{ topMilkProducers[2].name }}</div>
                         <div
@@ -217,8 +223,10 @@ onMounted(() => {
                     <div v-if="topWeightLivestock[1]"
                         class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
                         @click="viewLivestock(topWeightLivestock[1].id)">
-                        <Avatar :image="getPhotoUrl(topWeightLivestock[1])" class="border border-2 border-primary mr-2"
-                            size="xlarge" shape="circle" />
+                        <Avatar class="border-2 border-primary mr-2" shape="circle">
+                            <AvatarImage :src="getPhotoUrl(topWeightLivestock[1])" :alt="topWeightLivestock[1].name" />
+                            <AvatarFallback>{{ topWeightLivestock[1].name.charAt(0).toUpperCase() }}</AvatarFallback>
+                        </Avatar>
                         <Badge class="!rounded-full">{{ topWeightLivestock[1].aifarm_id }}</Badge>
                         <div class="text-xs">{{ topWeightLivestock[1].name }}</div>
                         <div
@@ -232,8 +240,10 @@ onMounted(() => {
                     <div v-if="topWeightLivestock[0]"
                         class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
                         @click="viewLivestock(topWeightLivestock[0].id)">
-                        <Avatar :image="getPhotoUrl(topWeightLivestock[0])" class="border border-2 border-primary mr-2"
-                            size="xlarge" shape="circle" />
+                        <Avatar class="border-2 border-primary mr-2" shape="circle">
+                            <AvatarImage :src="getPhotoUrl(topWeightLivestock[0])" :alt="topWeightLivestock[0].name" />
+                            <AvatarFallback>{{ topWeightLivestock[0].name.charAt(0).toUpperCase() }}</AvatarFallback>
+                        </Avatar>
                         <Badge class="!rounded-full">{{ topWeightLivestock[0].aifarm_id }}</Badge>
                         <div class="text-xs">{{ topWeightLivestock[0].name }}</div>
                         <div
@@ -247,8 +257,10 @@ onMounted(() => {
                     <div v-if="topWeightLivestock[2]"
                         class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
                         @click="viewLivestock(topWeightLivestock[2].id)">
-                        <Avatar :image="getPhotoUrl(topWeightLivestock[2])" class="border border-2 border-primary mr-2"
-                            size="xlarge" shape="circle" />
+                        <Avatar class="border-2 border-primary mr-2" shape="circle">
+                            <AvatarImage :src="getPhotoUrl(topWeightLivestock[2])" :alt="topWeightLivestock[2].name" />
+                            <AvatarFallback>{{ topWeightLivestock[2].name.charAt(0).toUpperCase() }}</AvatarFallback>
+                        </Avatar>
                         <Badge class="!rounded-full">{{ topWeightLivestock[2].aifarm_id }}</Badge>
                         <div class="text-xs">{{ topWeightLivestock[2].name }}</div>
                         <div
