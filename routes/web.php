@@ -51,6 +51,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/herds/feeding', [HerdController::class, 'feeding'])->name('herds.feeding');
     Route::post('/herds/feeding', [HerdController::class, 'storeFeeding'])->name('herds.feeding.store');
 
+    // Leftover Feed Routes
+    Route::get('/rations/leftover', [RationController::class, 'leftover'])->name('rations.leftover');
+    Route::post('/rations/leftover', [RationController::class, 'storeLeftover'])->name('rations.leftover.store');
+
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);

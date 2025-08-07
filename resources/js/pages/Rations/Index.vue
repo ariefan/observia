@@ -1,6 +1,6 @@
 <script setup>
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import {
@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Building2, Pencil, Trash, Plus } from 'lucide-vue-next';
+import { Badge } from '@/components/ui/badge';
 
 import {
     Dialog,
@@ -40,8 +41,10 @@ const props = defineProps({
     rations: Object,
     historyRations: Object,
     herdFeedings: Object,
+    feedingLeftovers: Object,
     selectedMonth: String,
     selectedYear: String,
+    tab: String,
 });
 
 // Get current month and year
@@ -51,16 +54,101 @@ const currentYear = String(now.getFullYear());
 
 const selectedMonth = ref(props.selectedMonth || currentMonth);
 const selectedYear = ref(props.selectedYear || currentYear);
+const editingLeftover = ref(null);
+const isLoading = ref(false);
+
+// Determine the default tab based on URL parameter
+const defaultTab = computed(() => props.tab || 'ration');
+
+const leftoverForm = useForm({
+    feeding_id: '',
+    leftover_quantity: '',
+    date: '',
+    time: '',
+    notes: '',
+});
+
+// Create a map of leftovers by feeding_id for easy lookup
+const leftoverMap = computed(() => {
+    const map = {};
+    if (props.feedingLeftovers && Array.isArray(props.feedingLeftovers)) {
+        props.feedingLeftovers.forEach(leftover => {
+            if (leftover && leftover.feeding_id) {
+                map[leftover.feeding_id] = leftover;
+            }
+        });
+    }
+    return map;
+});
+
+const startEditingLeftover = (feeding) => {
+    const existingLeftover = leftoverMap.value[feeding.id];
+    editingLeftover.value = feeding.id;
+    leftoverForm.reset();
+    leftoverForm.feeding_id = feeding.id;
+    leftoverForm.leftover_quantity = existingLeftover ? existingLeftover.leftover_quantity : '';
+    leftoverForm.date = existingLeftover ? existingLeftover.date : new Date().toISOString().split('T')[0];
+    leftoverForm.time = existingLeftover ? existingLeftover.time : new Date().toTimeString().split(' ')[0].substring(0, 5);
+    leftoverForm.notes = existingLeftover ? existingLeftover.notes : '';
+};
+
+const cancelEditing = () => {
+    editingLeftover.value = null;
+    leftoverForm.reset();
+};
+
+const saveLeftover = () => {
+    if (!leftoverForm.feeding_id || !leftoverForm.leftover_quantity) {
+        console.error('Missing required data for leftover');
+        return;
+    }
+
+    isLoading.value = true;
+
+    leftoverForm.post(route('rations.leftover.store'), {
+        data: {
+            month: selectedMonth.value,
+            year: selectedYear.value,
+            tab: 'feed' // Keep the current tab
+        },
+        preserveState: false,
+        preserveScroll: true,
+        onSuccess: () => {
+            editingLeftover.value = null;
+            leftoverForm.reset();
+            isLoading.value = false;
+            // Let Inertia handle the data refresh automatically
+        },
+        onError: (errors) => {
+            console.error('Error saving leftover:', errors);
+            isLoading.value = false;
+        }
+    });
+};
+
+const calculateEfficiency = (quantity, leftover) => {
+    if (!leftover || leftover === 0) return 100;
+    return Math.round(((quantity - leftover) / quantity) * 100);
+};
 
 // Watch for changes and reload data
 watch([selectedMonth, selectedYear], ([month, year]) => {
-    router.get(route('rations.index'), { month, year }, { preserveState: true, preserveScroll: true });
+    router.get(route('rations.index'), { month, year }, {
+        preserveState: false, // Don't preserve state to get fresh data
+        preserveScroll: true
+    });
 });
 
 onMounted(() => {
     // If no initial filter, trigger load with default
     if (!props.selectedMonth || !props.selectedYear) {
-        router.get(route('rations.index'), { month: selectedMonth.value, year: selectedYear.value }, { preserveState: true, preserveScroll: true });
+        router.get(route('rations.index'), {
+            month: selectedMonth.value,
+            year: selectedYear.value
+        }, {
+            preserveState: false,
+            preserveScroll: true
+        });
     }
 });
 
@@ -121,8 +209,8 @@ const months = [
             </aside>
 
             <div class="flex-1 flex flex-col gap-4 p-4 max-w-7xl mx-auto">
-                <Tabs default-value="ration" class="w-full">
-                    <TabsList class="grid w-full grid-cols-6">
+                <Tabs :default-value="defaultTab" class="w-full">
+                    <TabsList class="grid w-full grid-cols-3">
                         <TabsTrigger class="text-primary font-semibold" value="ration">
                             Stok Ransum
                         </TabsTrigger>
@@ -180,17 +268,17 @@ const months = [
                                                     </TableCell>
                                                     <TableCell>
                                                         {{
-                                                            ration.ration_items && ration.ration_items.length
-                                                                ? ration.ration_items.reduce((sum, item) => sum +
-                                                                    (item.quantity || 0), 0)
-                                                                : 0
+                                                        ration.ration_items && ration.ration_items.length
+                                                        ? ration.ration_items.reduce((sum, item) => sum +
+                                                        (item.quantity || 0), 0)
+                                                        : 0
                                                         }} kg
                                                     </TableCell>
                                                     <TableCell>
                                                         {{ formatCurrency(totalCost(ration.ration_items)) }}
                                                     </TableCell>
                                                     <TableCell class="text-right text-primary">
-                                                        <Link :href="`${route('rations.edit', ration.id)}?restock=1`">
+                                                        <Link :href="`${route('rations.edit', ration.id) }?restock=1`">
                                                         <Button variant="ghost">
                                                             <Plus class="w-4 h-4" /> Restock
                                                         </Button>
@@ -301,11 +389,11 @@ const months = [
                                                     </TableCell>
                                                     <TableCell>
                                                         {{
-                                                            ration.history_ration_items &&
-                                                                ration.history_ration_items.length
-                                                                ? ration.history_ration_items.reduce((sum, item) => sum +
-                                                                    (item.quantity || 0), 0)
-                                                                : 0
+                                                        ration.history_ration_items &&
+                                                        ration.history_ration_items.length
+                                                        ? ration.history_ration_items.reduce((sum, item) => sum +
+                                                        (item.quantity || 0), 0)
+                                                        : 0
                                                         }} kg
                                                     </TableCell>
                                                     <TableCell>
@@ -314,7 +402,7 @@ const months = [
                                                     <TableCell>
                                                         <span v-if="ration.created_at">
                                                             {{ new Date(ration.created_at).toLocaleString('id-ID', {
-                                                                dateStyle: 'long', timeStyle: 'short'
+                                                            dateStyle: 'long', timeStyle: 'short'
                                                             }) }}
                                                         </span>
                                                     </TableCell>
@@ -336,21 +424,98 @@ const months = [
                             <CardHeader>
                                 <CardTitle>
                                     <div class="flex items-center justify-between">
-                                        Pakan
+                                        Pakan & Sisa Pakan
                                         <div>
                                             <Link :href="route('herds.feeding')">
-                                            <Button size="sm">Catat pemberian pakan</Button>
+                                            <Button size="sm">Beri Pakan</Button>
                                             </Link>
                                         </div>
                                     </div>
                                 </CardTitle>
                                 <CardDescription>
-                                    Pantau riwayat pemberian pakan pada setiap kandang untuk memastikan ternak mendapat
-                                    nutrisi
-                                    yang optimal dan konsisten setiap harinya.
+                                    Pantau riwayat pemberian pakan dan catat sisa pakan pada setiap kandang.
+                                    Klik tombol + atau edit untuk menambah/mengubah catatan sisa pakan dan meningkatkan
+                                    efisiensi pemberian pakan.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-2">
+                                <!-- Summary Cards (temporarily hidden) -->
+                                <!-- 
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                    <Card>
+                                        <CardContent class="pt-6">
+                                            <div class="flex items-center">
+                                                <div class="space-y-0.5 flex-1">
+                                                    <div class="text-2xl font-bold">{{ herdFeedings?.length || 0 }}
+                                                    </div>
+                                                    <div class="text-xs text-muted-foreground">
+                                                        Total Pemberian
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                                    <div class="w-4 h-4 rounded-full bg-blue-500"></div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardContent class="pt-6">
+                                            <div class="flex items-center">
+                                                <div class="space-y-0.5 flex-1">
+                                                    <div class="text-2xl font-bold">{{ Object.keys(leftoverMap).length
+                                                        }}</div>
+                                                    <div class="text-xs text-muted-foreground">
+                                                        Sudah Dicatat
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardContent class="pt-6">
+                                            <div class="flex items-center">
+                                                <div class="space-y-0.5 flex-1">
+                                                    <div class="text-2xl font-bold">{{ (herdFeedings?.length || 0) -
+                                                        Object.keys(leftoverMap).length }}</div>
+                                                    <div class="text-xs text-muted-foreground">
+                                                        Belum Dicatat
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                                                    <div class="w-4 h-4 rounded-full bg-orange-500"></div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardContent class="pt-6">
+                                            <div class="flex items-center">
+                                                <div class="space-y-0.5 flex-1">
+                                                    <div class="text-2xl font-bold">{{
+                                                        Math.round(Object.values(leftoverMap).reduce((acc, leftover) =>
+                                                            acc +
+                                                            calculateEfficiency(leftover.feeding?.quantity || 0,
+                                                                leftover.leftover_quantity), 0) /
+                                                            Math.max(Object.keys(leftoverMap).length, 1))}}%</div>
+                                                    <div class="text-xs text-muted-foreground">
+                                                        Rata-rata Efisiensi
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                                                    <div class="w-4 h-4 rounded-full bg-purple-500"></div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                                -->
                                 <div class="flex items-center gap-4 mb-4">
                                     <label>Bulan</label>
                                     <select
@@ -369,8 +534,11 @@ const months = [
                                                 <TableHead>Nama Kandang</TableHead>
                                                 <TableHead>Ransum</TableHead>
                                                 <TableHead>Jumlah Pemberian</TableHead>
+                                                <TableHead>Sisa Pakan</TableHead>
+                                                <TableHead>Efisiensi</TableHead>
                                                 <TableHead>Tanggal Pemberian</TableHead>
                                                 <TableHead>Sesi</TableHead>
+                                                <TableHead class="text-center">Aksi</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -384,11 +552,56 @@ const months = [
                                                         {{ feeding.ration ? feeding.ration.name : 'N/A' }}
                                                     </TableCell>
                                                     <TableCell>
-                                                        {{ feeding.quantity }} kg
+                                                        <div class="flex flex-col">
+                                                            <span class="font-semibold text-lg">{{ feeding.quantity
+                                                                }}</span>
+                                                            <span class="text-xs text-muted-foreground">kg</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div v-if="editingLeftover === feeding.id" class="space-y-2">
+                                                            <Input v-model="leftoverForm.leftover_quantity"
+                                                                type="number" step="0.01" min="0"
+                                                                :max="feeding.quantity" placeholder="0.00" class="w-20"
+                                                                @keyup.enter="saveLeftover"
+                                                                @keyup.escape="cancelEditing" />
+                                                            <div v-if="leftoverForm.errors.leftover_quantity"
+                                                                class="text-xs text-red-600">
+                                                                {{ leftoverForm.errors.leftover_quantity }}
+                                                            </div>
+                                                        </div>
+                                                        <div v-else-if="leftoverMap[feeding.id]"
+                                                            class="flex flex-col items-center">
+                                                            <span class="font-semibold text-lg text-orange-600">{{
+                                                                leftoverMap[feeding.id].leftover_quantity }}</span>
+                                                            <span class="text-xs text-muted-foreground">kg</span>
+                                                        </div>
+                                                        <div v-else class="text-center">
+                                                            <span class="text-sm text-muted-foreground">-</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div v-if="leftoverMap[feeding.id]" class="text-center">
+                                                            <div class="flex flex-col items-center">
+                                                                <span class="font-semibold text-lg" :class="{
+                                                                    'text-green-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) > 80,
+                                                                    'text-yellow-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) > 60,
+                                                                    'text-red-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) <= 60
+                                                                }">
+                                                                    {{ calculateEfficiency(feeding.quantity,
+                                                                        leftoverMap[feeding.id].leftover_quantity) }}%
+                                                                </span>
+                                                                <span
+                                                                    class="text-xs text-muted-foreground">dimakan</span>
+                                                            </div>
+                                                        </div>
+                                                        <div v-else class="text-center">
+                                                            <span class="text-sm text-muted-foreground">-</span>
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell>
                                                         {{ new Date(feeding.date).toLocaleDateString('id-ID', {
-                                                            dateStyle: 'medium'
+                                                        dateStyle: 'medium'
                                                         }) }}
                                                         <span v-if="feeding.time" class="text-sm text-gray-500 ml-1">
                                                             {{ feeding.time }}
@@ -408,10 +621,34 @@ const months = [
                                                             {{ feeding.session }}
                                                         </span>
                                                     </TableCell>
+                                                    <TableCell class="text-center">
+                                                        <div v-if="editingLeftover === feeding.id"
+                                                            class="flex gap-1 justify-center">
+                                                            <Button size="sm" @click="saveLeftover"
+                                                                :disabled="leftoverForm.processing || isLoading">
+                                                                <template v-if="leftoverForm.processing || isLoading">
+                                                                    Menyimpan...
+                                                                </template>
+                                                                <template v-else>
+                                                                    Simpan
+                                                                </template>
+                                                            </Button>
+                                                            <Button size="sm" variant="outline" @click="cancelEditing">
+                                                                Batal
+                                                            </Button>
+                                                        </div>
+                                                        <div v-else class="flex gap-1 justify-center">
+                                                            <Button size="sm" variant="outline"
+                                                                @click="startEditingLeftover(feeding)"
+                                                                :title="leftoverMap[feeding.id] ? 'Edit sisa pakan' : 'Tambah sisa pakan'">
+                                                                Catat sisa pakan
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
                                                 </TableRow>
                                             </template>
                                             <TableRow v-if="!herdFeedings || herdFeedings.length === 0">
-                                                <TableCell colspan="5" class="px-6 py-4 text-center">
+                                                <TableCell colspan="8" class="px-6 py-4 text-center">
                                                     Belum ada data pemberian pakan.
                                                 </TableCell>
                                             </TableRow>

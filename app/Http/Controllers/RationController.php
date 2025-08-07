@@ -7,6 +7,7 @@ use App\Models\Ration;
 use App\Models\HistoryRation;
 use App\Models\HistoryRationItem;
 use App\Models\HerdFeeding;
+use App\Models\FeedingLeftover;
 use App\Models\Herd;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,12 +60,32 @@ class RationController extends Controller
             ->orderBy('time', 'desc')
             ->get();
 
+        // Get feeding leftovers for the current farm
+        $feedingLeftoversQuery = FeedingLeftover::with(['feeding.herd', 'feeding.ration'])
+            ->whereHas('feeding.herd', function ($query) {
+                $query->where('farm_id', auth()->user()->current_farm_id);
+            });
+
+        if ($month) {
+            $feedingLeftoversQuery->whereMonth('date', $month);
+        }
+        if ($year) {
+            $feedingLeftoversQuery->whereYear('date', $year);
+        }
+
+        $feedingLeftovers = $feedingLeftoversQuery
+            ->orderBy('date', 'desc')
+            ->orderBy('time', 'desc')
+            ->get();
+
         return Inertia::render('Rations/Index', [
             'rations' => $rations,
             'historyRations' => $historyRations,
             'herdFeedings' => $herdFeedings,
+            'feedingLeftovers' => $feedingLeftovers,
             'selectedMonth' => $month,
             'selectedYear' => $year,
+            'tab' => request('tab'),
         ]);
     }
 
@@ -253,5 +274,85 @@ class RationController extends Controller
             });
 
         return response()->json($rations);
+    }
+
+    /**
+     * Show the form for recording leftover feed
+     */
+    public function leftover()
+    {
+        // Get feedings without leftover records from last 7 days
+        $availableFeedings = HerdFeeding::with(['herd', 'ration'])
+            ->whereHas('herd', function ($query) {
+                $query->where('farm_id', auth()->user()->current_farm_id);
+            })
+            ->whereDoesntHave('leftover')
+            ->where('date', '>=', now()->subDays(7))
+            ->orderBy('date', 'desc')
+            ->orderBy('time', 'desc')
+            ->get();
+
+        return Inertia::render('Rations/LeftoverForm', [
+            'availableFeedings' => $availableFeedings,
+        ]);
+    }
+
+    /**
+     * Store leftover feed record
+     */
+    public function storeLeftover(Request $request)
+    {
+        $validated = $request->validate([
+            'feeding_id' => 'required|exists:herd_feedings,id',
+            'leftover_quantity' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'time' => 'nullable|date_format:H:i',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        // Get the feeding to validate leftover quantity
+        $feeding = HerdFeeding::find($validated['feeding_id']);
+        
+        if ($validated['leftover_quantity'] > $feeding->quantity) {
+            return back()->withErrors([
+                'leftover_quantity' => 'Sisa pakan tidak boleh melebihi jumlah pakan yang diberikan (' . $feeding->quantity . ' kg).'
+            ]);
+        }
+
+        // Check if leftover already exists for this feeding
+        $existingLeftover = FeedingLeftover::where('feeding_id', $validated['feeding_id'])->first();
+        
+        if ($existingLeftover) {
+            // Update existing leftover
+            $existingLeftover->update([
+                'leftover_quantity' => $validated['leftover_quantity'],
+                'date' => $validated['date'],
+                'time' => $validated['time'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'user_id' => auth()->id(),
+            ]);
+            
+            return redirect()->route('rations.index', [
+                'month' => $request->get('month'),
+                'year' => $request->get('year'),
+                'tab' => $request->get('tab', 'feed')
+            ])->with('success', 'Sisa pakan berhasil diperbarui!');
+        } else {
+            // Create new leftover record
+            FeedingLeftover::create([
+                'feeding_id' => $validated['feeding_id'],
+                'leftover_quantity' => $validated['leftover_quantity'],
+                'date' => $validated['date'],
+                'time' => $validated['time'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'user_id' => auth()->id(),
+            ]);
+            
+            return redirect()->route('rations.index', [
+                'month' => $request->get('month'),
+                'year' => $request->get('year'),
+                'tab' => $request->get('tab', 'feed')
+            ])->with('success', 'Sisa pakan berhasil dicatat!');
+        }
     }
 }
