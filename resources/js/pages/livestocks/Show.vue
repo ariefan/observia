@@ -49,6 +49,7 @@ import HealthHistoryCard from "./components/HealthHistoryCard.vue";
 import FeedHistoryCard from "./components/FeedHistoryCard.vue";
 import FamilyTree from "./components/FamilyTree.vue";
 import OrgChart from "./components/OrgChart.vue";
+import PedigreeCard from "./components/PedigreeCard.vue";
 
 // Assets
 import Example2 from "@/assets/example-2.png";
@@ -61,6 +62,8 @@ const props = defineProps<{
   lactationDays: number;
   rank?: number;
   totalRanked?: number;
+  feedingHistory?: any[];
+  pedigreeData?: any[];
 }>();
 
 // Breadcrumb navigation
@@ -592,8 +595,11 @@ const milkingTrend = computed(() => {
       <!-- Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <HealthHistoryCard :history="healthData" />
-        <FeedHistoryCard :feed="feedData" />
+        <FeedHistoryCard :feed="feedData" :feedingHistory="feedingHistory" />
       </div>
+
+      <!-- Pedigree Section -->
+      <PedigreeCard :pedigreeData="pedigreeData" />
 
       <!-- <FamilyTree :goat="goatData" /> -->
 

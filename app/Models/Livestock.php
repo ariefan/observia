@@ -89,20 +89,19 @@ class Livestock extends Model
 
     public static function pedigree(string $id)
     {
-        DB::statement("SET @nomor=0");
+        // SQLite compatible version using recursive CTE
         $sql = "WITH RECURSIVE FamilyTree AS (
             SELECT
-                @nomor:=@nomor+1 AS nomor,
                 l.id,
                 l.name,
-                female_parent_id,
-                male_parent_id,
-                breed_id,
-                sex,
-                b.name breed_name,
+                l.female_parent_id,
+                l.male_parent_id,
+                l.breed_id,
+                l.sex,
+                b.name as breed_name,
                 l.photo,
                 0 AS depth,
-                CAST(@nomor AS CHAR(100)) AS path
+                l.id AS path
             FROM
                 livestocks l
             JOIN breeds b ON b.id = l.breed_id
@@ -112,17 +111,16 @@ class Livestock extends Model
             UNION ALL
 
             SELECT
-                @nomor:=@nomor+1 AS nomor,
                 parent.id,
                 parent.name,
                 parent.female_parent_id,
                 parent.male_parent_id,
                 parent.breed_id,
                 parent.sex,
-                b.name breed_name,
+                b.name as breed_name,
                 parent.photo,
                 child.depth + 1 AS depth,
-                CONCAT(child.path, ',', @nomor) AS path
+                child.path || ',' || parent.id AS path
             FROM
                 livestocks parent
             INNER JOIN
@@ -132,7 +130,7 @@ class Livestock extends Model
                 child.depth < 3
         )
 
-        SELECT * FROM FamilyTree ORDER BY depth, female_parent_id, male_parent_id, path;
+        SELECT * FROM FamilyTree ORDER BY depth, female_parent_id, male_parent_id;
         ";
 
         return DB::select($sql, [$id]);

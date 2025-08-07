@@ -198,6 +198,19 @@ class LivestockController extends Controller
         $totalRanked = $livestockAverages->count();
         // --- End ranking ---
 
+        // Get feeding history from HerdFeeding
+        $feedingHistory = \App\Models\HerdFeeding::whereHas('herd.livestocks', function($q) use ($livestock) {
+            $q->where('livestocks.id', $livestock->id);
+        })
+        ->with(['ration.rationItems', 'user', 'leftover'])
+        ->orderBy('date', 'desc')
+        ->orderBy('time', 'desc')
+        ->take(10)
+        ->get();
+
+        // Get pedigree data
+        $pedigreeData = \App\Models\Livestock::pedigree($livestock->id);
+
         return Inertia::render('livestocks/Show', [
             'livestock' => $livestock,
             'weightHistory' => $weightHistory,
@@ -205,6 +218,8 @@ class LivestockController extends Controller
             'lactationDays' => $lactationDays,
             'rank' => $rank,
             'totalRanked' => $totalRanked,
+            'feedingHistory' => $feedingHistory,
+            'pedigreeData' => $pedigreeData,
         ]);
     }
 
