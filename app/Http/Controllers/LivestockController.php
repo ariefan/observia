@@ -379,4 +379,66 @@ class LivestockController extends Controller
 
         return response()->json($livestocks);
     }
+
+    /**
+     * Get livestock rankings by milk production and weight
+     */
+    public function rankings(Request $request)
+    {
+        $currentFarmId = Auth::user()->current_farm_id;
+        
+        // Get all livestocks in the current farm with necessary relationships
+        $livestocks = Livestock::whereHas('breed.species')
+            ->where('farm_id', $currentFarmId)
+            ->with(['breed.species', 'milkings', 'weights'])
+            ->get();
+        
+        // Calculate milk production rankings
+        $milkRankings = $livestocks->map(function($livestock) {
+            $lactationDays = $livestock->milkings->unique('date')->count();
+            $totalVolume = $livestock->milkings->sum('milk_volume');
+            $avgPerDay = $lactationDays > 0 ? $totalVolume / $lactationDays : 0;
+            
+            return [
+                'id' => $livestock->id,
+                'name' => $livestock->name,
+                'aifarm_id' => $livestock->aifarm_id,
+                'photo' => $livestock->photo ? (is_array($livestock->photo) && count($livestock->photo) > 0 ? $livestock->photo[0] : null) : null,
+                'species' => $livestock->breed->species->name,
+                'average_litre_per_day' => round($avgPerDay, 2),
+                'total_volume' => $totalVolume,
+                'lactation_days' => $lactationDays
+            ];
+        })
+        ->filter(function($item) {
+            return $item['average_litre_per_day'] > 0; // Only include livestock with milk production
+        })
+        ->sortByDesc('average_litre_per_day')
+        ->values();
+        
+        // Calculate weight rankings
+        $weightRankings = $livestocks->map(function($livestock) {
+            $latestWeight = $livestock->weights->sortByDesc('date')->first();
+            $currentWeight = $latestWeight ? $latestWeight->weight : $livestock->weight;
+            
+            return [
+                'id' => $livestock->id,
+                'name' => $livestock->name,
+                'aifarm_id' => $livestock->aifarm_id,
+                'photo' => $livestock->photo ? (is_array($livestock->photo) && count($livestock->photo) > 0 ? $livestock->photo[0] : null) : null,
+                'species' => $livestock->breed->species->name,
+                'current_weight' => $currentWeight ? round($currentWeight, 2) : 0
+            ];
+        })
+        ->filter(function($item) {
+            return $item['current_weight'] > 0; // Only include livestock with recorded weights
+        })
+        ->sortByDesc('current_weight')
+        ->values();
+        
+        return response()->json([
+            'milk_rankings' => $milkRankings->take(10), // Top 10
+            'weight_rankings' => $weightRankings->take(10), // Top 10
+        ]);
+    }
 }
