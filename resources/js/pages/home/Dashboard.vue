@@ -24,8 +24,18 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-defineProps<{
+const props = defineProps<{
     name?: string;
+    totalLivestock?: number;
+    todayMilkProduction?: number;
+    totalMilkProduction?: number;
+    averageWeight?: number;
+    milkProductionTrend?: number | null;
+    weightTrend?: number | null;
+    notification?: {
+        emoji: string;
+        message: string;
+    };
 }>();
 </script>
 
@@ -51,10 +61,9 @@ defineProps<{
                     <CardContent>
                         <!-- Notification Banner -->
                         <div class="flex items-center space-x-4 bg-teal-800 rounded-xl p-3 mb-4">
-                            <div>😊</div>
+                            <div>{{ props.notification?.emoji || '😊' }}</div>
                             <p>
-                                Perkembangan populasi ternak dan susu seluruh peternakanmu hari ini
-                                untung Rp300.000 dari pengelolaan pakan dan peningkatan jumlah susu sebanyak 10%.
+                                {{ props.notification?.message || 'Selamat datang di dashboard peternakan Anda!' }}
                             </p>
                         </div>
 
@@ -68,7 +77,7 @@ defineProps<{
                                 </CardHeader>
                                 <CardContent
                                     class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-6 rounded-b-xl text-5xl font-semibold">
-                                    00 <span class="text-sm font-normal">Liter</span>
+                                    {{ props.todayMilkProduction || 0 }} <span class="text-sm font-normal">Liter</span>
                                 </CardContent>
                             </Card>
 
@@ -80,7 +89,7 @@ defineProps<{
                                 </CardHeader>
                                 <CardContent
                                     class="bg-white dark:bg-zinc-800 dark:text-white text-teal-800 text-center py-6 rounded-b-xl text-5xl font-semibold">
-                                    00 <span class="text-sm font-normal">Ekor</span>
+                                    {{ props.totalLivestock || 0 }} <span class="text-sm font-normal">Ekor</span>
                                 </CardContent>
                             </Card>
                         </div>
@@ -91,33 +100,38 @@ defineProps<{
                             <div class="text-sm px-2 items-center text-left">
                                 <span class="text-left">
                                     Produksi susu seluruh ternakmu hari ini: <br />
-                                    <span class="text-red-300 dark:text-red-700 text-xl font-semibold me-2">↓ 69%</span>
-                                    dari 10000 ekor
+                                    <span v-if="props.milkProductionTrend !== undefined && props.milkProductionTrend !== null && props.milkProductionTrend !== 0"
+                                          :class="props.milkProductionTrend > 0 ? 'text-green-300 dark:text-green-700' : 'text-red-300 dark:text-red-700'"
+                                          class="text-xl font-semibold me-2">
+                                        {{ props.milkProductionTrend > 0 ? '↑' : '↓' }} {{ Math.abs(props.milkProductionTrend) }}%
+                                    </span>
+                                    <span v-else-if="props.milkProductionTrend === 0" class="text-blue-300 dark:text-blue-500 text-xl font-semibold me-2">
+                                        = 0%
+                                    </span>
+                                    <span v-else class="text-gray-300 dark:text-gray-500 text-xl font-semibold me-2">
+                                        - Tidak ada data pembanding
+                                    </span>
+                                    dari {{ props.totalLivestock || 0 }} ekor
                                 </span>
-                                <!-- <div class="flex justify-center gap-2 text-xl font-semibold">
-                                    <span class="text-green-300 dark:text-green-700">↑ 0%</span>
-                                    <span class="text-red-300 dark:text-red-700">↓ 0%</span>
-                                </div>
-                                <span class="text-right">
-                                    dari 10000 ekor
-                                </span> -->
                             </div>
 
                             <!-- Weight Development -->
                             <div class="text-sm px-2 items-center text-left">
                                 <span class="text-left">
-                                    Perkembangan bobot seluruh ternakmu hari ini <br />
-                                    <span class="text-green-300 dark:text-green-700 text-xl font-semibold me-2">↑
-                                        69%</span>
-                                    dari 10000 ekor
+                                    Perkembangan bobot seluruh ternakmu minggu ini: <br />
+                                    <span v-if="props.weightTrend !== undefined && props.weightTrend !== null && props.weightTrend !== 0"
+                                          :class="props.weightTrend > 0 ? 'text-green-300 dark:text-green-700' : 'text-red-300 dark:text-red-700'"
+                                          class="text-xl font-semibold me-2">
+                                        {{ props.weightTrend > 0 ? '↑' : '↓' }} {{ Math.abs(props.weightTrend) }}%
+                                    </span>
+                                    <span v-else-if="props.weightTrend === 0" class="text-blue-300 dark:text-blue-500 text-xl font-semibold me-2">
+                                        = 0%
+                                    </span>
+                                    <span v-else class="text-gray-300 dark:text-gray-500 text-xl font-semibold me-2">
+                                        - Tidak ada data pembanding
+                                    </span>
+                                    rata-rata {{ props.averageWeight || 0 }}kg
                                 </span>
-                                <!-- <div class="flex justify-center gap-2 text-xl font-semibold">
-                                    <span class="text-green-300 dark:text-green-700">↑ 69%</span>
-                                    <span class="text-red-300 dark:text-red-700">↓ 0%</span>
-                                </div> -->
-                                <!-- <span class="text-right">
-                                    dari 10000 ekor
-                                </span> -->
                             </div>
                         </div>
                     </CardContent>
