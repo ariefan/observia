@@ -2,61 +2,38 @@
     <Card class="border border-primary/20 dark:border-primary/80">
       <CardContent class="p-4">
       <h3 class="font-semibold text-lg mb-4">Riwayat Pakan</h3>
-      <div v-if="feedingHistory && feedingHistory.length > 0" class="space-y-3">
-        <div v-for="feeding in feedingHistory" :key="`${feeding.id}-${feeding.date}-${feeding.time}`" 
-             class="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800/50">
-          <div class="flex justify-between items-start mb-2">
-            <div class="flex-1">
-              <p class="font-medium text-sm">{{ feeding.ration?.name || 'Ransum tidak diketahui' }}</p>
-              <p class="text-xs text-muted-foreground">
-                {{ formatDate(feeding.date) }} • {{ feeding.time }} • {{ feeding.session }}
-              </p>
-            </div>
-            <div class="text-right">
-              <p class="text-sm font-medium">{{ feeding.quantity }} kg</p>
-              <p v-if="feeding.leftover" class="text-xs text-orange-600 dark:text-orange-400">
-                Sisa: {{ feeding.leftover.quantity }} kg
-              </p>
-            </div>
-          </div>
-          
-          <div v-if="feeding.ration?.rationItems && feeding.ration.rationItems.length > 0" 
-               class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-            <p class="text-xs text-muted-foreground mb-1">Komposisi:</p>
-            <div class="flex flex-wrap gap-1">
-              <span v-for="item in feeding.ration.rationItems" 
-                    :key="item.id" 
-                    class="inline-block px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs">
-                {{ item.feed }} ({{ item.quantity }} kg)
-              </span>
-            </div>
-          </div>
-          
-          <div v-if="feeding.user" class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-            <div class="w-5 h-5 bg-primary rounded-full flex items-center justify-center text-xs text-white">
-              {{ feeding.user.name?.charAt(0) || 'U' }}
-            </div>
-            <span class="text-xs text-muted-foreground">Oleh {{ feeding.user.name }}</span>
-          </div>
-          
-          <p v-if="feeding.notes" class="text-xs text-muted-foreground mt-2 italic">
-            "{{ feeding.notes }}"
-          </p>
-        </div>
-      </div>
-      
-      <div v-else-if="feed && feed.length > 0" class="space-y-2">
-        <div v-for="item in feed" :key="item.date" class="flex justify-between items-center">
+      <ul v-if="feedingHistory && feedingHistory.length > 0" class="space-y-2">
+        <li v-for="feeding in feedingHistory" :key="`${feeding.id}-${feeding.date}-${feeding.time}`" 
+            class="flex justify-between items-start">
           <div>
-            <p class="font-medium">{{ item.name }}</p>
-            <p class="text-sm text-muted-foreground">{{ item.date }}</p>
+            <Badge variant="default" class="rounded-full mb-1">{{ feeding.ration?.name || 'Ransum tidak diketahui' }}</Badge>
+            <p class="text-sm mt-1">
+              {{ feeding.quantity }} kg • {{ feeding.time }} • {{ translateSession(feeding.session) }}
+              <span v-if="feeding.leftover" class="text-orange-600 dark:text-orange-400">
+                • Sisa: {{ feeding.leftover.leftover_quantity }} kg
+              </span>
+            </p>
+            <div v-if="feeding.ration?.rationItems && feeding.ration.rationItems.length > 0" 
+                 class="text-xs text-muted-foreground mt-1">
+              Komposisi: {{ feeding.ration.rationItems.map(item => `${item.feed} (${item.quantity}kg)`).join(', ') }}
+            </div>
+            <p v-if="feeding.notes" class="text-xs text-muted-foreground mt-1 italic">
+              "{{ feeding.notes }}"
+            </p>
           </div>
-          <div class="flex items-center gap-2">
-            <img v-if="item.avatar" :src="item.avatar" class="w-6 h-6 rounded-full" />
-            <span class="text-sm">{{ item.qty }}</span>
+          <span class="text-sm">{{ formatDate(feeding.date) }}</span>
+        </li>
+      </ul>
+      
+      <ul v-else-if="feed && feed.length > 0" class="space-y-2">
+        <li v-for="item in feed" :key="item.date" class="flex justify-between items-start">
+          <div>
+            <Badge variant="default" class="rounded-full mb-1">{{ item.name }}</Badge>
+            <p class="text-sm mt-1">{{ item.qty }}</p>
           </div>
-        </div>
-      </div>
+          <span class="text-sm">{{ item.date }}</span>
+        </li>
+      </ul>
       
       <div v-else class="text-center py-8 text-muted-foreground">
         <p class="text-sm">Belum ada riwayat pakan</p>
@@ -68,6 +45,7 @@
   
 <script setup>
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const props = defineProps({
   feed: {
@@ -90,6 +68,27 @@ const formatDate = (dateStr) => {
     timeZone: 'Asia/Jakarta'
   };
   return date.toLocaleDateString('id-ID', options);
+};
+
+const translateSession = (session) => {
+  if (!session) return '';
+  
+  switch (session.toLowerCase()) {
+    case 'morning':
+      return 'Pagi';
+    case 'afternoon':
+      return 'Siang';
+    case 'evening':
+      return 'Sore';
+    case 'night':
+      return 'Malam';
+    case 'dawn':
+      return 'Subuh';
+    case 'dusk':
+      return 'Maghrib';
+    default:
+      return session; // Return original if no translation found
+  }
 };
 </script>
   
