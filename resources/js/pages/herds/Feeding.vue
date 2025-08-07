@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Core Vue imports
-import { ref, watch, onMounted, nextTick } from "vue";
+import { ref, watch, onMounted, nextTick, computed } from "vue";
 import { Head, useForm } from "@inertiajs/vue3";
 import axios from "axios";
 
@@ -31,7 +31,8 @@ const getDisplayValue = (herd: any) => {
 
 const getRationDisplayValue = (ration: any) => {
     if (!ration) return '';
-    return `${ration.name}`;
+    const quantityText = ration.total_quantity ? ` (${ration.total_quantity} kg tersedia)` : '';
+    return `${ration.name}${quantityText}`;
 };
 
 // Get current date and time
@@ -122,6 +123,16 @@ watch(selectedRation, (newValue) => {
     }
 });
 
+// Computed property for available quantity
+const availableQuantity = computed(() => {
+    return selectedRation.value?.total_quantity || 0;
+});
+
+// Computed property for quantity validation
+const quantityExceedsAvailable = computed(() => {
+    return form.quantity > availableQuantity.value;
+});
+
 watch(selectedHerd, (newValue) => {
     if (newValue) {
         form.herd_id = newValue.id;
@@ -160,6 +171,10 @@ watch(() => form.time, async (newTime) => {
 });
 
 const submit = () => {
+    if (quantityExceedsAvailable.value) {
+        alert(`Tidak dapat menyimpan: Jumlah pakan (${form.quantity} kg) melebihi stok tersedia (${availableQuantity.value} kg).`);
+        return;
+    }
     form.post(route('herds.feeding.store'));
 };
 
@@ -263,11 +278,20 @@ const back = () => window.history.back();
                     <div>
                         <Label for="quantity">Volume Pakan</Label>
                         <div class="relative">
-                            <Input id="quantity" type="number" step="0.1" v-model="form.quantity" class="pr-16" />
+                            <Input id="quantity" type="number" step="0.1" v-model="form.quantity" :class="[
+                                'pr-16',
+                                quantityExceedsAvailable ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                            ]" />
                             <div
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">
                                 kg
                             </div>
+                        </div>
+                        <div v-if="selectedRation && availableQuantity > 0" class="text-xs text-muted-foreground mt-1">
+                            Stok tersedia: {{ availableQuantity }} kg
+                        </div>
+                        <div v-if="quantityExceedsAvailable" class="text-xs text-red-500 mt-1">
+                            Jumlah melebihi stok tersedia ({{ availableQuantity }} kg)
                         </div>
                         <InputError :message="form.errors.quantity" />
                     </div>
@@ -306,7 +330,8 @@ const back = () => window.history.back();
                     </div>
                 </div>
                 <div class="flex justify-end mt-4">
-                    <Button type="submit" :disabled="form.processing">
+                    <Button type="submit" :disabled="form.processing || quantityExceedsAvailable"
+                        :class="quantityExceedsAvailable ? 'opacity-50 cursor-not-allowed' : ''">
                         <Milk class="h-4 w-4 mr-2" />
                         Simpan Data Pakan
                     </Button>

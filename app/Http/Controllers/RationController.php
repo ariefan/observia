@@ -243,9 +243,14 @@ class RationController extends Controller
             ->when(!$id && $query, function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%");
             })
+            ->with('rationItems')
             ->select('id', 'name')
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function ($ration) {
+                $ration->total_quantity = $ration->rationItems->sum('quantity');
+                return $ration;
+            });
 
         return response()->json($rations);
     }

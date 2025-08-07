@@ -126,6 +126,7 @@ class HerdController extends Controller
         ]);
 
         $herd = Herd::find($validated['herd_id']);
+        $ration = Ration::with('rationItems')->find($validated['ration_id']);
 
         // Check if feeding already exists for this herd, date, and session
         $existingFeeding = $herd->feedings()
@@ -139,7 +140,15 @@ class HerdController extends Controller
             ]);
         }
 
-        $herd->feedings()->create([
+        // Check if ration has sufficient quantity
+        $totalAvailableQuantity = $ration->rationItems->sum('quantity');
+        if ($validated['quantity'] > $totalAvailableQuantity) {
+            return back()->withErrors([
+                'quantity' => 'Jumlah pakan yang akan diberikan (' . $validated['quantity'] . ' kg) melebihi stok tersedia (' . $totalAvailableQuantity . ' kg).'
+            ]);
+        }
+
+        $feeding = $herd->feedings()->create([
             'ration_id' => $validated['ration_id'],
             'quantity' => $validated['quantity'],
             'date' => $validated['date'],
@@ -149,6 +158,31 @@ class HerdController extends Controller
             'user_id' => auth()->id(),
         ]);
 
+        // Deduct quantity from ration items proportionally
+        $this->deductRationQuantity($ration, $validated['quantity']);
+
         return redirect()->route('rations.index');
+    }
+
+    /**
+     * Deduct quantity from ration items proportionally
+     */
+    private function deductRationQuantity($ration, $feedingQuantity)
+    {
+        $totalRationQuantity = $ration->rationItems->sum('quantity');
+        
+        if ($totalRationQuantity <= 0) {
+            return; // Prevent division by zero
+        }
+
+        foreach ($ration->rationItems as $item) {
+            // Calculate proportional deduction
+            $proportion = $item->quantity / $totalRationQuantity;
+            $deduction = $feedingQuantity * $proportion;
+            
+            // Update the item quantity
+            $newQuantity = max(0, $item->quantity - $deduction);
+            $item->update(['quantity' => $newQuantity]);
+        }
     }
 }
