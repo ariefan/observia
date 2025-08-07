@@ -7,24 +7,20 @@
         <!-- Level 1 - Root -->
         <div class="relative flex items-center">
           <!-- Root Node Card -->
-          <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1">
+          <div 
+            :class="[
+              'bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1',
+              orgData.isClickable ? 'cursor-pointer hover:bg-gray-50 hover:border-blue-300' : ''
+            ]"
+            @click="navigateToLivestock(orgData)"
+          >
             <div class="size-10 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center">
               <img v-if="orgData.avatar" :src="getPhotoUrl(orgData.avatar)" :alt="orgData.name"
                 class="size-10 rounded-full object-cover" @error="handleImageError" />
               <ImageOff v-else class="w-6 h-6 text-gray-400" />
             </div>
             <div class="flex-1 min-w-0">
-              <h3 
-                :class="[
-                  'text-xs font-semibold truncate',
-                  orgData.isClickable 
-                    ? 'text-blue-600 hover:text-blue-800 cursor-pointer hover:underline' 
-                    : 'text-gray-900'
-                ]"
-                @click="navigateToLivestock(orgData)"
-              >
-                {{ orgData.name }}
-              </h3>
+              <h3 class="text-xs font-semibold text-gray-900 truncate">{{ orgData.name }}</h3>
               <p class="text-xs text-gray-600 truncate">{{ orgData.title }}</p>
             </div>
           </div>
@@ -50,24 +46,19 @@
 
                   <!-- Level 2 Node Card -->
                   <div
-                    class="bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1">
+                    :class="[
+                      'bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1',
+                      level2Node.isClickable ? 'cursor-pointer hover:bg-gray-50 hover:border-blue-300' : ''
+                    ]"
+                    @click="navigateToLivestock(level2Node)"
+                  >
                     <div class="size-10 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center">
                       <img v-if="level2Node.avatar" :src="getPhotoUrl(level2Node.avatar)" :alt="level2Node.name"
                         class="size-10 rounded-full object-cover" @error="handleImageError" />
                       <ImageOff v-else class="w-6 h-6 text-gray-400" />
                     </div>
                     <div class="flex-1 min-w-0">
-                      <h3 
-                        :class="[
-                          'text-xs font-semibold truncate',
-                          level2Node.isClickable 
-                            ? 'text-blue-600 hover:text-blue-800 cursor-pointer hover:underline' 
-                            : 'text-gray-900'
-                        ]"
-                        @click="navigateToLivestock(level2Node)"
-                      >
-                        {{ level2Node.name }}
-                      </h3>
+                      <h3 class="text-xs font-semibold text-gray-900 truncate">{{ level2Node.name }}</h3>
                       <p class="text-xs text-gray-600 truncate">{{ level2Node.title }}</p>
                     </div>
                   </div>
@@ -92,24 +83,19 @@
 
                         <!-- Level 3 Node Card -->
                         <div
-                          class="bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1">
+                          :class="[
+                            'bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1',
+                            level3Node.isClickable ? 'cursor-pointer hover:bg-gray-50 hover:border-blue-300' : ''
+                          ]"
+                          @click="navigateToLivestock(level3Node)"
+                        >
                           <div class="size-10 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center">
                             <img v-if="level3Node.avatar" :src="getPhotoUrl(level3Node.avatar)" :alt="level3Node.name"
                               class="size-10 rounded-full object-cover" @error="handleImageError" />
                             <ImageOff v-else class="w-6 h-6 text-gray-400" />
                           </div>
                           <div class="flex-1 min-w-0">
-                            <h3 
-                              :class="[
-                                'text-xs font-semibold truncate',
-                                level3Node.isClickable 
-                                  ? 'text-blue-600 hover:text-blue-800 cursor-pointer hover:underline' 
-                                  : 'text-gray-900'
-                              ]"
-                              @click="navigateToLivestock(level3Node)"
-                            >
-                              {{ level3Node.name }}
-                            </h3>
+                            <h3 class="text-xs font-semibold text-gray-900 truncate">{{ level3Node.name }}</h3>
                             <p class="text-xs text-gray-600 truncate">{{ level3Node.title }}</p>
                           </div>
                         </div>
@@ -167,7 +153,7 @@ const orgData = computed<OrgNode>(() => {
         id: grandparent?.id || `gp-${actualGpIndex}`,
         name: grandparent?.name || `Kakek/Nenek ${actualGpIndex + 1}`,
         title: grandparent?.breed_name || 'Unknown',
-        avatar: grandparent?.photo && grandparent.photo.length > 0 ? grandparent.photo[0] : '',
+        avatar: grandparent?.photo && Array.isArray(grandparent.photo) && grandparent.photo.length > 0 ? grandparent.photo[0] : (grandparent?.photo || ''),
         isClickable: !!grandparent
       }
     })
@@ -176,7 +162,7 @@ const orgData = computed<OrgNode>(() => {
       id: parent?.id || `parent-${index}`,
       name: parent?.name || (index === 0 ? 'Ayah' : 'Ibu'),
       title: parent?.breed_name || 'Unknown',
-      avatar: parent?.photo && parent.photo.length > 0 ? parent.photo[0] : '',
+      avatar: parent?.photo && Array.isArray(parent.photo) && parent.photo.length > 0 ? parent.photo[0] : (parent?.photo || ''),
       children: grandparentNodes,
       isClickable: !!parent
     }
@@ -186,7 +172,7 @@ const orgData = computed<OrgNode>(() => {
     id: currentAnimal?.id || 'current',
     name: currentAnimal?.name || 'Current Animal',
     title: currentAnimal?.breed_name || 'Unknown',
-    avatar: currentAnimal?.photo && currentAnimal.photo.length > 0 ? currentAnimal.photo[0] : '',
+    avatar: currentAnimal?.photo && Array.isArray(currentAnimal.photo) && currentAnimal.photo.length > 0 ? currentAnimal.photo[0] : (currentAnimal?.photo || ''),
     children: parentNodes,
     isClickable: !!currentAnimal
   }
