@@ -7,13 +7,14 @@
         <!-- Level 1 - Root -->
         <div class="relative flex items-center">
           <!-- Root Node Card -->
-          <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 w-48 h-24 flex items-center space-x-3">
-            <div class="w-12 h-12 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center">
-              <img :src="getPhotoUrl(orgData.avatar) || '/api/placeholder/48/48'" :alt="orgData.name"
-                class="w-12 h-12 rounded-full object-cover" @error="handleImageError" />
+          <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1">
+            <div class="size-10 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center">
+              <img v-if="orgData.avatar" :src="getPhotoUrl(orgData.avatar)" :alt="orgData.name"
+                class="size-10 rounded-full object-cover" @error="handleImageError" />
+              <Beef v-else class="w-6 h-6 text-blue-600" />
             </div>
             <div class="flex-1 min-w-0">
-              <h3 class="text-sm font-semibold text-gray-900 truncate">{{ orgData.name }}</h3>
+              <h3 class="text-xs font-semibold text-gray-900 truncate">{{ orgData.name }}</h3>
               <p class="text-xs text-gray-600 truncate">{{ orgData.title }}</p>
             </div>
           </div>
@@ -39,13 +40,14 @@
 
                   <!-- Level 2 Node Card -->
                   <div
-                    class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 w-48 h-24 flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center">
-                      <img :src="getPhotoUrl(level2Node.avatar) || '/api/placeholder/48/48'" :alt="level2Node.name"
-                        class="w-12 h-12 rounded-full object-cover" @error="handleImageError" />
+                    class="bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1">
+                    <div class="size-10 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center">
+                      <img v-if="level2Node.avatar" :src="getPhotoUrl(level2Node.avatar)" :alt="level2Node.name"
+                        class="size-10 rounded-full object-cover" @error="handleImageError" />
+                      <Beef v-else class="w-6 h-6 text-blue-600" />
                     </div>
                     <div class="flex-1 min-w-0">
-                      <h3 class="text-sm font-semibold text-gray-900 truncate">{{ level2Node.name }}</h3>
+                      <h3 class="text-xs font-semibold text-gray-900 truncate">{{ level2Node.name }}</h3>
                       <p class="text-xs text-gray-600 truncate">{{ level2Node.title }}</p>
                     </div>
                   </div>
@@ -70,14 +72,14 @@
 
                         <!-- Level 3 Node Card -->
                         <div
-                          class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 w-48 h-24 flex items-center space-x-3">
-                          <div
-                            class="w-12 h-12 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center">
-                            <img :src="getPhotoUrl(level3Node.avatar) || '/api/placeholder/48/48'" :alt="level3Node.name"
-                              class="w-12 h-12 rounded-full object-cover" @error="handleImageError" />
+                          class="bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1">
+                          <div class="size-10 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center">
+                            <img v-if="level3Node.avatar" :src="getPhotoUrl(level3Node.avatar)" :alt="level3Node.name"
+                              class="size-10 rounded-full object-cover" @error="handleImageError" />
+                            <Beef v-else class="w-6 h-6 text-blue-600" />
                           </div>
                           <div class="flex-1 min-w-0">
-                            <h3 class="text-sm font-semibold text-gray-900 truncate">{{ level3Node.name }}</h3>
+                            <h3 class="text-xs font-semibold text-gray-900 truncate">{{ level3Node.name }}</h3>
                             <p class="text-xs text-gray-600 truncate">{{ level3Node.title }}</p>
                           </div>
                         </div>
@@ -96,6 +98,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { Beef } from 'lucide-vue-next'
 
 interface OrgNode {
   id: string
@@ -110,61 +113,47 @@ const props = defineProps<{
 }>()
 
 const orgData = computed<OrgNode>(() => {
-  if (!props.pedigreeData || props.pedigreeData.length === 0) {
-    return {
-      id: '1',
-      name: 'No Data Available',
-      title: 'Pedigree data not found',
-      avatar: '',
-      children: []
-    }
-  }
-
   // Find current animal (depth 0)
-  const currentAnimal = props.pedigreeData.find(animal => animal.depth === 0)
-  if (!currentAnimal) {
-    return {
-      id: '1',
-      name: 'No Current Animal',
-      title: 'Current animal not found',
-      avatar: '',
-      children: []
-    }
-  }
+  const currentAnimal = props.pedigreeData?.find(animal => animal.depth === 0)
 
-  // Find parents (depth 1)
-  const parents = props.pedigreeData.filter(animal => animal.depth === 1)
-  
+  // Find parents (depth 1)  
+  const parents = props.pedigreeData?.filter(animal => animal.depth === 1) || []
+
   // Find grandparents (depth 2)
-  const grandparents = props.pedigreeData.filter(animal => animal.depth === 2)
+  const grandparents = props.pedigreeData?.filter(animal => animal.depth === 2) || []
 
-  // Build children structure (parents with their grandparents)
-  const children = parents.map((parent, index) => {
-    // Split grandparents between parents
-    const grandparentsPerParent = Math.ceil(grandparents.length / parents.length)
-    const startIndex = index * grandparentsPerParent
-    const parentGrandparents = grandparents.slice(startIndex, startIndex + grandparentsPerParent)
+  // Always create 2 parents (even if data doesn't exist)
+  const parentNodes = [0, 1].map(index => {
+    const parent = parents[index]
+
+    // Always create 2 grandparents per parent (4 total)
+    const grandparentNodes = [0, 1].map(gpIndex => {
+      const actualGpIndex = index * 2 + gpIndex
+      const grandparent = grandparents[actualGpIndex]
+
+      return {
+        id: grandparent?.id || `gp-${actualGpIndex}`,
+        name: grandparent?.name || `Kakek/Nenek ${actualGpIndex + 1}`,
+        title: grandparent?.breed_name || 'Unknown',
+        avatar: grandparent?.photo && grandparent.photo.length > 0 ? grandparent.photo[0] : ''
+      }
+    })
 
     return {
-      id: parent.id,
-      name: parent.name || 'Unknown Parent',
-      title: parent.breed_name || 'Unknown Breed',
-      avatar: parent.photo && parent.photo.length > 0 ? parent.photo[0] : '',
-      children: parentGrandparents.map(gp => ({
-        id: gp.id,
-        name: gp.name || 'Unknown Grandparent',
-        title: gp.breed_name || 'Unknown Breed',
-        avatar: gp.photo && gp.photo.length > 0 ? gp.photo[0] : ''
-      }))
+      id: parent?.id || `parent-${index}`,
+      name: parent?.name || (index === 0 ? 'Ayah' : 'Ibu'),
+      title: parent?.breed_name || 'Unknown',
+      avatar: parent?.photo && parent.photo.length > 0 ? parent.photo[0] : '',
+      children: grandparentNodes
     }
   })
 
   return {
-    id: currentAnimal.id,
-    name: currentAnimal.name || 'Unknown Animal',
-    title: currentAnimal.breed_name || 'Unknown Breed',
-    avatar: currentAnimal.photo && currentAnimal.photo.length > 0 ? currentAnimal.photo[0] : '',
-    children: children
+    id: currentAnimal?.id || 'current',
+    name: currentAnimal?.name || 'Current Animal',
+    title: currentAnimal?.breed_name || 'Unknown',
+    avatar: currentAnimal?.photo && currentAnimal.photo.length > 0 ? currentAnimal.photo[0] : '',
+    children: parentNodes
   }
 })
 

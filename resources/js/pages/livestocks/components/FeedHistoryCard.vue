@@ -8,10 +8,7 @@
           <div>
             <Badge variant="default" class="rounded-full mb-1">{{ feeding.ration?.name || 'Ransum tidak diketahui' }}</Badge>
             <p class="text-sm mt-1">
-              {{ feeding.quantity }} kg • {{ feeding.time }} • {{ translateSession(feeding.session) }}
-              <span v-if="feeding.leftover" class="text-orange-600 dark:text-orange-400">
-                • Sisa: {{ feeding.leftover.leftover_quantity }} kg
-              </span>
+              {{ feeding.time }} • {{ translateSession(feeding.session) }}
             </p>
             <div v-if="feeding.ration?.rationItems && feeding.ration.rationItems.length > 0" 
                  class="text-xs text-muted-foreground mt-1">
@@ -21,7 +18,12 @@
               "{{ feeding.notes }}"
             </p>
           </div>
-          <span class="text-sm">{{ formatDate(feeding.date) }}</span>
+          <div class="text-right">
+            <div class="text-sm mb-1">{{ formatDate(feeding.date) }}</div>
+            <Badge :variant="feeding.leftover ? 'destructive' : 'secondary'" class="text-xs">
+              {{ feeding.quantity }}kg{{ feeding.leftover ? ` sisa ${feeding.leftover.leftover_quantity}kg` : '' }}
+            </Badge>
+          </div>
         </li>
       </ul>
       
