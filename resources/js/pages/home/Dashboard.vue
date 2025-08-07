@@ -109,7 +109,7 @@ const props = defineProps<{
                                         = 0%
                                     </span>
                                     <span v-else class="text-gray-300 dark:text-gray-500 text-xl font-semibold me-2">
-                                        - Tidak ada data pembanding
+                                        0%
                                     </span>
                                     dari {{ props.totalLivestock || 0 }} ekor
                                 </span>
@@ -128,7 +128,7 @@ const props = defineProps<{
                                         = 0%
                                     </span>
                                     <span v-else class="text-gray-300 dark:text-gray-500 text-xl font-semibold me-2">
-                                        - Tidak ada data pembanding
+                                        0%
                                     </span>
                                     rata-rata {{ props.averageWeight || 0 }}kg
                                 </span>
