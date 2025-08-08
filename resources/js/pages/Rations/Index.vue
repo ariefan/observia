@@ -267,17 +267,17 @@ const months = [
                                                     </TableCell>
                                                     <TableCell>
                                                         {{
-                                                        ration.ration_items && ration.ration_items.length
-                                                        ? ration.ration_items.reduce((sum, item) => sum +
-                                                        (item.quantity || 0), 0)
-                                                        : 0
+                                                            ration.ration_items && ration.ration_items.length
+                                                                ? ration.ration_items.reduce((sum, item) => sum +
+                                                                    (item.quantity || 0), 0)
+                                                                : 0
                                                         }} kg
                                                     </TableCell>
                                                     <TableCell>
                                                         {{ formatCurrency(totalCost(ration.ration_items)) }}
                                                     </TableCell>
                                                     <TableCell class="text-right text-primary">
-                                                        <Link :href="`${route('rations.edit', ration.id) }?restock=1`">
+                                                        <Link :href="`${route('rations.edit', ration.id)}?restock=1`">
                                                         <Button variant="ghost">
                                                             <Plus class="w-4 h-4" /> Restock
                                                         </Button>
@@ -388,11 +388,11 @@ const months = [
                                                     </TableCell>
                                                     <TableCell>
                                                         {{
-                                                        ration.history_ration_items &&
-                                                        ration.history_ration_items.length
-                                                        ? ration.history_ration_items.reduce((sum, item) => sum +
-                                                        (item.quantity || 0), 0)
-                                                        : 0
+                                                            ration.history_ration_items &&
+                                                                ration.history_ration_items.length
+                                                                ? ration.history_ration_items.reduce((sum, item) => sum +
+                                                                    (item.quantity || 0), 0)
+                                                                : 0
                                                         }} kg
                                                     </TableCell>
                                                     <TableCell>
@@ -401,7 +401,7 @@ const months = [
                                                     <TableCell>
                                                         <span v-if="ration.created_at">
                                                             {{ new Date(ration.created_at).toLocaleString('id-ID', {
-                                                            dateStyle: 'long', timeStyle: 'short'
+                                                                dateStyle: 'long', timeStyle: 'short'
                                                             }) }}
                                                         </span>
                                                     </TableCell>
@@ -534,7 +534,7 @@ const months = [
                                                 <TableHead>Ransum</TableHead>
                                                 <TableHead>Jumlah Pemberian</TableHead>
                                                 <TableHead>Sisa Pakan</TableHead>
-                                                <TableHead>Efisiensi</TableHead>
+                                                <TableHead>Terbuang</TableHead>
                                                 <TableHead>Tanggal Pemberian</TableHead>
                                                 <TableHead>Sesi</TableHead>
                                                 <TableHead class="text-center">Aksi</TableHead>
@@ -553,7 +553,7 @@ const months = [
                                                     <TableCell>
                                                         <div class="flex flex-col">
                                                             <span class="font-semibold text-lg">{{ feeding.quantity
-                                                                }}</span>
+                                                            }}</span>
                                                             <span class="text-xs text-muted-foreground">kg</span>
                                                         </div>
                                                     </TableCell>
@@ -600,7 +600,7 @@ const months = [
                                                     </TableCell>
                                                     <TableCell>
                                                         {{ new Date(feeding.date).toLocaleDateString('id-ID', {
-                                                        dateStyle: 'medium'
+                                                            dateStyle: 'medium'
                                                         }) }}
                                                         <span v-if="feeding.time" class="text-sm text-gray-500 ml-1">
                                                             {{ feeding.time }}

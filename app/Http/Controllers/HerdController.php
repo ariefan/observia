@@ -121,7 +121,7 @@ class HerdController extends Controller
             'quantity' => 'required|numeric|min:0',
             'date' => 'required|date',
             'time' => 'nullable|date_format:H:i',
-            'session' => 'required|in:morning,afternoon',
+            'session' => 'required|in:morning,afternoon,evening,night',
             'notes' => 'nullable|string|max:1000',
         ]);
 

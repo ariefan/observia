@@ -38,7 +38,12 @@ const getRationDisplayValue = (ration: any) => {
 // Get current date and time
 const now = new Date();
 const currentHour = now.getHours();
-const currentSession = currentHour < 12 ? 'morning' : 'afternoon';
+const currentSession = (() => {
+    if (currentHour >= 5 && currentHour < 12) return 'morning';
+    if (currentHour >= 12 && currentHour < 15) return 'afternoon';
+    if (currentHour >= 15 && currentHour < 19) return 'evening';
+    return 'night';
+})();
 
 const form = useForm({
     herd_id: props.herd.id,
@@ -147,7 +152,11 @@ watch(() => form.session, async (newSession) => {
     if (newSession === 'morning') {
         form.time = '08:00';
     } else if (newSession === 'afternoon') {
+        form.time = '13:00';
+    } else if (newSession === 'evening') {
         form.time = '16:00';
+    } else if (newSession === 'night') {
+        form.time = '19:00';
     }
     await nextTick();
     isUpdatingAutomatically.value = false;
@@ -160,10 +169,14 @@ watch(() => form.time, async (newTime) => {
     if (newTime) {
         isUpdatingAutomatically.value = true;
         const [hours] = newTime.split(':').map(Number);
-        if (hours < 12) {
+        if (hours >= 5 && hours < 12) {
             form.session = 'morning';
-        } else {
+        } else if (hours >= 12 && hours < 15) {
             form.session = 'afternoon';
+        } else if (hours >= 15 && hours < 19) {
+            form.session = 'evening';
+        } else {
+            form.session = 'night';
         }
         await nextTick();
         isUpdatingAutomatically.value = false;
@@ -304,7 +317,9 @@ const back = () => window.history.back();
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="morning">Pagi</SelectItem>
-                                <SelectItem value="afternoon">Sore</SelectItem>
+                                <SelectItem value="afternoon">Siang</SelectItem>
+                                <SelectItem value="evening">Sore</SelectItem>
+                                <SelectItem value="night">Malam</SelectItem>
                             </SelectContent>
                         </Select>
                         <InputError :message="form.errors.session" />
