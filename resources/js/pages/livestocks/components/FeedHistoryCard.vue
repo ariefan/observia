@@ -37,7 +37,8 @@
             </p>
             <div v-if="feeding.ration?.rationItems && feeding.ration.rationItems.length > 0"
               class="text-xs text-muted-foreground mt-1">
-              Komposisi: {{feeding.ration.rationItems.map(item => `${item.feed} (${parseFloat(item.quantity).toFixed(2)}kg)`).join(', ')}}
+              Komposisi: {{feeding.ration.rationItems.map(item => `${item.feed}
+              (${parseFloat(item.quantity).toFixed(2)}kg)`).join(', ')}}
             </div>
             <p v-if="feeding.notes" class="text-xs text-muted-foreground mt-1 italic">
               "{{ feeding.notes }}"
@@ -70,25 +71,55 @@
     </CardContent>
 
     <CardFooter v-if="feedingHistory && feedingHistory.length > 0" class="p-0 mt-auto">
-      <Button @click="openLast30DaysDialog" variant="ghost"
+      <Button @click="openMonthlyDialog" variant="ghost"
         class="w-full justify-center rounded-none text-primary hover:bg-primary/10 py-3" style="box-shadow: none;">
-        <span class="font-semibold underline">Lihat 30 hari terakhir</span>
+        <span class="font-semibold underline">Lihat bulan ini</span>
       </Button>
     </CardFooter>
   </Card>
 
-  <!-- Last 30 Days Feed Dialog -->
-  <Dialog v-model:open="showLast30DaysDialog">
-    <DialogContent class="max-w-xl max-h-[80vh] overflow-y-auto">
+  <!-- Monthly Feed Dialog -->
+  <Dialog v-model:open="showMonthlyDialog">
+    <DialogContent class="max-w-2xl max-h-[80vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>Riwayat Pakan - 30 Hari Terakhir</DialogTitle>
+        <DialogTitle>Riwayat Pakan - {{ getMonthYearName(selectedMonth, selectedYear) }}</DialogTitle>
         <DialogDescription>
-          Seluruh pemberian pakan dalam 30 hari terakhir
+          Seluruh pemberian pakan pada bulan {{ getMonthYearName(selectedMonth, selectedYear) }}
         </DialogDescription>
       </DialogHeader>
 
-      <div v-if="last30DaysFeedings && last30DaysFeedings.length > 0" class="space-y-4">
-        <div v-for="dayData in last30DaysFeedings" :key="dayData.date" class="last:border-b-0">
+      <!-- Month/Year Filter -->
+      <div class="flex gap-4 mb-4">
+        <div class="flex-1">
+          <Label for="month-select" class="text-sm font-medium">Bulan</Label>
+          <Select v-model="selectedMonth">
+            <SelectTrigger id="month-select">
+              <SelectValue placeholder="Pilih bulan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="(month, index) in months" :key="index" :value="index">
+                {{ month }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div class="flex-1">
+          <Label for="year-select" class="text-sm font-medium">Tahun</Label>
+          <Select v-model="selectedYear">
+            <SelectTrigger id="year-select">
+              <SelectValue placeholder="Pilih tahun" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="year in availableYears" :key="year" :value="year">
+                {{ year }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div v-if="filteredFeedings && filteredFeedings.length > 0" class="space-y-4">
+        <div v-for="dayData in filteredFeedings" :key="dayData.date" class="last:border-b-0">
           <div class="flex justify-between items-center">
             <p class="font-semibold text-sm">{{ formatDateLong(dayData.date) }}</p>
             <Badge class="text-xs">
@@ -121,11 +152,11 @@
       </div>
 
       <div v-else class="text-center py-8 text-muted-foreground">
-        <p class="text-sm">Belum ada riwayat pakan dalam 30 hari terakhir</p>
+        <p class="text-sm">Belum ada riwayat pakan pada {{ getMonthYearName(selectedMonth, selectedYear) }}</p>
       </div>
 
       <DialogFooter>
-        <Button @click="showLast30DaysDialog = false" variant="secondary">Tutup</Button>
+        <Button @click="showMonthlyDialog = false" variant="secondary">Tutup</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
@@ -137,6 +168,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const props = defineProps({
   feed: {
@@ -213,11 +246,42 @@ const formatDate = (dateStr) => {
 };
 
 // Dialog state
-const showLast30DaysDialog = ref(false);
+const showMonthlyDialog = ref(false);
+const selectedMonth = ref(new Date().getMonth());
+const selectedYear = ref(new Date().getFullYear());
 
-const openLast30DaysDialog = () => {
-  showLast30DaysDialog.value = true;
+const openMonthlyDialog = () => {
+  selectedMonth.value = new Date().getMonth();
+  selectedYear.value = new Date().getFullYear();
+  showMonthlyDialog.value = true;
 };
+
+// Month names
+const months = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
+// Get month and year display name
+const getMonthYearName = (month, year) => {
+  return `${months[month]} ${year}`;
+};
+
+// Get available years from feeding history
+const availableYears = computed(() => {
+  if (!props.feedingHistory || props.feedingHistory.length === 0) {
+    return [new Date().getFullYear()];
+  }
+
+  const years = new Set();
+  props.feedingHistory.forEach(feeding => {
+    const feedingDate = new Date(feeding.date);
+    years.add(feedingDate.getFullYear());
+  });
+
+  const yearArray = Array.from(years).sort((a, b) => b - a); // Latest year first
+  return yearArray.length > 0 ? yearArray : [new Date().getFullYear()];
+});
 
 // Format date for monthly view
 const formatDateLong = (dateStr) => {
@@ -232,24 +296,21 @@ const formatDateLong = (dateStr) => {
   return date.toLocaleDateString('id-ID', options);
 };
 
-// Get last 30 days feeding data
-const last30DaysFeedings = computed(() => {
+// Get filtered feeding data based on selected month/year
+const filteredFeedings = computed(() => {
   if (!props.feedingHistory || props.feedingHistory.length === 0) {
     return [];
   }
 
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-
-  // Filter feedings for last 30 days and group by date
-  const last30DaysFeedings = props.feedingHistory.filter(feeding => {
+  // Filter feedings for selected month/year and group by date
+  const monthlyFeedings = props.feedingHistory.filter(feeding => {
     const feedingDate = new Date(feeding.date);
-    return feedingDate >= thirtyDaysAgo && feedingDate <= now;
+    return feedingDate.getMonth() === selectedMonth.value && feedingDate.getFullYear() === selectedYear.value;
   });
 
   const grouped = {};
 
-  last30DaysFeedings.forEach(feeding => {
+  monthlyFeedings.forEach(feeding => {
     const date = feeding.date;
 
     if (!grouped[date]) {
