@@ -97,32 +97,54 @@
           <h4 class="font-semibold mb-3">Rincian Per Sesi</h4>
           <div class="space-y-3">
             <div v-for="session in ['morning', 'afternoon', 'evening', 'night']" :key="session"
-              v-if="selectedDateData.sessions[session]" class="border rounded-lg p-3">
+              class="border rounded-lg p-3"
+              :class="selectedDateData.sessions[session] ? '' : 'bg-muted/30'">
               <div class="flex justify-between items-center mb-2">
-                <Badge variant="default">{{ translateSession(session) }}</Badge>
-                <span class="font-semibold">{{ selectedDateData.sessions[session].quantity }} kg</span>
+                <Badge :variant="selectedDateData.sessions[session] ? 'default' : 'secondary'">
+                  {{ translateSession(session) }}
+                </Badge>
+                <span class="font-semibold">
+                  {{ selectedDateData.sessions[session]?.quantity || 0 }} kg
+                </span>
               </div>
-              <div class="space-y-2">
+              
+              <!-- Show feeding data if exists -->
+              <div v-if="selectedDateData.sessions[session]" class="space-y-2">
                 <div v-for="feeding in selectedDateData.sessions[session].feedings" :key="feeding.id"
-                  class="text-sm border-l-2 border-muted pl-3">
-                  <div class="flex justify-between items-start">
+                  class="text-sm border-l-2 border-primary/30 pl-3 bg-background/50 rounded-r p-2">
+                  <div class="flex justify-between items-start mb-1">
                     <div>
-                      <p class="font-medium">{{ feeding.ration?.name || 'Ransum tidak diketahui' }}</p>
+                      <p class="font-medium text-primary">{{ feeding.ration?.name || 'Ransum tidak diketahui' }}</p>
                       <p class="text-muted-foreground text-xs">{{ feeding.time || 'Waktu tidak tercatat' }}</p>
-                      <p v-if="feeding.notes" class="text-xs italic mt-1">"{{ feeding.notes }}"</p>
                     </div>
-                    <span class="font-semibold">{{ feeding.quantity }} kg</span>
+                    <Badge variant="outline" class="text-xs">
+                      {{ feeding.quantity }} kg
+                    </Badge>
                   </div>
+                  
+                  <!-- Show ration composition -->
                   <div v-if="feeding.ration?.rationItems && feeding.ration.rationItems.length > 0"
-                    class="text-xs text-muted-foreground mt-2">
-                    <p class="font-medium">Komposisi:</p>
-                    <ul class="ml-2">
-                      <li v-for="item in feeding.ration.rationItems" :key="item.id">
-                        {{ item.feed }}: {{ item.quantity }}kg
-                      </li>
-                    </ul>
+                    class="text-xs text-muted-foreground mt-2 bg-muted/50 rounded p-2">
+                    <p class="font-medium mb-1">Komposisi Ransum:</p>
+                    <div class="grid grid-cols-1 gap-1">
+                      <div v-for="item in feeding.ration.rationItems" :key="item.id"
+                        class="flex justify-between items-center">
+                        <span>{{ item.feed }}</span>
+                        <span class="font-medium">{{ item.quantity }} kg</span>
+                      </div>
+                    </div>
                   </div>
+                  
+                  <!-- Show notes if exists -->
+                  <p v-if="feeding.notes" class="text-xs italic mt-2 text-muted-foreground bg-muted/30 rounded p-2">
+                    "{{ feeding.notes }}"
+                  </p>
                 </div>
+              </div>
+              
+              <!-- Show no data message -->
+              <div v-else class="text-center py-4">
+                <p class="text-sm text-muted-foreground italic">Tidak ada pemberian pakan</p>
               </div>
             </div>
           </div>
