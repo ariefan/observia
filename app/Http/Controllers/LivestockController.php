@@ -114,7 +114,7 @@ class LivestockController extends Controller
     {
         $this->authorize('view', $livestock);
         
-        $livestock->load('breed.species', 'maleParent', 'femaleParent');
+        $livestock->load('breed.species', 'maleParent', 'femaleParent', 'herd');
 
         // Get weight history for the last 12 months (average per month, fill missing with last known)
         $now = now();

@@ -31,6 +31,11 @@ class Livestock extends Model
         return $this->belongsTo(Breed::class);
     }
 
+    public function herd(): BelongsTo
+    {
+        return $this->belongsTo(Herd::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

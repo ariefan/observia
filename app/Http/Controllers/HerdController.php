@@ -148,9 +148,11 @@ class HerdController extends Controller
             ]);
         }
 
+        // Round quantity to 2 decimal places (comma rounding)
+        $roundedQuantity = round($validated['quantity'], 2);
         $feeding = $herd->feedings()->create([
             'ration_id' => $validated['ration_id'],
-            'quantity' => $validated['quantity'],
+            'quantity' => $roundedQuantity,
             'date' => $validated['date'],
             'time' => $validated['time'] ?? null,
             'session' => $validated['session'],
@@ -178,10 +180,9 @@ class HerdController extends Controller
         foreach ($ration->rationItems as $item) {
             // Calculate proportional deduction
             $proportion = $item->quantity / $totalRationQuantity;
-            $deduction = $feedingQuantity * $proportion;
-            
+            $deduction = round($feedingQuantity * $proportion, 2); // round to 2 decimal places
             // Update the item quantity
-            $newQuantity = max(0, $item->quantity - $deduction);
+            $newQuantity = max(0, round($item->quantity - $deduction, 2)); // round to 2 decimal places
             $item->update(['quantity' => $newQuantity]);
         }
     }

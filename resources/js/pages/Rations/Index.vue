@@ -268,9 +268,9 @@ const months = [
                                                     <TableCell>
                                                         {{
                                                             ration.ration_items && ration.ration_items.length
-                                                                ? ration.ration_items.reduce((sum, item) => sum +
-                                                                    (item.quantity || 0), 0)
-                                                                : 0
+                                                                ? (ration.ration_items.reduce((sum, item) => sum +
+                                                                    (item.quantity || 0), 0)).toFixed(2)
+                                                                : '0.00'
                                                         }} kg
                                                     </TableCell>
                                                     <TableCell>

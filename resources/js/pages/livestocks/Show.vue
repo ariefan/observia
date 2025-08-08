@@ -326,43 +326,48 @@ const milkingTrend = computed(() => {
             </div>
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="icon">
-              <MoreVertical class="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem as-child>
-              <Link :href="route('livestocks.edit', livestock.id)" class="flex items-center gap-2">
-              <Pencil class="h-4 w-4" />
-              <span>Edit data ternak</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem as-child>
-              <div class="flex items-center gap-2">
-                <TreeDeciduous class="h-4 w-4" />
-                <span>Studbook</span>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem as-child>
-              <div class="flex items-center gap-2">
-                <Award class="h-4 w-4" />
-                <span>Sertifikat ternak</span>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem as-child>
-              <div class="flex items-center gap-2">
-                <Skull class="h-4 w-4" />
-                <span>Data end</span>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem @click="deleteLivestock" class="flex items-center gap-2 text-red-600">
-              <Trash2 class="h-4 w-4" />
-              <span>Hapus</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div class="flex items-center gap-3">
+          <div v-if="livestock.herd" class="text-right">
+            <p class="font-medium">{{ livestock.herd.name }}</p>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="outline" size="icon">
+                <MoreVertical class="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem as-child>
+                <Link :href="route('livestocks.edit', livestock.id)" class="flex items-center gap-2">
+                <Pencil class="h-4 w-4" />
+                <span>Edit data ternak</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem as-child>
+                <div class="flex items-center gap-2">
+                  <TreeDeciduous class="h-4 w-4" />
+                  <span>Studbook</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem as-child>
+                <div class="flex items-center gap-2">
+                  <Award class="h-4 w-4" />
+                  <span>Sertifikat ternak</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem as-child>
+                <div class="flex items-center gap-2">
+                  <Skull class="h-4 w-4" />
+                  <span>Data end</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="deleteLivestock" class="flex items-center gap-2 text-red-600">
+                <Trash2 class="h-4 w-4" />
+                <span>Hapus</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <!-- Population Stats Card -->
