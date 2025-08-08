@@ -18,7 +18,7 @@
               <div class="text-sm font-semibold">{{ formatDate(date) }}</div>
               <div class="text-sm font-semibold text-muted-foreground">
                 <Badge class="text-xs">
-                  {{ dateGroup.totalQuantity }} kg
+                  {{ parseFloat(dateGroup.totalQuantity).toFixed(2) }} kg
                 </Badge>
               </div>
             </div>
@@ -37,7 +37,7 @@
             </p>
             <div v-if="feeding.ration?.rationItems && feeding.ration.rationItems.length > 0"
               class="text-xs text-muted-foreground mt-1">
-              Komposisi: {{feeding.ration.rationItems.map(item => `${item.feed} (${item.quantity}kg)`).join(', ')}}
+              Komposisi: {{feeding.ration.rationItems.map(item => `${item.feed} (${parseFloat(item.quantity).toFixed(2)}kg)`).join(', ')}}
             </div>
             <p v-if="feeding.notes" class="text-xs text-muted-foreground mt-1 italic">
               "{{ feeding.notes }}"
@@ -46,7 +46,7 @@
           <div class="text-right">
             <div class="text-sm mb-1">{{ formatDate(feeding.date) }}</div>
             <Badge :variant="feeding.leftover ? 'secondary' : 'secondary'" class="text-xs">
-              {{ feeding.quantity }}kg
+              {{ parseFloat(feeding.quantity).toFixed(2) }}kg
             </Badge>
           </div>
         </li>
@@ -92,7 +92,7 @@
           <div class="flex justify-between items-center">
             <p class="font-semibold text-sm">{{ formatDateLong(dayData.date) }}</p>
             <Badge class="text-xs">
-              {{ dayData.totalQuantity.toFixed(1) }} kg
+              {{ parseFloat(dayData.totalQuantity).toFixed(2) }} kg
             </Badge>
           </div>
 
@@ -105,7 +105,7 @@
                     <span class="w-16">{{ translateSession(session) }}</span>
                     <span class="font-medium">{{ feeding.ration?.name || 'Ransum tidak diketahui' }}</span>
                   </div>
-                  <span class="font-semibold">{{ feeding.quantity }} kg</span>
+                  <span class="font-semibold">{{ parseFloat(feeding.quantity).toFixed(2) }} kg</span>
                 </div>
               </div>
             </div>

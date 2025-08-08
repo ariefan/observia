@@ -31,7 +31,7 @@ const getDisplayValue = (herd: any) => {
 
 const getRationDisplayValue = (ration: any) => {
     if (!ration) return '';
-    const quantityText = ration.total_quantity ? ` (${ration.total_quantity} kg tersedia)` : '';
+    const quantityText = ration.total_quantity ? ` (${parseFloat(ration.total_quantity).toFixed(2)} kg tersedia)` : '';
     return `${ration.name}${quantityText}`;
 };
 
@@ -185,7 +185,7 @@ watch(() => form.time, async (newTime) => {
 
 const submit = () => {
     if (quantityExceedsAvailable.value) {
-        alert(`Tidak dapat menyimpan: Jumlah pakan (${form.quantity} kg) melebihi stok tersedia (${availableQuantity.value} kg).`);
+        alert(`Tidak dapat menyimpan: Jumlah pakan (${parseFloat(form.quantity).toFixed(2)} kg) melebihi stok tersedia (${parseFloat(availableQuantity.value).toFixed(2)} kg).`);
         return;
     }
     form.post(route('herds.feeding.store'));
@@ -301,10 +301,10 @@ const back = () => window.history.back();
                             </div>
                         </div>
                         <div v-if="selectedRation && availableQuantity > 0" class="text-xs text-muted-foreground mt-1">
-                            Stok tersedia: {{ availableQuantity }} kg
+                            Stok tersedia: {{ parseFloat(availableQuantity).toFixed(2) }} kg
                         </div>
                         <div v-if="quantityExceedsAvailable" class="text-xs text-red-500 mt-1">
-                            Jumlah melebihi stok tersedia ({{ availableQuantity }} kg)
+                            Jumlah melebihi stok tersedia ({{ parseFloat(availableQuantity).toFixed(2) }} kg)
                         </div>
                         <InputError :message="form.errors.quantity" />
                     </div>
