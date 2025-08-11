@@ -34,8 +34,8 @@ import { Select } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 
 
-import { ref, watch, onMounted } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { ref, watch, onMounted, computed as vueComputed } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     rations: Object,
@@ -57,8 +57,14 @@ const selectedYear = ref(props.selectedYear || currentYear);
 const editingLeftover = ref(null);
 const isLoading = ref(false);
 
-// Determine the default tab based on URL parameter
-const defaultTab = computed(() => props.tab || 'ration');
+// Determine the default tab based on URL query string (reactive)
+const page = usePage();
+const getTabFromUrl = () => {
+    const url = page.url;
+    const match = url.match(/[?&]tab=([^&]+)/);
+    return match ? decodeURIComponent(match[1]) : (props.tab || 'ration');
+};
+const defaultTab = vueComputed(() => getTabFromUrl());
 
 const leftoverForm = useForm({
     feeding_id: '',
@@ -132,7 +138,8 @@ const calculateEfficiency = (quantity, leftover) => {
 
 // Watch for changes and reload data
 watch([selectedMonth, selectedYear], ([month, year]) => {
-    router.get(route('rations.index'), { month, year }, {
+    const currentTab = getTabFromUrl();
+    router.get(route('rations.index'), { month, year, tab: currentTab }, {
         preserveState: false, // Don't preserve state to get fresh data
         preserveScroll: true
     });
@@ -141,9 +148,11 @@ watch([selectedMonth, selectedYear], ([month, year]) => {
 onMounted(() => {
     // If no initial filter, trigger load with default
     if (!props.selectedMonth || !props.selectedYear) {
+        const currentTab = getTabFromUrl();
         router.get(route('rations.index'), {
             month: selectedMonth.value,
-            year: selectedYear.value
+            year: selectedYear.value,
+            tab: currentTab
         }, {
             preserveState: false,
             preserveScroll: true
@@ -553,7 +562,7 @@ const months = [
                                                     <TableCell>
                                                         <div class="flex flex-col">
                                                             <span class="font-semibold text-lg">{{ feeding.quantity
-                                                                }}</span>
+                                                            }}</span>
                                                             <span class="text-xs text-muted-foreground">kg</span>
                                                         </div>
                                                     </TableCell>

@@ -100,23 +100,19 @@ function goToFeed(route: string) {
     <Teleport to="body">
         <div v-if="showFeedDialog" class="fixed inset-0 z-50 flex items-center justify-center">
             <!-- Backdrop -->
-            <div 
-                class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                @click="showFeedDialog = false"
-            ></div>
-            
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showFeedDialog = false"></div>
+
             <!-- Dialog Content -->
             <div class="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
                 <!-- Close button -->
-                <button 
-                    @click="showFeedDialog = false"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                >
+                <button @click="showFeedDialog = false"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </button>
-                
+
                 <!-- Header -->
                 <div class="mb-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
@@ -126,7 +122,7 @@ function goToFeed(route: string) {
                         Pilih yang ingin Anda lakukan untuk mengelola pakan ternak:
                     </p>
                 </div>
-                
+
                 <!-- Buttons -->
                 <div class="flex gap-6 justify-center">
                     <button @click="goToFeed('/herds/feeding')"
@@ -134,7 +130,7 @@ function goToFeed(route: string) {
                         <Utensils class="mb-2 h-8 w-8" />
                         <span class="font-semibold">Pemberian Pakan</span>
                     </button>
-                    <button @click="goToFeed('/rations/leftover')"
+                    <button @click="goToFeed(route('rations.index', { tab: 'feed' }))"
                         class="flex flex-col items-center p-6 rounded-xl border border-gray-300 shadow-sm hover:shadow-md hover:bg-teal-50 dark:hover:bg-teal-950 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-transform transform hover:scale-105 text-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" class="mb-2 h-8 w-8" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">

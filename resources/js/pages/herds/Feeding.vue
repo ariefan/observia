@@ -266,7 +266,7 @@ const back = () => window.history.back();
                             <ComboboxAnchor as-child>
                                 <ComboboxTrigger as-child>
                                     <Button variant="outline" class="justify-between w-full">
-                                        {{ selectedHerd ? getDisplayValue(selectedHerd) : 'Pilih Ternak' }}
+                                        {{ selectedHerd ? getDisplayValue(selectedHerd) : 'Pilih Kandang' }}
                                         <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                     </Button>
                                 </ComboboxTrigger>
