@@ -553,7 +553,7 @@ const months = [
                                                     <TableCell>
                                                         <div class="flex flex-col">
                                                             <span class="font-semibold text-lg">{{ feeding.quantity
-                                                            }}</span>
+                                                                }}</span>
                                                             <span class="text-xs text-muted-foreground">kg</span>
                                                         </div>
                                                     </TableCell>
@@ -622,7 +622,15 @@ const months = [
                                                         </span>
                                                         <span v-else-if="feeding.session === 'afternoon'"
                                                             class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-800 bg-orange-100 rounded-full">
+                                                            Siang
+                                                        </span>
+                                                        <span v-else-if="feeding.session === 'evening'"
+                                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-purple-800 bg-purple-100 rounded-full">
                                                             Sore
+                                                        </span>
+                                                        <span v-else-if="feeding.session === 'night'"
+                                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">
+                                                            Malam
                                                         </span>
                                                         <span v-else
                                                             class="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded-full">

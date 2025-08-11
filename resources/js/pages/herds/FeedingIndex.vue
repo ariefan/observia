@@ -31,7 +31,12 @@ const getDisplayValue = (livestock: any) => {
 // Get current date and time
 const now = new Date();
 const currentHour = now.getHours();
-const currentSession = currentHour < 12 ? 'morning' : 'afternoon';
+const currentSession = (() => {
+    if (currentHour < 12) return 'morning';
+    if (currentHour < 17) return 'afternoon';
+    if (currentHour < 19) return 'evening';
+    return 'night';
+})();
 
 const form = useForm({
     livestock_id: props.livestock.id,
@@ -93,6 +98,10 @@ watch(() => form.session, async (newSession) => {
         form.time = '08:00';
     } else if (newSession === 'afternoon') {
         form.time = '16:00';
+    } else if (newSession === 'evening') {
+        form.time = '18:00';
+    } else if (newSession === 'night') {
+        form.time = '20:00';
     }
     await nextTick();
     isUpdatingAutomatically.value = false;
@@ -107,8 +116,12 @@ watch(() => form.time, async (newTime) => {
         const [hours] = newTime.split(':').map(Number);
         if (hours < 12) {
             form.session = 'morning';
-        } else {
+        } else if (hours < 17) {
             form.session = 'afternoon';
+        } else if (hours < 19) {
+            form.session = 'evening';
+        } else {
+            form.session = 'night';
         }
         await nextTick();
         isUpdatingAutomatically.value = false;
@@ -207,7 +220,9 @@ const back = () => window.history.back();
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="morning">Pagi</SelectItem>
-                                <SelectItem value="afternoon">Sore</SelectItem>
+                                <SelectItem value="afternoon">Siang</SelectItem>
+                                <SelectItem value="evening">Sore</SelectItem>
+                                <SelectItem value="night">Malam</SelectItem>
                             </SelectContent>
                         </Select>
                         <InputError :message="form.errors.session" />
