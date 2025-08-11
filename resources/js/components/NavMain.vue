@@ -21,6 +21,7 @@ import {
     Users,
     Heart,
     Cross,
+    Droplets,
     Utensils,
 } from 'lucide-vue-next';
 
@@ -66,21 +67,21 @@ function goToFeed(route: string) {
                             <span>Pakan</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem @click="router.get('/livestocks/milking')">
-                            <CreditCard class="mr-2 h-4 w-4" />
+                            <Droplets class="mr-2 h-4 w-4" />
                             <span>Perah</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem @click="router.get('/livestocks/weight')">
                             <Anvil class="mr-2 h-4 w-4" />
                             <span>Bobot ternak</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <!-- <DropdownMenuItem>
                             <Heart class="mr-2 h-4 w-4" />
                             <span>Breeding</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                             <Cross class="mr-2 h-4 w-4" />
                             <span>Kesehatan</span>
-                        </DropdownMenuItem>
+                        </DropdownMenuItem> -->
                     </DropdownMenuGroup>
                 </DropdownMenuContent>
             </DropdownMenu>
