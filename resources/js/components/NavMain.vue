@@ -20,10 +20,11 @@ import {
     User,
     Users,
     Heart,
-    Cross,
+    Wheat,
     Droplets,
     Utensils,
 } from 'lucide-vue-next';
+import { IconScaleOutline, IconHorse, IconScale, IconMilk } from '@tabler/icons-vue';
 
 import { ref } from 'vue';
 
@@ -59,19 +60,20 @@ function goToFeed(route: string) {
                 <DropdownMenuContent class="w-56 ml-8">
                     <DropdownMenuGroup>
                         <DropdownMenuItem @click="router.get('/livestocks/create')">
-                            <PawPrint class="mr-2 h-4 w-4" />
+                            <!-- <PawPrint class="mr-2 h-4 w-4" /> -->
+                            🐮
                             <span>Ternak</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem @click="openFeedDialog">
-                            <Utensils class="mr-2 h-4 w-4" />
+                            <Wheat class="mr-2 h-4 w-4" />
                             <span>Pakan</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem @click="router.get('/livestocks/milking')">
-                            <Droplets class="mr-2 h-4 w-4" />
+                            <IconMilk class="mr-2 h-4 w-4" />
                             <span>Perah</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem @click="router.get('/livestocks/weight')">
-                            <Anvil class="mr-2 h-4 w-4" />
+                            <IconScaleOutline class="mr-2 h-4 w-4" />
                             <span>Bobot ternak</span>
                         </DropdownMenuItem>
                         <!-- <DropdownMenuItem>
