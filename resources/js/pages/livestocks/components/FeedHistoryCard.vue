@@ -18,7 +18,14 @@
               <div class="text-sm font-semibold">{{ formatDate(date) }}</div>
               <div class="text-sm font-semibold text-muted-foreground">
                 <Badge class="text-xs">
-                  {{ parseFloat(dateGroup.totalQuantity).toFixed(2) }} kg
+                  <template
+                    v-if="dateGroup.sessions && Object.values(dateGroup.sessions).length && Object.values(dateGroup.sessions)[0].feedings && Object.values(dateGroup.sessions)[0].feedings[0] && Object.values(dateGroup.sessions)[0].feedings[0].livestock_count">
+                    {{ (parseFloat(dateGroup.totalQuantity) /
+                      (Object.values(dateGroup.sessions)[0].feedings[0].livestock_count || 1)).toFixed(2) }} kg/ekor
+                  </template>
+                  <template v-else>
+                    {{ parseFloat(dateGroup.totalQuantity).toFixed(2) }} kg
+                  </template>
                 </Badge>
               </div>
             </div>
@@ -47,7 +54,7 @@
           <div class="text-right">
             <div class="text-sm mb-1">{{ formatDate(feeding.date) }}</div>
             <Badge :variant="feeding.leftover ? 'secondary' : 'secondary'" class="text-xs">
-              {{ parseFloat(feeding.quantity).toFixed(2) }}kg
+              {{ (parseFloat(feeding.quantity) / (feeding.livestock_count || 1)).toFixed(2) }}kg/ekor
             </Badge>
           </div>
         </li>
@@ -57,7 +64,14 @@
         <li v-for="item in feed" :key="item.date" class="flex justify-between items-start">
           <div>
             <Badge variant="default" class="rounded-full mb-1">{{ item.name }}</Badge>
-            <p class="text-sm mt-1">{{ item.qty }}</p>
+            <p class="text-sm mt-1">
+              <template v-if="item.livestock_count">
+                {{ (parseFloat(item.qty) / (item.livestock_count || 1)).toFixed(2) }} kg/ekor
+              </template>
+              <template v-else>
+                {{ item.qty }}
+              </template>
+            </p>
           </div>
           <span class="text-sm">{{ item.date }}</span>
         </li>
@@ -136,7 +150,8 @@
                     <span class="w-16">{{ translateSession(session) }}</span>
                     <span class="font-medium">{{ feeding.ration?.name || 'Ransum tidak diketahui' }}</span>
                   </div>
-                  <span class="font-semibold">{{ parseFloat(feeding.quantity).toFixed(2) }} kg</span>
+                  <span class="font-semibold">{{ (parseFloat(feeding.quantity) / (feeding.livestock_count ||
+                    1)).toFixed(2) }} kg/ekor</span>
                 </div>
               </div>
             </div>

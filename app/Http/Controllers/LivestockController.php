@@ -202,11 +202,15 @@ class LivestockController extends Controller
         $feedingHistory = \App\Models\HerdFeeding::whereHas('herd.livestocks', function($q) use ($livestock) {
             $q->where('livestocks.id', $livestock->id);
         })
-        ->with(['ration.rationItems', 'user', 'leftover'])
+        ->with(['ration.rationItems', 'user', 'leftover', 'herd.livestocks'])
         ->orderBy('date', 'desc')
         ->orderBy('time', 'desc')
         ->take(10)
-        ->get();
+        ->get()
+        ->map(function ($feeding) {
+            $feeding->livestock_count = $feeding->herd && $feeding->herd->livestocks ? $feeding->herd->livestocks->count() : 1;
+            return $feeding;
+        });
 
         // Get pedigree data
         $pedigreeData = \App\Models\Livestock::pedigree($livestock->id);

@@ -327,9 +327,9 @@ const milkingTrend = computed(() => {
           </div>
         </div>
         <div class="flex items-center gap-3">
-          <div v-if="livestock.herd" class="text-right">
+          <Badge v-if="livestock.herd" class="text-right text-base">
             <p class="font-medium">{{ livestock.herd.name }}</p>
-          </div>
+          </Badge>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <Button variant="outline" size="icon">
