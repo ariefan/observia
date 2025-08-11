@@ -24,7 +24,7 @@
               <div class="text-sm font-semibold text-muted-foreground">
                 <Badge class="text-xs">
                   <template v-if="dateGroup.livestockCount && dateGroup.livestockCount > 1">
-                    {{ (parseFloat(dateGroup.totalQuantity) / dateGroup.livestockCount).toFixed(2) }} kg/ekor
+                    {{ dateGroup.totalQuantityPerLivestock.toFixed(2) }} kg/ekor
                   </template>
                   <template v-else>
                     {{ parseFloat(dateGroup.totalQuantity).toFixed(2) }} kg
@@ -57,7 +57,12 @@
           <div class="text-right">
             <div class="text-sm mb-1">{{ formatDate(feeding.date) }}</div>
             <Badge :variant="feeding.leftover ? 'secondary' : 'secondary'" class="text-xs">
-              {{ (parseFloat(feeding.quantity) / (feeding.livestock_count || 1)).toFixed(2) }}kg/ekor
+              {{
+                feeding.leftover
+                  ? ((parseFloat(feeding.quantity) - parseFloat(feeding.leftover.leftover_quantity || 0)) /
+                    (feeding.livestock_count || 1)).toFixed(2)
+                  : (parseFloat(feeding.quantity) / (feeding.livestock_count || 1)).toFixed(2)
+              }}kg/ekor
             </Badge>
           </div>
         </li>
@@ -141,7 +146,7 @@
             <p class="font-semibold text-sm">{{ formatDateLong(dayData.date) }}</p>
             <Badge class="text-xs">
               <template v-if="dayData.livestockCount && dayData.livestockCount > 1">
-                {{ (parseFloat(dayData.totalQuantity) / dayData.livestockCount).toFixed(2) }} kg/ekor
+                {{ dayData.totalQuantityPerLivestock.toFixed(2) }} kg/ekor
               </template>
               <template v-else>
                 {{ parseFloat(dayData.totalQuantity).toFixed(2) }} kg
@@ -158,8 +163,12 @@
                     <span class="w-16">{{ translateSession(session) }}</span>
                     <span class="font-medium">{{ feeding.ration?.name || 'Ransum tidak diketahui' }}</span>
                   </div>
-                  <span class="font-semibold">{{ (parseFloat(feeding.quantity) / (feeding.livestock_count ||
-                    1)).toFixed(2) }} kg/ekor</span>
+                  <span class="font-semibold">{{
+                    feeding.leftover
+                      ? ((parseFloat(feeding.quantity) - parseFloat(feeding.leftover.leftover_quantity || 0)) /
+                        (feeding.livestock_count || 1)).toFixed(2)
+                      : (parseFloat(feeding.quantity) / (feeding.livestock_count || 1)).toFixed(2)
+                    }} kg/ekor</span>
                 </div>
               </div>
             </div>
@@ -227,8 +236,12 @@ const groupedFeedings = computed(() => {
     }
 
     // Add to total quantity
-    grouped[date].totalQuantity += parseFloat(feeding.quantity);
-    grouped[date].totalQuantityPerLivestock += parseFloat(feeding.quantity) / (feeding.livestock_count || 1);
+    const feedQuantity = parseFloat(feeding.quantity);
+    const leftoverQuantity = feeding.leftover ? parseFloat(feeding.leftover.leftover_quantity || 0) : 0;
+    const consumedQuantity = feedQuantity - leftoverQuantity;
+
+    grouped[date].totalQuantity += feedQuantity;
+    grouped[date].totalQuantityPerLivestock += consumedQuantity / (feeding.livestock_count || 1);
 
     // Group by session
     if (!grouped[date].sessions[feeding.session]) {
@@ -238,8 +251,8 @@ const groupedFeedings = computed(() => {
         feedings: []
       };
     }
-    grouped[date].sessions[feeding.session].quantity += parseFloat(feeding.quantity);
-    grouped[date].sessions[feeding.session].quantityPerLivestock += parseFloat(feeding.quantity) / (feeding.livestock_count || 1);
+    grouped[date].sessions[feeding.session].quantity += feedQuantity;
+    grouped[date].sessions[feeding.session].quantityPerLivestock += consumedQuantity / (feeding.livestock_count || 1);
     grouped[date].sessions[feeding.session].feedings.push(feeding);
 
     // Group by ration
@@ -251,8 +264,8 @@ const groupedFeedings = computed(() => {
         totalQuantityPerLivestock: 0
       };
     }
-    grouped[date].rations[rationName].totalQuantity += parseFloat(feeding.quantity);
-    grouped[date].rations[rationName].totalQuantityPerLivestock += parseFloat(feeding.quantity) / (feeding.livestock_count || 1);
+    grouped[date].rations[rationName].totalQuantity += feedQuantity;
+    grouped[date].rations[rationName].totalQuantityPerLivestock += consumedQuantity / (feeding.livestock_count || 1);
   });
 
   // Convert rations object to array for easier templating
@@ -354,8 +367,12 @@ const filteredFeedings = computed(() => {
     }
 
     // Add to total quantity
-    grouped[date].totalQuantity += parseFloat(feeding.quantity);
-    grouped[date].totalQuantityPerLivestock += parseFloat(feeding.quantity) / (feeding.livestock_count || 1);
+    const feedQuantity = parseFloat(feeding.quantity);
+    const leftoverQuantity = feeding.leftover ? parseFloat(feeding.leftover.leftover_quantity || 0) : 0;
+    const consumedQuantity = feedQuantity - leftoverQuantity;
+
+    grouped[date].totalQuantity += feedQuantity;
+    grouped[date].totalQuantityPerLivestock += consumedQuantity / (feeding.livestock_count || 1);
 
     // Group by session
     if (!grouped[date].sessions[feeding.session]) {
@@ -365,8 +382,8 @@ const filteredFeedings = computed(() => {
         feedings: []
       };
     }
-    grouped[date].sessions[feeding.session].quantity += parseFloat(feeding.quantity);
-    grouped[date].sessions[feeding.session].quantityPerLivestock += parseFloat(feeding.quantity) / (feeding.livestock_count || 1);
+    grouped[date].sessions[feeding.session].quantity += feedQuantity;
+    grouped[date].sessions[feeding.session].quantityPerLivestock += consumedQuantity / (feeding.livestock_count || 1);
     grouped[date].sessions[feeding.session].feedings.push(feeding);
   });
 

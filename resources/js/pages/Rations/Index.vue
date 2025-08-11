@@ -552,19 +552,9 @@ const months = [
                                                     </TableCell>
                                                     <TableCell>
                                                         <div class="flex flex-col">
-                                                            <template
-                                                                v-if="feeding.livestock_count && feeding.livestock_count > 1">
-                                                                <span class="font-semibold text-lg">{{
-                                                                    (parseFloat(feeding.quantity) /
-                                                                    feeding.livestock_count).toFixed(2) }}</span>
-                                                                <span
-                                                                    class="text-xs text-muted-foreground">kg/ekor</span>
-                                                            </template>
-                                                            <template v-else>
-                                                                <span class="font-semibold text-lg">{{ feeding.quantity
-                                                                    }}</span>
-                                                                <span class="text-xs text-muted-foreground">kg</span>
-                                                            </template>
+                                                            <span class="font-semibold text-lg">{{ feeding.quantity
+                                                            }}</span>
+                                                            <span class="text-xs text-muted-foreground">kg</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
@@ -585,11 +575,10 @@ const months = [
                                                                 v-if="feeding.livestock_count && feeding.livestock_count > 1">
                                                                 <span class="font-semibold text-lg text-orange-600">
                                                                     {{
-                                                                        (parseFloat(leftoverMap[feeding.id].leftover_quantity)
-                                                                    / feeding.livestock_count).toFixed(2) }}
+                                                                        (parseFloat(leftoverMap[feeding.id].leftover_quantity)).toFixed(2)
+                                                                    }}
                                                                 </span>
-                                                                <span
-                                                                    class="text-xs text-muted-foreground">kg/ekor</span>
+                                                                <span class="text-xs text-muted-foreground">kg</span>
                                                             </template>
                                                             <template v-else>
                                                                 <span class="font-semibold text-lg text-orange-600">
@@ -604,22 +593,19 @@ const months = [
                                                     </TableCell>
                                                     <TableCell>
                                                         <div v-if="leftoverMap[feeding.id]" class="text-center">
-                                                            <div class="flex flex-col items-center">
-                                                                <span class="font-semibold text-lg" :class="{
-                                                                    'text-green-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) > 80,
-                                                                    'text-yellow-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) > 60,
-                                                                    'text-red-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) <= 60
-                                                                }">
-                                                                    {{ calculateEfficiency(feeding.quantity,
-                                                                        leftoverMap[feeding.id].leftover_quantity) }}%
-                                                                </span>
-                                                                <span
-                                                                    class="text-xs text-muted-foreground">dimakan</span>
-                                                            </div>
+                                                            <span class="font-semibold text-lg" :class="{
+                                                                'text-green-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) > 80,
+                                                                'text-yellow-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) > 60,
+                                                                'text-red-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) <= 60
+                                                            }">
+                                                                {{ calculateEfficiency(feeding.quantity,
+                                                                    leftoverMap[feeding.id].leftover_quantity) }}%
+                                                            </span>
                                                         </div>
                                                         <div v-else class="text-center">
                                                             <span class="text-sm text-muted-foreground">-</span>
                                                         </div>
+                                                        <span class="text-xs text-muted-foreground">&nbsp;</span>
                                                     </TableCell>
                                                     <TableCell>
                                                         {{ new Date(feeding.date).toLocaleDateString('id-ID', {

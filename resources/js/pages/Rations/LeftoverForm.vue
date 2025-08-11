@@ -130,7 +130,7 @@ const submit = () => {
                                                         <template
                                                             v-if="feeding.livestock_count && feeding.livestock_count > 1">
                                                             {{ (parseFloat(feeding.quantity) /
-                                                            feeding.livestock_count).toFixed(2) }} kg/ekor
+                                                                feeding.livestock_count).toFixed(2) }} kg/ekor
                                                         </template>
                                                         <template v-else>
                                                             {{ feeding.quantity }} kg
@@ -199,8 +199,8 @@ const submit = () => {
                                         <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
                                             class="text-xs">
                                             Atau {{ (parseFloat(selectedFeeding.quantity) /
-                                            selectedFeeding.livestock_count).toFixed(2) }} kg/ekor × {{
-                                            selectedFeeding.livestock_count }} ekor
+                                                selectedFeeding.livestock_count).toFixed(2) }} kg/ekor × {{
+                                                selectedFeeding.livestock_count }} ekor
                                         </div>
                                     </div>
                                 </div>
@@ -217,7 +217,7 @@ const submit = () => {
                                                     <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
                                                         class="text-xs text-gray-500">
                                                         {{ (parseFloat(selectedFeeding.quantity) /
-                                                        selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
+                                                            selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
                                                     </div>
                                                 </div>
                                             </div>
@@ -225,12 +225,12 @@ const submit = () => {
                                                 <span>Sisa:</span>
                                                 <div class="text-right">
                                                     <div class="font-medium text-orange-600">{{ form.leftover_quantity
-                                                        }} kg
+                                                    }} kg
                                                         (total)</div>
                                                     <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
                                                         class="text-xs text-gray-500">
                                                         {{ (parseFloat(form.leftover_quantity) /
-                                                        selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
+                                                            selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
                                                     </div>
                                                 </div>
                                             </div>
@@ -239,13 +239,13 @@ const submit = () => {
                                                 <div class="text-right">
                                                     <div class="font-medium text-green-600">
                                                         {{ (selectedFeeding.quantity -
-                                                        form.leftover_quantity).toFixed(2) }} kg
+                                                            form.leftover_quantity).toFixed(2) }} kg
                                                         (total)
                                                     </div>
                                                     <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
                                                         class="text-xs text-gray-500">
                                                         {{ ((selectedFeeding.quantity - form.leftover_quantity) /
-                                                        selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
+                                                            selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
                                                     </div>
                                                 </div>
                                             </div>
