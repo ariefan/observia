@@ -552,9 +552,19 @@ const months = [
                                                     </TableCell>
                                                     <TableCell>
                                                         <div class="flex flex-col">
-                                                            <span class="font-semibold text-lg">{{ feeding.quantity
-                                                            }}</span>
-                                                            <span class="text-xs text-muted-foreground">kg</span>
+                                                            <template
+                                                                v-if="feeding.livestock_count && feeding.livestock_count > 1">
+                                                                <span class="font-semibold text-lg">{{
+                                                                    (parseFloat(feeding.quantity) /
+                                                                    feeding.livestock_count).toFixed(2) }}</span>
+                                                                <span
+                                                                    class="text-xs text-muted-foreground">kg/ekor</span>
+                                                            </template>
+                                                            <template v-else>
+                                                                <span class="font-semibold text-lg">{{ feeding.quantity
+                                                                    }}</span>
+                                                                <span class="text-xs text-muted-foreground">kg</span>
+                                                            </template>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
@@ -571,9 +581,22 @@ const months = [
                                                         </div>
                                                         <div v-else-if="leftoverMap[feeding.id]"
                                                             class="flex flex-col items-center">
-                                                            <span class="font-semibold text-lg text-orange-600">{{
-                                                                leftoverMap[feeding.id].leftover_quantity }}</span>
-                                                            <span class="text-xs text-muted-foreground">kg</span>
+                                                            <template
+                                                                v-if="feeding.livestock_count && feeding.livestock_count > 1">
+                                                                <span class="font-semibold text-lg text-orange-600">
+                                                                    {{
+                                                                        (parseFloat(leftoverMap[feeding.id].leftover_quantity)
+                                                                    / feeding.livestock_count).toFixed(2) }}
+                                                                </span>
+                                                                <span
+                                                                    class="text-xs text-muted-foreground">kg/ekor</span>
+                                                            </template>
+                                                            <template v-else>
+                                                                <span class="font-semibold text-lg text-orange-600">
+                                                                    {{ leftoverMap[feeding.id].leftover_quantity }}
+                                                                </span>
+                                                                <span class="text-xs text-muted-foreground">kg</span>
+                                                            </template>
                                                         </div>
                                                         <div v-else class="text-center">
                                                             <span class="text-sm text-muted-foreground">-</span>

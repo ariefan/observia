@@ -43,7 +43,7 @@ class RationController extends Controller
             ->get();
 
         // Get herd feedings for the current farm
-        $herdFeedingsQuery = HerdFeeding::with(['herd', 'ration'])
+        $herdFeedingsQuery = HerdFeeding::with(['herd.livestocks', 'ration'])
             ->whereHas('herd', function ($query) {
                 $query->where('farm_id', auth()->user()->current_farm_id);
             });
@@ -58,7 +58,11 @@ class RationController extends Controller
         $herdFeedings = $herdFeedingsQuery
             ->orderBy('date', 'desc')
             ->orderBy('time', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($feeding) {
+                $feeding->livestock_count = $feeding->herd && $feeding->herd->livestocks ? $feeding->herd->livestocks->count() : 1;
+                return $feeding;
+            });
 
         // Get feeding leftovers for the current farm
         $feedingLeftoversQuery = FeedingLeftover::with(['feeding.herd', 'feeding.ration'])
@@ -282,7 +286,7 @@ class RationController extends Controller
     public function leftover()
     {
         // Get feedings without leftover records from last 7 days
-        $availableFeedings = HerdFeeding::with(['herd', 'ration'])
+        $availableFeedings = HerdFeeding::with(['herd.livestocks', 'ration'])
             ->whereHas('herd', function ($query) {
                 $query->where('farm_id', auth()->user()->current_farm_id);
             })
@@ -290,7 +294,11 @@ class RationController extends Controller
             ->where('date', '>=', now()->subDays(7))
             ->orderBy('date', 'desc')
             ->orderBy('time', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($feeding) {
+                $feeding->livestock_count = $feeding->herd && $feeding->herd->livestocks ? $feeding->herd->livestocks->count() : 1;
+                return $feeding;
+            });
 
         return Inertia::render('Rations/LeftoverForm', [
             'availableFeedings' => $availableFeedings,

@@ -126,7 +126,15 @@ const submit = () => {
                                                 <div>
                                                     <div class="font-medium">{{ feeding.herd?.name || 'N/A' }}</div>
                                                     <div class="text-sm text-gray-500">
-                                                        {{ feeding.ration?.name || 'N/A' }} - {{ feeding.quantity }} kg
+                                                        {{ feeding.ration?.name || 'N/A' }} -
+                                                        <template
+                                                            v-if="feeding.livestock_count && feeding.livestock_count > 1">
+                                                            {{ (parseFloat(feeding.quantity) /
+                                                            feeding.livestock_count).toFixed(2) }} kg/ekor
+                                                        </template>
+                                                        <template v-else>
+                                                            {{ feeding.quantity }} kg
+                                                        </template>
                                                     </div>
                                                 </div>
                                                 <div class="text-right text-sm text-gray-500">
@@ -158,7 +166,16 @@ const submit = () => {
                                     </div>
                                     <div>
                                         <span class="text-blue-700 font-medium">Jumlah Diberikan:</span>
-                                        <div>{{ selectedFeeding.quantity }} kg</div>
+                                        <template
+                                            v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1">
+                                            <div>{{ (parseFloat(selectedFeeding.quantity) /
+                                                selectedFeeding.livestock_count).toFixed(2) }} kg/ekor</div>
+                                            <div class="text-xs text-gray-500">(Total: {{ selectedFeeding.quantity }}
+                                                kg)</div>
+                                        </template>
+                                        <template v-else>
+                                            <div>{{ selectedFeeding.quantity }} kg</div>
+                                        </template>
                                     </div>
                                     <div>
                                         <span class="text-blue-700 font-medium">Sesi:</span>
@@ -178,7 +195,13 @@ const submit = () => {
                                         {{ form.errors.leftover_quantity }}
                                     </div>
                                     <div v-if="selectedFeeding" class="text-sm text-gray-500">
-                                        Maksimal: {{ selectedFeeding.quantity }} kg
+                                        Maksimal: {{ selectedFeeding.quantity }} kg (total untuk seluruh kandang)
+                                        <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
+                                            class="text-xs">
+                                            Atau {{ (parseFloat(selectedFeeding.quantity) /
+                                            selectedFeeding.livestock_count).toFixed(2) }} kg/ekor × {{
+                                            selectedFeeding.livestock_count }} ekor
+                                        </div>
                                     </div>
                                 </div>
 
@@ -188,25 +211,49 @@ const submit = () => {
                                         <div class="space-y-1 text-sm">
                                             <div class="flex justify-between">
                                                 <span>Diberikan:</span>
-                                                <span class="font-medium">{{ selectedFeeding.quantity }} kg</span>
+                                                <div class="text-right">
+                                                    <div class="font-medium">{{ selectedFeeding.quantity }} kg (total)
+                                                    </div>
+                                                    <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
+                                                        class="text-xs text-gray-500">
+                                                        {{ (parseFloat(selectedFeeding.quantity) /
+                                                        selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="flex justify-between">
                                                 <span>Sisa:</span>
-                                                <span class="font-medium text-orange-600">{{ form.leftover_quantity }}
-                                                    kg</span>
+                                                <div class="text-right">
+                                                    <div class="font-medium text-orange-600">{{ form.leftover_quantity
+                                                        }} kg
+                                                        (total)</div>
+                                                    <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
+                                                        class="text-xs text-gray-500">
+                                                        {{ (parseFloat(form.leftover_quantity) /
+                                                        selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="flex justify-between border-t pt-1">
                                                 <span>Dimakan:</span>
-                                                <span class="font-medium text-green-600">
-                                                    {{ (selectedFeeding.quantity - form.leftover_quantity).toFixed(2) }}
-                                                    kg
-                                                </span>
+                                                <div class="text-right">
+                                                    <div class="font-medium text-green-600">
+                                                        {{ (selectedFeeding.quantity -
+                                                        form.leftover_quantity).toFixed(2) }} kg
+                                                        (total)
+                                                    </div>
+                                                    <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
+                                                        class="text-xs text-gray-500">
+                                                        {{ ((selectedFeeding.quantity - form.leftover_quantity) /
+                                                        selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="flex justify-between">
                                                 <span>Efisiensi:</span>
                                                 <span class="font-bold text-green-600">
                                                     {{ Math.round(((selectedFeeding.quantity - form.leftover_quantity) /
-                                                    selectedFeeding.quantity) * 100) }}%
+                                                        selectedFeeding.quantity) * 100) }}%
                                                 </span>
                                             </div>
                                         </div>

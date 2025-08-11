@@ -10,7 +10,12 @@
                 :class="dateGroup.sessions[session] ? '' : 'opacity-50'" class="text-xs">
                 {{ translateSession(session) }}
                 <span v-if="dateGroup.sessions[session]" class="ml-1 hidden">
-                  ({{ dateGroup.sessions[session].quantity }}kg)
+                  <template v-if="dateGroup.livestockCount && dateGroup.livestockCount > 1">
+                    ({{ (dateGroup.sessions[session].quantityPerLivestock).toFixed(2) }}kg/ekor)
+                  </template>
+                  <template v-else>
+                    ({{ dateGroup.sessions[session].quantity }}kg)
+                  </template>
                 </span>
               </Badge>
             </div>
@@ -18,10 +23,8 @@
               <div class="text-sm font-semibold">{{ formatDate(date) }}</div>
               <div class="text-sm font-semibold text-muted-foreground">
                 <Badge class="text-xs">
-                  <template
-                    v-if="dateGroup.sessions && Object.values(dateGroup.sessions).length && Object.values(dateGroup.sessions)[0].feedings && Object.values(dateGroup.sessions)[0].feedings[0] && Object.values(dateGroup.sessions)[0].feedings[0].livestock_count">
-                    {{ (parseFloat(dateGroup.totalQuantity) /
-                      (Object.values(dateGroup.sessions)[0].feedings[0].livestock_count || 1)).toFixed(2) }} kg/ekor
+                  <template v-if="dateGroup.livestockCount && dateGroup.livestockCount > 1">
+                    {{ (parseFloat(dateGroup.totalQuantity) / dateGroup.livestockCount).toFixed(2) }} kg/ekor
                   </template>
                   <template v-else>
                     {{ parseFloat(dateGroup.totalQuantity).toFixed(2) }} kg
@@ -137,7 +140,12 @@
           <div class="flex justify-between items-center">
             <p class="font-semibold text-sm">{{ formatDateLong(dayData.date) }}</p>
             <Badge class="text-xs">
-              {{ parseFloat(dayData.totalQuantity).toFixed(2) }} kg
+              <template v-if="dayData.livestockCount && dayData.livestockCount > 1">
+                {{ (parseFloat(dayData.totalQuantity) / dayData.livestockCount).toFixed(2) }} kg/ekor
+              </template>
+              <template v-else>
+                {{ parseFloat(dayData.totalQuantity).toFixed(2) }} kg
+              </template>
             </Badge>
           </div>
 
@@ -211,22 +219,27 @@ const groupedFeedings = computed(() => {
     if (!grouped[date]) {
       grouped[date] = {
         totalQuantity: 0,
+        totalQuantityPerLivestock: 0,
         sessions: {},
-        rations: {}
+        rations: {},
+        livestockCount: feeding.livestock_count || 1
       };
     }
 
     // Add to total quantity
     grouped[date].totalQuantity += parseFloat(feeding.quantity);
+    grouped[date].totalQuantityPerLivestock += parseFloat(feeding.quantity) / (feeding.livestock_count || 1);
 
     // Group by session
     if (!grouped[date].sessions[feeding.session]) {
       grouped[date].sessions[feeding.session] = {
         quantity: 0,
+        quantityPerLivestock: 0,
         feedings: []
       };
     }
     grouped[date].sessions[feeding.session].quantity += parseFloat(feeding.quantity);
+    grouped[date].sessions[feeding.session].quantityPerLivestock += parseFloat(feeding.quantity) / (feeding.livestock_count || 1);
     grouped[date].sessions[feeding.session].feedings.push(feeding);
 
     // Group by ration
@@ -234,10 +247,12 @@ const groupedFeedings = computed(() => {
     if (!grouped[date].rations[rationName]) {
       grouped[date].rations[rationName] = {
         name: rationName,
-        totalQuantity: 0
+        totalQuantity: 0,
+        totalQuantityPerLivestock: 0
       };
     }
     grouped[date].rations[rationName].totalQuantity += parseFloat(feeding.quantity);
+    grouped[date].rations[rationName].totalQuantityPerLivestock += parseFloat(feeding.quantity) / (feeding.livestock_count || 1);
   });
 
   // Convert rations object to array for easier templating
@@ -332,21 +347,26 @@ const filteredFeedings = computed(() => {
       grouped[date] = {
         date,
         totalQuantity: 0,
-        sessions: {}
+        totalQuantityPerLivestock: 0,
+        sessions: {},
+        livestockCount: feeding.livestock_count || 1
       };
     }
 
     // Add to total quantity
     grouped[date].totalQuantity += parseFloat(feeding.quantity);
+    grouped[date].totalQuantityPerLivestock += parseFloat(feeding.quantity) / (feeding.livestock_count || 1);
 
     // Group by session
     if (!grouped[date].sessions[feeding.session]) {
       grouped[date].sessions[feeding.session] = {
         quantity: 0,
+        quantityPerLivestock: 0,
         feedings: []
       };
     }
     grouped[date].sessions[feeding.session].quantity += parseFloat(feeding.quantity);
+    grouped[date].sessions[feeding.session].quantityPerLivestock += parseFloat(feeding.quantity) / (feeding.livestock_count || 1);
     grouped[date].sessions[feeding.session].feedings.push(feeding);
   });
 
