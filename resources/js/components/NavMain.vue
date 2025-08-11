@@ -60,8 +60,7 @@ function goToFeed(route: string) {
                 <DropdownMenuContent class="w-56 ml-8">
                     <DropdownMenuGroup>
                         <DropdownMenuItem @click="router.get('/livestocks/create')">
-                            <!-- <PawPrint class="mr-2 h-4 w-4" /> -->
-                            🐮
+                            <IconHorse class="mr-2 h-4 w-4" />
                             <span>Ternak</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem @click="openFeedDialog">
@@ -130,7 +129,7 @@ function goToFeed(route: string) {
                 <div class="flex gap-6 justify-center">
                     <button @click="goToFeed('/herds/feeding')"
                         class="flex flex-col items-center p-6 rounded-xl border border-gray-300 shadow-sm hover:shadow-md hover:bg-teal-50 dark:hover:bg-teal-950 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-transform transform hover:scale-105 text-primary">
-                        <Utensils class="mb-2 h-8 w-8" />
+                        <Wheat class="mb-2 h-8 w-8" />
                         <span class="font-semibold">Pemberian Pakan</span>
                     </button>
                     <button @click="goToFeed(route('rations.index', { tab: 'feed' }))"

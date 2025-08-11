@@ -10,6 +10,7 @@ import AppLogo from './AppLogo.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSidebar } from '@/components/ui/sidebar/utils';
 import type { SharedData, User } from '@/types';
+import { IconFileText, IconHorse } from '@tabler/icons-vue';
 
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
@@ -24,12 +25,12 @@ const mainNavItems: NavItem[] = [
         {
             title: 'Populasi',
             href: '/livestocks',
-            icon: PawPrint,
+            icon: IconHorse,
         },
         {
             title: 'Data',
             href: '/rations',
-            icon: Database,
+            icon: IconFileText,
         }
             // {
             //     title: 'Produktivitas',

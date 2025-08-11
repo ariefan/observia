@@ -18,8 +18,8 @@ defineProps<{
 }>();
 
 const form = useForm({
-    email: 'test@aifarm.id',
-    password: 'password123',
+    email: '',
+    password: '',
     remember: false,
 });
 
