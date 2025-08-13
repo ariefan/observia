@@ -209,6 +209,45 @@ class FarmController extends Controller
         return back()->with('success', 'Undangan untuk email ' . $email . ' telah dihapus dari peternakan: ' . $farm->name);
     }
 
+    public function acceptInvite(FarmInvite $invite)
+    {
+        $user = auth()->user();
+        
+        // Check if the invite is for the current user
+        if ($invite->email !== $user->email) {
+            return back()->with('error', 'Undangan ini bukan untuk Anda.');
+        }
+        
+        // Check if user is already a member of this farm
+        if ($user->farms()->where('farms.id', $invite->farm_id)->exists()) {
+            $invite->delete();
+            return back()->with('error', 'Anda sudah menjadi anggota peternakan ini.');
+        }
+        
+        // Add user to farm
+        $user->farms()->attach($invite->farm_id, ['role' => $invite->role]);
+        
+        // Delete the invitation
+        $invite->delete();
+        
+        return redirect()->route('dashboard')->with('success', 'Anda telah bergabung dengan peternakan: ' . $invite->farm->name);
+    }
+    
+    public function rejectInvite(FarmInvite $invite)
+    {
+        $user = auth()->user();
+        
+        // Check if the invite is for the current user
+        if ($invite->email !== $user->email) {
+            return back()->with('error', 'Undangan ini bukan untuk Anda.');
+        }
+        
+        // Delete the invitation
+        $invite->delete();
+        
+        return back()->with('success', 'Undangan telah ditolak.');
+    }
+
     /**
      * Remove the specified resource from storage.
      */

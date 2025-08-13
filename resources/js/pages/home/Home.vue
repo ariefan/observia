@@ -1,13 +1,33 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Link, Head } from '@inertiajs/vue3';
+import { Link, Head, router } from '@inertiajs/vue3';
 import Rank from './Rank.vue';
 import Tips from './Tips.vue';
 import Welcome1 from '@/assets/welcome-1.jpg';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
-defineProps<{
+const props = defineProps<{
     name?: string;
+    farmInvites?: Array<{
+        id: number;
+        farm_id: string;
+        email: string;
+        role: string;
+        farm: {
+            id: string;
+            name: string;
+        };
+    }>;
 }>();
+
+const acceptInvite = (inviteId: number) => {
+    router.post(`/farm-invites/${inviteId}/accept`);
+};
+
+const rejectInvite = (inviteId: number) => {
+    router.post(`/farm-invites/${inviteId}/reject`);
+};
 </script>
 
 <template>
@@ -28,6 +48,32 @@ defineProps<{
             <!-- MIDDLE BIG CHONK -->
             <div class="relative flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
                 v-if="!($page.props.auth.user.farms && $page.props.auth.user.farms.length > 0)">
+
+                <!-- Farm Invitation Alerts -->
+                <div v-if="props.farmInvites && props.farmInvites.length > 0" class="space-y-3 mb-4">
+                    <Alert v-for="invite in props.farmInvites" :key="invite.id" variant="info"
+                        class="bg-teal-50 dark:bg-teal-900/20">
+                        <AlertTitle class="text-teal-800 dark:text-teal-200">
+                            Undangan Bergabung Peternakan
+                        </AlertTitle>
+                        <AlertDescription class="text-teal-700 dark:text-teal-300">
+                            <p class="mb-3">
+                                Anda diundang untuk bergabung dengan peternakan <strong>{{ invite.farm.name }}</strong>
+                                sebagai <strong>{{ invite.role }}</strong>.
+                            </p>
+                            <div class="flex gap-2">
+                                <Button @click="acceptInvite(invite.id)" size="sm">
+                                    Terima
+                                </Button>
+                                <Button @click="rejectInvite(invite.id)" size="sm" variant="outline"
+                                    class="text-red-600 border-red-300 hover:bg-red-50">
+                                    Tolak
+                                </Button>
+                            </div>
+                        </AlertDescription>
+                    </Alert>
+                </div>
+
                 <Card class="!bg-primary">
                     <template #header />
 

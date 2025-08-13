@@ -33,18 +33,6 @@ class GoogleLoginController extends Controller
             // $user->teams()->attach($team);
         }
 
-        if(FarmInvite::where('email', $googleUser->email)->first()){
-            $invites = FarmInvite::where('email', $googleUser->email)->get();
-            foreach ($invites as $invite) {
-                $farm = $invite->farm;
-                if ($farm) {
-                    // Attach the user to the farm with the role from the invite
-                    $user->farms()->attach($farm->id, ['role' => $invite->role]);
-
-                }
-            }
-            FarmInvite::where('email', $googleUser->email)->delete();
-        }
 
         Auth::login($user);
 

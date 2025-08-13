@@ -60,6 +60,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
     Route::post('/notifications/{notification}/accept', [NotificationController::class, 'accept']);
     Route::post('/notifications/{notification}/reject', [NotificationController::class, 'reject']);
+    
+    // Farm Invitations
+    Route::post('/farm-invites/{invite}/accept', [FarmController::class, 'acceptInvite'])->name('farm-invites.accept');
+    Route::post('/farm-invites/{invite}/reject', [FarmController::class, 'rejectInvite'])->name('farm-invites.reject');
 
     Route::get('/api/species/{species}/breeds', [SpeciesController::class, 'breeds']);
     Route::get('/api/livestocks', [LivestockController::class, 'search'])->name('livestocks.search');

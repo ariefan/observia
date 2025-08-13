@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Farm;
+use App\Models\FarmInvite;
 use App\Models\Livestock;
 use App\Models\LivestockMilking;
 use App\Models\LivestockWeight;
@@ -23,7 +24,11 @@ class HomeController extends Controller
         if(auth()->user()->current_farm_id) {
             return redirect()->route('dashboard');
         }
-        $data = [];
+        // Get farm invitations for current user even when no current farm
+        $farmInvites = FarmInvite::where('email', Auth::user()->email)
+            ->with('farm')
+            ->get();
+        $data = ['farmInvites' => $farmInvites];
         return Inertia::render('home/Home', $data);
     }
     
@@ -38,6 +43,11 @@ class HomeController extends Controller
         $currentFarmId = Auth::user()->current_farm_id;
         
         if (!$currentFarmId) {
+            // Get farm invitations for current user even when no current farm
+            $farmInvites = FarmInvite::where('email', Auth::user()->email)
+                ->with('farm')
+                ->get();
+                
             $data = [
                 'totalLivestock' => 0,
                 'todayMilkProduction' => 0,
@@ -48,7 +58,8 @@ class HomeController extends Controller
                 'notification' => [
                     'emoji' => '🏠',
                     'message' => 'Belum ada data ternak. Silakan tambahkan data ternak terlebih dahulu untuk melihat perkembangan populasi dan produksi susu.'
-                ]
+                ],
+                'farmInvites' => $farmInvites,
             ];
             return Inertia::render('home/Dashboard', $data);
         }
@@ -131,6 +142,11 @@ class HomeController extends Controller
         // Generate dynamic notification
         $notification = $this->generateNotification($todayMilkProduction, $milkTrend, $weightTrend, $livestocks->count());
 
+        // Get farm invitations for current user
+        $farmInvites = FarmInvite::where('email', Auth::user()->email)
+            ->with('farm')
+            ->get();
+
         $data = [
             'totalLivestock' => $livestocks->count(),
             'todayMilkProduction' => round($todayMilkProduction, 2),
@@ -138,7 +154,8 @@ class HomeController extends Controller
             'averageWeight' => $averageWeight,
             'milkProductionTrend' => $milkTrend !== null ? round($milkTrend, 1) : null,
             'weightTrend' => $weightTrend !== null ? round($weightTrend, 1) : null,
-            'notification' => $notification
+            'notification' => $notification,
+            'farmInvites' => $farmInvites
         ];
 
         return Inertia::render('home/Dashboard', $data);

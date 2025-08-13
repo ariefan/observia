@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import Rank from './Rank.vue';
 import Tips from './Tips.vue';
 import Guide from './Guide.vue';
@@ -13,6 +13,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 import PlaceholderPattern from '../../components/PlaceholderPattern.vue';
 import RealtimeClock from '@/components/ui/realtime-clock/RealtimeClock.vue';
@@ -36,7 +38,25 @@ const props = defineProps<{
         emoji: string;
         message: string;
     };
+    farmInvites?: Array<{
+        id: number;
+        farm_id: string;
+        email: string;
+        role: string;
+        farm: {
+            id: string;
+            name: string;
+        };
+    }>;
 }>();
+
+const acceptInvite = (inviteId: number) => {
+    router.post(`/farm-invites/${inviteId}/accept`);
+};
+
+const rejectInvite = (inviteId: number) => {
+    router.post(`/farm-invites/${inviteId}/reject`);
+};
 </script>
 
 <template>
@@ -65,6 +85,32 @@ const props = defineProps<{
                             <p>
                                 {{ props.notification?.message || 'Selamat datang di dashboard peternakan Anda!' }}
                             </p>
+                        </div>
+
+                        <!-- Farm Invitation Alerts -->
+                        <div v-if="props.farmInvites && props.farmInvites.length > 0" class="space-y-3 mb-4">
+                            <Alert v-for="invite in props.farmInvites" :key="invite.id" variant="info"
+                                class="bg-teal-50 dark:bg-teal-900/20">
+                                <AlertTitle class="text-teal-800 dark:text-teal-200">
+                                    Undangan Bergabung Peternakan
+                                </AlertTitle>
+                                <AlertDescription class="text-teal-700 dark:text-teal-300">
+                                    <p class="mb-3">
+                                        Anda diundang untuk bergabung dengan peternakan <strong>{{ invite.farm.name
+                                            }}</strong>
+                                        sebagai <strong>{{ invite.role }}</strong>.
+                                    </p>
+                                    <div class="flex gap-2">
+                                        <Button @click="acceptInvite(invite.id)" size="sm">
+                                            Terima
+                                        </Button>
+                                        <Button @click="rejectInvite(invite.id)" size="sm" variant="outline"
+                                            class="text-red-600 border-red-300 hover:bg-red-50">
+                                            Tolak
+                                        </Button>
+                                    </div>
+                                </AlertDescription>
+                            </Alert>
                         </div>
 
                         <!-- Goat and Milk Stats -->
@@ -100,12 +146,15 @@ const props = defineProps<{
                             <div class="text-sm px-2 items-center text-left">
                                 <span class="text-left">
                                     Produksi susu seluruh ternakmu hari ini: <br />
-                                    <span v-if="props.milkProductionTrend !== undefined && props.milkProductionTrend !== null && props.milkProductionTrend !== 0"
-                                          :class="props.milkProductionTrend > 0 ? 'text-green-300 dark:text-green-700' : 'text-red-300 dark:text-red-700'"
-                                          class="text-xl font-semibold me-2">
-                                        {{ props.milkProductionTrend > 0 ? '↑' : '↓' }} {{ Math.abs(props.milkProductionTrend) }}%
+                                    <span
+                                        v-if="props.milkProductionTrend !== undefined && props.milkProductionTrend !== null && props.milkProductionTrend !== 0"
+                                        :class="props.milkProductionTrend > 0 ? 'text-green-300 dark:text-green-700' : 'text-red-300 dark:text-red-700'"
+                                        class="text-xl font-semibold me-2">
+                                        {{ props.milkProductionTrend > 0 ? '↑' : '↓' }} {{
+                                        Math.abs(props.milkProductionTrend) }}%
                                     </span>
-                                    <span v-else-if="props.milkProductionTrend === 0" class="text-blue-300 dark:text-blue-500 text-xl font-semibold me-2">
+                                    <span v-else-if="props.milkProductionTrend === 0"
+                                        class="text-blue-300 dark:text-blue-500 text-xl font-semibold me-2">
                                         = 0%
                                     </span>
                                     <span v-else class="text-gray-300 dark:text-gray-500 text-xl font-semibold me-2">
@@ -119,12 +168,14 @@ const props = defineProps<{
                             <div class="text-sm px-2 items-center text-left">
                                 <span class="text-left">
                                     Perkembangan bobot seluruh ternakmu minggu ini: <br />
-                                    <span v-if="props.weightTrend !== undefined && props.weightTrend !== null && props.weightTrend !== 0"
-                                          :class="props.weightTrend > 0 ? 'text-green-300 dark:text-green-700' : 'text-red-300 dark:text-red-700'"
-                                          class="text-xl font-semibold me-2">
+                                    <span
+                                        v-if="props.weightTrend !== undefined && props.weightTrend !== null && props.weightTrend !== 0"
+                                        :class="props.weightTrend > 0 ? 'text-green-300 dark:text-green-700' : 'text-red-300 dark:text-red-700'"
+                                        class="text-xl font-semibold me-2">
                                         {{ props.weightTrend > 0 ? '↑' : '↓' }} {{ Math.abs(props.weightTrend) }}%
                                     </span>
-                                    <span v-else-if="props.weightTrend === 0" class="text-blue-300 dark:text-blue-500 text-xl font-semibold me-2">
+                                    <span v-else-if="props.weightTrend === 0"
+                                        class="text-blue-300 dark:text-blue-500 text-xl font-semibold me-2">
                                         = 0%
                                     </span>
                                     <span v-else class="text-gray-300 dark:text-gray-500 text-xl font-semibold me-2">
