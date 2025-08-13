@@ -67,19 +67,25 @@ try {
     list($tenantId, $tenantInfo) = identifyTenant($connections['main'], $databases['client']);
 
     // --- Step 2: Migrate Users ---
-    list($userMapping, $ownerId) = migrateUsers($connections['main'], $tenantId, $stats);
+    list($userMapping, $ownerId, $allUsers) = migrateUsers($connections['main'], $tenantId, $stats);
 
     // --- Step 3: Migrate Farm ---
     $farmUuid = migrateFarm($tenantInfo, $ownerId, $stats);
 
-    // --- Step 4: Migrate Breeds ---
+    // --- Step 4: Associate Users with Farm ---
+    associateUsersToFarm($farmUuid, $userMapping, $allUsers, $stats);
+
+    // --- Step 5: Migrate Breeds ---
     $breedMapping = migrateBreeds($connections['client'], $stats);
 
-    // --- Step 5: Migrate Herds ---
+    // --- Step 6: Migrate Herds ---
     $herdMapping = migrateHerds($connections['client'], $farmUuid, $stats);
 
-    // --- Step 6: Migrate Livestocks ---
+    // --- Step 7: Migrate Livestocks ---
     migrateLivestocks($connections['client'], $farmUuid, $breedMapping, $herdMapping, $stats);
+
+    // --- Step 8: Update User Passwords ---
+    updateUserPasswords($stats);
 
     // --- Finalize ---
     DB::commit();
@@ -135,7 +141,7 @@ function identifyTenant(PDO $connection, string $tenantDbName): array
 }
 
 /**
- * Migrates users for a given tenant and returns the user mapping and owner's UUID.
+ * Migrates users for a given tenant and returns the user mapping, owner's UUID, and original user data.
  */
 function migrateUsers(PDO $connection, int $tenantId, array &$stats): array
 {
@@ -146,7 +152,7 @@ function migrateUsers(PDO $connection, int $tenantId, array &$stats): array
 
     if (empty($users)) {
         echo "⚠️ No verified users found for this tenant.\n";
-        return [[], null];
+        return [[], null, []];
     }
 
     $userMapping = [];
@@ -165,7 +171,7 @@ function migrateUsers(PDO $connection, int $tenantId, array &$stats): array
             'name' => getValue($user, 'name', 'Unknown User'),
             'email' => getValue($user, 'email') ?: 'user' . $user['id'] . '@aifarm.local',
             'phone' => getValue($user, 'phone'),
-            'password' => getValue($user, 'password', bcrypt('password123')),
+            'password' => getValue($user, 'password'), // Keep original password to check format later
             'is_super_user' => getValue($user, 'role') === 'superadmin',
             'profile_photo_path' => getValue($user, 'photo'),
             'created_at' => getValue($user, 'created_at', now()),
@@ -177,7 +183,7 @@ function migrateUsers(PDO $connection, int $tenantId, array &$stats): array
     $stats['users'] = count($usersToInsert);
 
     echo "✅ Migrated {$stats['users']} users.\n";
-    return [$userMapping, $firstUserUuid];
+    return [$userMapping, $firstUserUuid, $users];
 }
 
 /**
@@ -215,12 +221,43 @@ function migrateFarm(array $tenant, ?string $ownerId, array &$stats): string
 }
 
 /**
+ * Associates the migrated users with the new farm.
+ */
+function associateUsersToFarm(string $farmUuid, array $userMapping, array $originalUsers, array &$stats): void
+{
+    echo "\n---\n🔗 Step 4: Associating Users with Farm...\n";
+    if (empty($userMapping)) {
+        echo "⚠️ No users to associate with the farm.\n";
+        return;
+    }
+
+    $farmUserInserts = [];
+    foreach ($originalUsers as $user) {
+        if (isset($userMapping[$user['id']])) {
+            $farmUserInserts[] = [
+                'farm_id' => $farmUuid,
+                'user_id' => $userMapping[$user['id']],
+                'role' => getValue($user, 'role'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+    }
+
+    if (!empty($farmUserInserts)) {
+        DB::table('farm_user')->insert($farmUserInserts);
+        $stats['farm_users'] = count($farmUserInserts);
+        echo "✅ Associated {" . $stats['farm_users'] . "} users with the farm.\n";
+    }
+}
+
+/**
  * Migrates goat types as breeds under the 'CAPRA' species.
  */
 function migrateBreeds(PDO $connection, array &$stats): array
 {
     echo "\n---\n";
-    echo "🐐 Step 3: Migrating Goat Types to Breeds...\n";
+    echo "🐐 Step 5: Migrating Goat Types to Breeds...\n";
     $capraSpeciesId = DB::table('species')->where('code', 'CAPRA')->value('id');
     if (!$capraSpeciesId) {
         throw new Exception("Species with code 'CAPRA' not found. Please seed the species table first.");
@@ -270,7 +307,7 @@ function migrateBreeds(PDO $connection, array &$stats): array
 function migrateHerds(PDO $connection, string $farmUuid, array &$stats): array
 {
     echo "\n---\n";
-    echo "🏠 Step 4: Migrating Cages to Herds...\n";
+    echo "🏠 Step 6: Migrating Cages to Herds...\n";
     $cages = $connection->query("SELECT * FROM cage ORDER BY id")->fetchAll();
 
     if (empty($cages)) {
@@ -307,7 +344,7 @@ function migrateHerds(PDO $connection, string $farmUuid, array &$stats): array
 function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMapping, array $herdMapping, array &$stats): void
 {
     echo "\n---\n";
-    echo "🐑 Step 5: Migrating Goats to Livestocks...\n";
+    echo "🐑 Step 7: Migrating Goats to Livestocks...\n";
     $goats = $connection->query("SELECT * FROM goat WHERE is_active = 1 ORDER BY id")->fetchAll();
 
     if (empty($goats)) {
@@ -351,6 +388,28 @@ function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMappin
 }
 
 /**
+ * Updates passwords for users with non-bcrypt hashes.
+ */
+function updateUserPasswords(array &$stats): void
+{
+    echo "\n---\n🔑 Step 8: Securing User Passwords...\n";
+    
+    // Default password hash for '12345678'
+    $newPasswordHash = '$2y$10$xIIrWcC5pbXHvQ2A6cWiX.gZc0z2eGXXWK/O4Stc/zDJrBkhs1HqO';
+
+    $updatedCount = DB::table('users')
+        ->where('password', 'not like', '$2y$%')
+        ->update(['password' => $newPasswordHash]);
+
+    if ($updatedCount > 0) {
+        $stats['passwords_updated'] = $updatedCount;
+        echo "✅ Secured passwords for {$updatedCount} users.\n";
+    } else {
+        echo "✅ All user passwords are secure. No updates needed.\n";
+    }
+}
+
+/**
  * Generates a UUID v4.
  */
 function generateUuid(): string
@@ -382,9 +441,15 @@ function printSuccessSummary(array $stats): void
     echo str_repeat("-", 40) . "\n";
     echo "✅ Farms migrated:     {$stats['farms']}\n";
     echo "✅ Users migrated:     {$stats['users']}\n";
+    if (isset($stats['farm_users']) && $stats['farm_users'] > 0) {
+        echo "✅ Farm Users created: {$stats['farm_users']}\n";
+    }
     echo "✅ Breeds migrated:    {$stats['breeds']}\n";
     echo "✅ Herds migrated:     {$stats['herds']}\n";
     echo "✅ Livestocks migrated:{$stats['livestocks']}\n";
+    if (isset($stats['passwords_updated']) && $stats['passwords_updated'] > 0) {
+        echo "✅ Passwords updated:  {$stats['passwords_updated']}\n";
+    }
     echo str_repeat("=", 70) . "\n";
 }
 
