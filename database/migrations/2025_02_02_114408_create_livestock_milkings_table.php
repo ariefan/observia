@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('livestock_weights', function (Blueprint $table) {
+        Schema::create('livestock_milkings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('livestock_id')->constrained()->onDelete('cascade');
-            $table->decimal('weight', 8, 2);
+            $table->foreignUuid('livestock_id')->constrained()->onDelete('cascade');
+            $table->decimal('milk_volume', 8, 2);
             $table->date('date');
+            $table->time('time')->nullable();
+            $table->string('session')->nullable();
             $table->string('device_id')->nullable();
             $table->foreignUuid('user_id');
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +30,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('livestock_weights');
+        Schema::table('livestock_milkings', function (Blueprint $table) {
+            $table->dropForeign(['livestock_id']);
+        });
+        Schema::dropIfExists('livestock_milkings');
     }
 };

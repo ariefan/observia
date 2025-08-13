@@ -1,11 +1,11 @@
-<script setup>
-import { Head, Link, useForm } from "@inertiajs/vue3";
+<script setup lang="ts">
+import { useForm } from "@inertiajs/vue3";
 import AppLayout from '@/layouts/AppLayout.vue';
 import { ref, onMounted, watch } from "vue";
-import _, { map } from "underscore";
 import axios from "axios";
+import type { Livestock, Species, Breed, Herd } from '@/types';
 
-import { Check, Circle, Dot, ArrowLeft, ChevronsUpDown } from 'lucide-vue-next'
+import { Check, ArrowLeft, ChevronsUpDown } from 'lucide-vue-next'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,27 +14,21 @@ import InputError from '@/components/InputError.vue';
 import LivestockUploader from "./LivestockUploader.vue";
 import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxList, ComboboxTrigger } from '@/components/ui/combobox'
 
-const props = defineProps({
-  livestock: {
-    default: () => ({}),
-  },
-  species: {
-    type: Array,
-  },
-  male_livestock: {
-    type: String,
-  },
-  female_livestock: {
-    type: String,
-  },
-});
+interface Props {
+  livestock: Livestock;
+  species: Species[];
+  male_livestock?: string;
+  female_livestock?: string;
+}
 
-const breeds = ref([]);
-const selected_male_parent = ref(null);
-const selected_female_parent = ref(null);
+const props = defineProps<Props>();
 
-const form_1 = ref(null)
-const livestockUploaderRef = ref(null)
+const breeds = ref<Breed[]>([]);
+const selected_male_parent = ref<Livestock | null>(null);
+const selected_female_parent = ref<Livestock | null>(null);
+
+const form_1 = ref<HTMLFormElement | null>(null)
+const livestockUploaderRef = ref<InstanceType<typeof LivestockUploader> | null>(null)
 
 const form = useForm({
   name: props.livestock.name,
@@ -75,7 +69,7 @@ const saveAction = async () => {
     if (livestockUploaderRef.value) {
       console.log('Getting processed images...')
       const processedImages = await livestockUploaderRef.value.getAllImagesAsFiles()
-      console.log('Processed images for save action:', processedImages.map(f => ({
+      console.log('Processed images for save action:', processedImages.map((f: File) => ({
         name: f.name,
         size: `${(f.size / 1024 / 1024).toFixed(2)}MB`,
         type: f.type,
@@ -83,10 +77,10 @@ const saveAction = async () => {
         constructor: f.constructor.name,
         webkitRelativePath: f.webkitRelativePath,
         // Show all enumerable properties
-        allProperties: Object.getOwnPropertyNames(f).reduce((acc, prop) => {
+        allProperties: Object.getOwnPropertyNames(f).reduce((acc: any, prop) => {
           try {
-            acc[prop] = f[prop]
-          } catch (e) {
+            acc[prop] = (f as any)[prop]
+          } catch {
             acc[prop] = '[Error accessing property]'
           }
           return acc
@@ -101,10 +95,10 @@ const saveAction = async () => {
     })
 
     const options = {
-      onSuccess: (page) => {
+      onSuccess: (page: any) => {
         console.log('Save action successful:', page)
       },
-      onError: (errors) => {
+      onError: (errors: any) => {
         console.error('Save action errors:', errors)
       },
       onFinish: () => {
@@ -120,7 +114,7 @@ const saveAction = async () => {
       form.transform((data) => ({
         ...data,
         _method: 'put',
-      })).post(route('livestocks.update', props.livestock.id), options);
+      })).post(route('livestocks.update', { livestock: props.livestock.id }), options);
     } else {
       console.log('Creating new livestock')
       form.post(route('livestocks.store'), options);
@@ -129,7 +123,7 @@ const saveAction = async () => {
     console.error('Error processing images before save action:', error)
     // Continue with original photos if processing fails
     const options = {
-      onError: (errors) => {
+      onError: (errors: any) => {
         console.error('Save action errors (fallback):', errors)
       }
     }
@@ -138,7 +132,7 @@ const saveAction = async () => {
       form.transform((data) => ({
         ...data,
         _method: 'put',
-      })).post(route('livestocks.update', props.livestock.id), options);
+      })).post(route('livestocks.update', { livestock: props.livestock.id }), options);
     } else {
       form.post(route('livestocks.store'), options);
     }
@@ -157,13 +151,13 @@ async function fetchBreeds() {
 // --- Combobox state for parent selection ---
 const maleParentQuery = ref('');
 const femaleParentQuery = ref('');
-const maleParentOptions = ref([]);
-const femaleParentOptions = ref([]);
-const selectedMaleParent = ref(selected_male_parent.value || null);
-const selectedFemaleParent = ref(selected_female_parent.value || null);
+const maleParentOptions = ref<Livestock[]>([]);
+const femaleParentOptions = ref<Livestock[]>([]);
+const selectedMaleParent = ref<Livestock | null>(selected_male_parent.value || null);
+const selectedFemaleParent = ref<Livestock | null>(selected_female_parent.value || null);
 
 // Fetch parent options
-const fetchParentOptions = async (query, sex) => {
+const fetchParentOptions = async (query: string, sex: 'M' | 'F') => {
   // Always fetch, even for empty query
   const response = await fetch(route('livestocks.search', { q: query || '', sex }));
   const data = await response.json();
@@ -195,7 +189,7 @@ watch(selectedMaleParent, (val) => {
     form.male_parent_id = val.id;
     selected_male_parent.value = val;
   } else {
-    form.male_parent_id = null;
+    form.male_parent_id = undefined;
     selected_male_parent.value = null;
   }
 });
@@ -204,7 +198,7 @@ watch(selectedFemaleParent, (val) => {
     form.female_parent_id = val.id;
     selected_female_parent.value = val;
   } else {
-    form.female_parent_id = null;
+    form.female_parent_id = undefined;
     selected_female_parent.value = null;
   }
 });
@@ -257,11 +251,11 @@ onMounted(async () => {
 
 
 
-const selectedHerd = ref(null)
+const selectedHerd = ref<Herd | null>(null)
 const searchQuery = ref('')
-const searchResults = ref([])
+const searchResults = ref<Herd[]>([])
 
-const getDisplayValue = (herd) => {
+const getDisplayValue = (herd: Herd | null) => {
   return herd ? `${herd.name} (Kapasitas: ${herd.capacity})` : ''
 }
 
@@ -508,7 +502,7 @@ const back = () => window.history.back();
                 <h3 class="text-primary font-semibold mt-6">Data Induk Jantan</h3>
                 <Label for="male_parent">Cari Induk Jantan</Label>
                 <Combobox v-model="selectedMaleParent" v-model:search-term="maleParentQuery"
-                  :display-value="(item) => item ? `${item.aifarm_id} - ${item.name}` : ''">
+                  :display-value="(item: Livestock | null) => item ? `${item.aifarm_id} - ${item.name}` : ''">
                   <ComboboxAnchor as-child>
                     <ComboboxTrigger as-child>
                       <Button variant="outline" class="justify-between w-full">
@@ -557,7 +551,7 @@ const back = () => window.history.back();
                 <h3 class="text-primary font-semibold mt-6">Data Induk Betina</h3>
                 <Label for="female_parent">Cari Induk Betina</Label>
                 <Combobox v-model="selectedFemaleParent" v-model:search-term="femaleParentQuery"
-                  :display-value="(item) => item ? `${item.aifarm_id} - ${item.name}` : ''">
+                  :display-value="(item: Livestock | null) => item ? `${item.aifarm_id} - ${item.name}` : ''">
                   <ComboboxAnchor as-child>
                     <ComboboxTrigger as-child>
                       <Button variant="outline" class="justify-between w-full">

@@ -11,20 +11,10 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-    PawPrint,
-    Anvil,
-    CreditCard,
-    Keyboard,
     Plus,
-    Settings,
-    User,
-    Users,
-    Heart,
     Wheat,
-    Droplets,
-    Utensils,
 } from 'lucide-vue-next';
-import { IconScaleOutline, IconHorse, IconScale, IconMilk } from '@tabler/icons-vue';
+import { IconScaleOutline, IconHorse, IconMilk } from '@tabler/icons-vue';
 
 import { ref } from 'vue';
 

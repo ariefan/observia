@@ -3,9 +3,7 @@ import IconFeed from "@/assets/icon-feed.svg";
 import IconBreed from "@/assets/icon-breed.svg";
 import IconHealth from "@/assets/icon-health.svg";
 
-defineProps<{
-    name?: string;
-}>();
+// No props needed for this component
 </script>
 
 <template>

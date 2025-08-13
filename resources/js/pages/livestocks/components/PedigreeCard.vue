@@ -45,7 +45,7 @@
             <!-- Level 2 nodes -->
             <div class="ml-0">
               <div class="flex flex-col space-y-8">
-                <div v-for="(level2Node, index) in orgData.children" :key="level2Node.id"
+                <div v-for="level2Node in orgData.children" :key="level2Node.id"
                   class="relative flex items-center">
                   <!-- Horizontal connector from vertical line to level 2 node -->
                   <div class="w-8 h-px bg-gray-300 dark:bg-gray-600"></div>
@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { ImageOff } from 'lucide-vue-next'
 import { router } from '@inertiajs/vue3'
 

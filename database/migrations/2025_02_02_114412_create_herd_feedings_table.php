@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('livestock_milkings', function (Blueprint $table) {
+        Schema::create('herd_feedings', function (Blueprint $table) {
             $table->id();
-            $table->foreignUuid('livestock_id')->constrained()->onDelete('cascade');
-            $table->decimal('milk_volume', 8, 2);
+            $table->foreignUuid('herd_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('ration_id')->constrained()->onDelete('cascade');
+            $table->decimal('quantity', 8, 2);
             $table->date('date');
             $table->time('time')->nullable();
             $table->string('session')->nullable();
@@ -30,6 +31,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('livestock_milkings');
+        Schema::table('herd_feedings', function (Blueprint $table) {
+            $table->dropForeign(['herd_id']);
+            $table->dropForeign(['ration_id']);
+        });
+        Schema::dropIfExists('herd_feedings');
     }
 };

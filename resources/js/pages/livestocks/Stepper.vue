@@ -1,6 +1,18 @@
-<script>
-import { Stepper, StepperDescription, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from '@/components/ui/stepper'
-
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+import { 
+    Stepper, 
+    StepperItem, 
+    StepperSeparator, 
+    StepperTrigger, 
+    StepperTitle, 
+    StepperDescription 
+} from '@/components/ui/stepper'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import InputError from '@/components/InputError.vue'
+import { Check, Circle, Dot } from 'lucide-vue-next'
 
 const stepIndex = ref(1)
 const steps = [
@@ -8,6 +20,43 @@ const steps = [
     { step: 2, title: 'Data induk Jantan', description: '' },
     { step: 3, title: 'Data induk Betina', description: '' },
 ]
+
+// Form state
+const form = reactive({
+    processing: false,
+    // Add form fields as needed
+    maleParent: {
+        id: '',
+        aifarmId: '',
+        name: '',
+        breed: '',
+        grandfatherId: '',
+        grandmotherId: '',
+        registrationNumber: ''
+    },
+    femaleParent: {
+        id: '',
+        aifarmId: '',
+        name: '',
+        breed: '',
+        grandfatherId: '',
+        grandmotherId: '',
+        registrationNumber: ''
+    }
+})
+
+// Meta validation state
+const meta = reactive({
+    valid: true
+})
+
+// Functions
+const submitStep1 = (nextStep: () => void) => {
+    // Implement step 1 submission logic
+    nextStep()
+}
+
+const isSelanjutnyaDisabled = ref(false)
 </script>
 <template>
 
@@ -55,47 +104,40 @@ const steps = [
                         keturunan serta mengoptimalkan hasil peternakan kambingmu.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                         <div>
-                            <!-- TODO -->
-                            <Label for="">ID Ternak</Label>
-                            <Input id="" />
+                            <Label for="male-id">ID Ternak</Label>
+                            <Input id="male-id" v-model="form.maleParent.id" />
                             <InputError :message="''" />
                         </div>
                         <div>
-                            <!-- TODO -->
-                            <Label for="">Aifarm ID</Label>
-                            <Input id="" />
+                            <Label for="male-aifarm-id">Aifarm ID</Label>
+                            <Input id="male-aifarm-id" v-model="form.maleParent.aifarmId" />
                             <InputError :message="''" />
                         </div>
                         <div>
-                            <!-- TODO -->
-                            <Label for="">Nama Induk Jantan</Label>
-                            <Input id="" />
+                            <Label for="male-name">Nama Induk Jantan</Label>
+                            <Input id="male-name" v-model="form.maleParent.name" />
                             <InputError :message="''" />
                         </div>
                         <div>
-                            <!-- TODO -->
-                            <Label for="">Ras</Label>
-                            <Input id="" />
+                            <Label for="male-breed">Ras</Label>
+                            <Input id="male-breed" v-model="form.maleParent.breed" />
                             <InputError :message="''" />
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-6">
                         <div>
-                            <!-- TODO -->
-                            <Label for="">Nomer Identitas Kakek</Label>
-                            <Input id="" />
+                            <Label for="male-grandfather">Nomer Identitas Kakek</Label>
+                            <Input id="male-grandfather" v-model="form.maleParent.grandfatherId" />
                             <InputError :message="''" />
                         </div>
                         <div>
-                            <!-- TODO -->
-                            <Label for="">Nomer Identitas Nenek</Label>
-                            <Input id="" />
+                            <Label for="male-grandmother">Nomer Identitas Nenek</Label>
+                            <Input id="male-grandmother" v-model="form.maleParent.grandmotherId" />
                             <InputError :message="''" />
                         </div>
                         <div>
-                            <!-- TODO -->
-                            <Label for="">No Buku Registrasi</Label>
-                            <Input id="" />
+                            <Label for="male-registration">No Buku Registrasi</Label>
+                            <Input id="male-registration" v-model="form.maleParent.registrationNumber" />
                             <InputError :message="''" />
                         </div>
                     </div>
@@ -115,47 +157,40 @@ const steps = [
                         keturunan serta mengoptimalkan hasil peternakan kambingmu.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                         <div>
-                            <!-- TODO -->
-                            <Label for="">ID Ternak</Label>
-                            <Input id="" />
+                            <Label for="female-id">ID Ternak</Label>
+                            <Input id="female-id" v-model="form.femaleParent.id" />
                             <InputError :message="''" />
                         </div>
                         <div>
-                            <!-- TODO -->
-                            <Label for="">Aifarm ID</Label>
-                            <Input id="" />
+                            <Label for="female-aifarm-id">Aifarm ID</Label>
+                            <Input id="female-aifarm-id" v-model="form.femaleParent.aifarmId" />
                             <InputError :message="''" />
                         </div>
                         <div>
-                            <!-- TODO -->
-                            <Label for="">Nama Induk Betina</Label>
-                            <Input id="" />
+                            <Label for="female-name">Nama Induk Betina</Label>
+                            <Input id="female-name" v-model="form.femaleParent.name" />
                             <InputError :message="''" />
                         </div>
                         <div>
-                            <!-- TODO -->
-                            <Label for="">Ras</Label>
-                            <Input id="" />
+                            <Label for="female-breed">Ras</Label>
+                            <Input id="female-breed" v-model="form.femaleParent.breed" />
                             <InputError :message="''" />
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-6">
                         <div>
-                            <!-- TODO -->
-                            <Label for="">Nomer Identitas Kakek</Label>
-                            <Input id="" />
+                            <Label for="female-grandfather">Nomer Identitas Kakek</Label>
+                            <Input id="female-grandfather" v-model="form.femaleParent.grandfatherId" />
                             <InputError :message="''" />
                         </div>
                         <div>
-                            <!-- TODO -->
-                            <Label for="">Nomer Identitas Nenek</Label>
-                            <Input id="" />
+                            <Label for="female-grandmother">Nomer Identitas Nenek</Label>
+                            <Input id="female-grandmother" v-model="form.femaleParent.grandmotherId" />
                             <InputError :message="''" />
                         </div>
                         <div>
-                            <!-- TODO -->
-                            <Label for="">No Buku Registrasi</Label>
-                            <Input id="" />
+                            <Label for="female-registration">No Buku Registrasi</Label>
+                            <Input id="female-registration" v-model="form.femaleParent.registrationNumber" />
                             <InputError :message="''" />
                         </div>
                     </div>

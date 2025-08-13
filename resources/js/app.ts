@@ -8,7 +8,6 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { initializeTheme } from './composables/useAppearance';
 
 import PrimeVue from 'primevue/config';
-import Aura from '@primeuix/themes/aura';
 import Aifarm from './themes/aifarm';
 
 // Extend ImportMeta interface for Vite...

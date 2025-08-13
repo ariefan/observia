@@ -1,10 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { Building2, Users, Edit, Trash2, Wheat, PlusCircle, X } from 'lucide-vue-next';
+import { Edit, Trash2, PlusCircle, X } from 'lucide-vue-next';
 defineProps({
     herds: Array,
 });
@@ -13,7 +12,7 @@ import { ref, reactive } from 'vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/InputError.vue';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 
 const showDialog = ref(false);
 const showDeleteDialog = ref(false);

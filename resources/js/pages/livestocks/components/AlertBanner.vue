@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Megaphone } from 'lucide-vue-next'
 

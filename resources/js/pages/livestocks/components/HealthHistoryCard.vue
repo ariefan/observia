@@ -16,9 +16,9 @@
   </Card>
 </template>
   
-<script setup>
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-const props = defineProps(['history'])
+<script setup lang="ts">
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+defineProps(['history'])
 </script>
   

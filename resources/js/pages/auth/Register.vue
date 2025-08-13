@@ -8,7 +8,6 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 import { Separator } from '@/components/ui/separator';
 import LogoGoogle from '@/assets/google.png';
-import LogoFacebook from '@/assets/facebook.png';
 
 const form = useForm({
     name: '',

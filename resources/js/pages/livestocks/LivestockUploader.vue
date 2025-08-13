@@ -64,7 +64,7 @@ const resizeAndCropImage = (file: File): Promise<File> => {
             console.log(`Image loaded: ${file.name}, Original dimensions: ${img.width}x${img.height}`)
 
             // Calculate dimensions for 16:9 aspect ratio
-            let { width, height } = img
+            const { width, height } = img
 
             // Calculate the target width (max 1080px but maintain aspect ratio)
             let targetWidth = Math.min(width, MAX_WIDTH)
@@ -130,7 +130,7 @@ const resizeAndCropImage = (file: File): Promise<File> => {
                             }
 
                             // Ensure we use a valid image MIME type and filename
-                            let mimeType = 'image/jpeg'
+                            const mimeType = 'image/jpeg'
                             let fileName = file.name
 
                             // Ensure the filename has the correct extension
@@ -183,7 +183,7 @@ const processExistingImage = async (imageUrl: string, fileName: string): Promise
             }
 
             // Use the same resizing logic as new uploads
-            let { width, height } = img
+            const { width, height } = img
 
             // Calculate the target width (max 1080px but maintain aspect ratio)
             let targetWidth = Math.min(width, MAX_WIDTH)

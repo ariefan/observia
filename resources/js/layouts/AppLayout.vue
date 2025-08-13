@@ -5,7 +5,6 @@ import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'vue-sonner';
 import { onMounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import 'vue-sonner/style.css';
 
 const page = usePage();
 

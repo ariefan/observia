@@ -30,13 +30,13 @@ return new class extends Migration
             $table->foreignId('permission_id')->constrained()->onDelete('cascade');
         });
 
-        Schema::create('user_role', function (Blueprint $table) {
-            $table->id();
-            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
-            $table->foreignUuid('farm_id')->nullable()->constrained()->onDelete('cascade'); // null = global
-            $table->foreignId('role_id')->constrained()->onDelete('cascade');
-            $table->timestamps();
-        });
+        // Schema::create('user_role', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
+        //     $table->foreignUuid('farm_id')->nullable()->constrained()->onDelete('cascade'); // null = global
+        //     $table->foreignId('role_id')->constrained()->onDelete('cascade');
+        //     $table->timestamps();
+        // });
     }
 
     /**
@@ -44,9 +44,24 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_role');
+        // Schema::table('user_role', function (Blueprint $table) {
+        //     $table->dropForeign(['user_id']);
+        //     $table->dropForeign(['farm_id']);
+        //     $table->dropForeign(['role_id']);
+        // });
+        // Schema::dropIfExists('user_role');
+        
+        Schema::table('role_permission', function (Blueprint $table) {
+            $table->dropForeign(['role_id']);
+            $table->dropForeign(['permission_id']);
+        });
         Schema::dropIfExists('role_permission');
+        
         Schema::dropIfExists('permissions');
+        
+        Schema::table('roles', function (Blueprint $table) {
+            $table->dropForeign(['farm_id']);
+        });
         Schema::dropIfExists('roles');
     }
 };

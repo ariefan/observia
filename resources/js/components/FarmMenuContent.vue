@@ -1,51 +1,44 @@
 <script setup lang="ts">
-import {
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
 import { getInitials } from '@/composables/useInitials';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Building2, Users, Plus, LogOut } from 'lucide-vue-next';
+import type { SharedData } from '@/types';
+import { computed } from 'vue';
 
-interface Farm {
-    name: string;
-    location: string;
-    members: number;
-    avatar?: string;
-}
+const page = usePage<SharedData>();
+const auth = computed(() => page.props.auth);
+
 </script>
 
 <template>
     <div class="overflow-hidden rounded-lg shadow-xl bg-white dark:bg-zinc-900 max-w-sm w-full">
         <!-- Top Info -->
         <div class="bg-teal-700 text-white px-4 py-4 flex flex-col items-center text-center"
-            v-if="$page.props.auth.user.current_farm">
+            v-if="auth.user.current_farm">
             <Avatar class="size-20 overflow-hidden rounded-full flex items-center justify-center mb-2">
-                <AvatarImage v-if="$page.props.auth.user.current_farm.picture"
-                    :src="$page.props.auth.user.current_farm.picture" :alt="$page.props.auth.user.current_farm.name" />
+                <AvatarImage v-if="auth.user.current_farm.picture"
+                    :src="auth.user.current_farm.picture" :alt="auth.user.current_farm.name" />
                 <AvatarFallback class="text-2xl rounded-lg font-semibold text-black  dark:text-white">
-                    {{ getInitials($page.props.auth.user.current_farm?.name) }}
+                    {{ getInitials(auth.user.current_farm?.name) }}
                 </AvatarFallback>
             </Avatar>
-            <h2 class="text-lg font-bold">{{ $page.props.auth.user.current_farm.name }}</h2>
-            <p class="text-xs opacity-80 leading-tight mt-0.5">{{ $page.props.auth.user.current_farm.address }}</p>
+            <h2 class="text-lg font-bold">{{ auth.user.current_farm.name }}</h2>
+            <p class="text-xs opacity-80 leading-tight mt-0.5">{{ auth.user.current_farm.address }}</p>
 
             <div class="mt-2 flex gap-2 w-full justify-center">
-                <Link :href="route('farms.edit', $page.props.auth.user.current_farm.id)">
+                <Link :href="route('farms.edit', auth.user.current_farm.id)">
                 <Button variant="outline"
                     class="bg-white/10 text-white border-white/30 hover:bg-white/80 text-xs px-3 py-1 h-auto gap-1">
                     <Building2 class="w-4 h-4" /> Profile Peternakan
                 </Button>
                 </Link>
-                <Link :href="route('farms.show', $page.props.auth.user.current_farm.id)">
+                <Link :href="route('farms.show', auth.user.current_farm.id)">
                 <Button variant="outline"
                     class="bg-white/10 text-white border-white/30 hover:bg-white/80 text-xs px-3 py-1 h-auto gap-1"
                     title="Lihat anggota peternakan">
-                    <Users class="w-4 h-4" /> {{ $page.props.auth.user.current_farm.users_count }}
+                    <Users class="w-4 h-4" /> {{ auth.user.current_farm.users_count }}
                 </Button>
                 </Link>
                 <Link :href="route('farms.logout')">
@@ -62,8 +55,8 @@ interface Farm {
         <div class="bg-teal-950 px-4 py-4 text-white text-sm">
             <h3 class="mb-2 font-semibold">Peternakan anda</h3>
             <ul class="space-y-1">
-                <li v-for="(farm, i) in $page.props.auth.farms.filter(
-                    (farm) => farm.id !== ($page.props.auth.user.current_farm?.id || '')
+                <li v-for="(farm, i) in auth.farms.filter(
+                    (farm) => farm.id !== (auth.user.current_farm?.id || '')
                 )" :key="i">
                     <Link :href="route('farms.switch', farm.id)"
                         class="flex items-center gap-2 cursor-pointer hover:bg-teal-800 rounded-full px-2 py-2 transition-all duration-150">

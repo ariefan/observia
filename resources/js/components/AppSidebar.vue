@@ -5,15 +5,14 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Home, PawPrint, ChartLine, ArrowLeftRight, Heart, Database } from 'lucide-vue-next';
+import { LayoutGrid, Home, Folder, BookOpen } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSidebar } from '@/components/ui/sidebar/utils';
-import type { SharedData, User } from '@/types';
+import type { SharedData } from '@/types';
 import { IconFileText, IconHorse } from '@tabler/icons-vue';
 
 const page = usePage<SharedData>();
-const user = page.props.auth.user as User;
 
 const mainNavItems: NavItem[] = [
     ...(page.props.auth.farms && page.props.auth.user.current_farm_id

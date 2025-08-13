@@ -1,20 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { BreadcrumbItem } from '@/types';
+import { toast } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
-import { FloatingInput } from '@/components/ui/floating-input';
-import { MapInput } from '@/components/ui/map-input';
 import { LocationInput } from '@/components/ui/location-input';
 import { ImageUpload } from '@/components/ui/image-upload';
 import {
     Card,
     CardContent,
-    CardDescription,
     CardFooter,
-    CardHeader,
-    CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,19 +19,13 @@ import {
     SelectContent,
     SelectGroup,
     SelectItem,
-    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
 import { Building2, Users, Trash2 } from 'lucide-vue-next';
-import 'vue-sonner/style.css';
-import { toast } from 'vue-sonner';
 
 const page = usePage();
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Profil Peternakan', href: '/teams' },
-];
 
 const props = defineProps<{
     provinces: { id: number; code: string; name: string }[];
@@ -60,9 +49,6 @@ const props = defineProps<{
         latlong: { latitude: number; longitude: number };
     }
 }>();
-
-const selectedCoordinates = ref<{ latitude: number; longitude: number } | null>(null);
-const profileImage = ref(null);
 
 const form = useForm({
     _method: props.farm?.id ? 'put' : 'post',

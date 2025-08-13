@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, warn } from 'vue';
+import { ref } from 'vue';
 import YoutubePlayer from '@/components/YoutubePlayer.vue';
 import Example1 from '@/assets/example-1.jpg';
 
@@ -49,9 +49,7 @@ const responsiveOptions = ref([
 const value = ref('0');
 const articleValue = ref('0');
 
-defineProps<{
-    name?: string;
-}>();
+// No props needed for this component
 </script>
 
 <template>
@@ -151,7 +149,7 @@ defineProps<{
                     <TabPanel value="0">
                         <Carousel :value="articles" :numVisible="4" :numScroll="1" :circular="true"
                             :responsiveOptions="responsiveOptions">
-                            <template #item="slotProps">
+                            <template #item>
                                 <div class="mx-1">
                                     <Card style="overflow: hidden" class="mb-1">
                                         <template #header>

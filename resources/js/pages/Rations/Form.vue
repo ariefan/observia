@@ -1,11 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/InputError.vue';
-import { ref, watch, computed } from 'vue';
+import { computed } from 'vue';
 import { X, Plus } from 'lucide-vue-next';
 
 const props = defineProps({

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,9 +17,31 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { computed, watch } from 'vue';
 
-const props = defineProps({
-    availableFeedings: Array,
-});
+// TypeScript interfaces
+interface Herd {
+    id: string;
+    name: string;
+}
+
+interface Ration {
+    id: string;
+    name: string;
+}
+
+interface Feeding {
+    id: string | number;
+    herd?: Herd;
+    ration?: Ration;
+    quantity: string | number;
+    livestock_count?: number;
+    date: string;
+    time?: string;
+    session: string;
+}
+
+const props = defineProps<{
+    availableFeedings?: Feeding[];
+}>();
 
 const form = useForm({
     feeding_id: '',
@@ -30,13 +52,13 @@ const form = useForm({
 });
 
 const selectedFeeding = computed(() => {
-    return props.availableFeedings.find(feeding => feeding.id == form.feeding_id);
+    return props.availableFeedings?.find(feeding => String(feeding.id) === form.feeding_id);
 });
 
 // Watch for feeding selection changes to auto-fill date and time
 watch(() => form.feeding_id, (newValue) => {
-    if (newValue) {
-        const feeding = props.availableFeedings.find(f => f.id == newValue);
+    if (newValue && props.availableFeedings) {
+        const feeding = props.availableFeedings.find(f => String(f.id) === newValue);
         if (feeding) {
             form.date = feeding.date;
             if (feeding.time) {
@@ -46,7 +68,7 @@ watch(() => form.feeding_id, (newValue) => {
     }
 });
 
-const formatDate = (dateString) => {
+const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('id-ID', {
         weekday: 'long',
         year: 'numeric',
@@ -55,8 +77,8 @@ const formatDate = (dateString) => {
     });
 };
 
-const formatSession = (session) => {
-    const sessions = {
+const formatSession = (session: string): string => {
+    const sessions: Record<string, string> = {
         'morning': 'Pagi',
         'afternoon': 'Sore'
     };
@@ -96,7 +118,7 @@ const submit = () => {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div v-if="availableFeedings.length === 0" class="text-center py-8">
+                        <div v-if="!availableFeedings || availableFeedings.length === 0" class="text-center py-8">
                             <Alert>
                                 <AlertCircle class="h-4 w-4" />
                                 <AlertDescription>
@@ -121,7 +143,7 @@ const submit = () => {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem v-for="feeding in availableFeedings" :key="feeding.id"
-                                            :value="feeding.id.toString()">
+                                            :value="String(feeding.id)">
                                             <div class="flex justify-between items-center w-full">
                                                 <div>
                                                     <div class="font-medium">{{ feeding.herd?.name || 'N/A' }}</div>
@@ -129,7 +151,7 @@ const submit = () => {
                                                         {{ feeding.ration?.name || 'N/A' }} -
                                                         <template
                                                             v-if="feeding.livestock_count && feeding.livestock_count > 1">
-                                                            {{ (parseFloat(feeding.quantity) /
+                                                            {{ (Number(feeding.quantity) /
                                                                 feeding.livestock_count).toFixed(2) }} kg/ekor
                                                         </template>
                                                         <template v-else>
@@ -168,7 +190,7 @@ const submit = () => {
                                         <span class="text-blue-700 font-medium">Jumlah Diberikan:</span>
                                         <template
                                             v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1">
-                                            <div>{{ (parseFloat(selectedFeeding.quantity) /
+                                            <div>{{ (Number(selectedFeeding.quantity) /
                                                 selectedFeeding.livestock_count).toFixed(2) }} kg/ekor</div>
                                             <div class="text-xs text-gray-500">(Total: {{ selectedFeeding.quantity }}
                                                 kg)</div>
@@ -198,7 +220,7 @@ const submit = () => {
                                         Maksimal: {{ selectedFeeding.quantity }} kg (total untuk seluruh kandang)
                                         <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
                                             class="text-xs">
-                                            Atau {{ (parseFloat(selectedFeeding.quantity) /
+                                            Atau {{ (Number(selectedFeeding.quantity) /
                                                 selectedFeeding.livestock_count).toFixed(2) }} kg/ekor × {{
                                                 selectedFeeding.livestock_count }} ekor
                                         </div>
@@ -216,7 +238,7 @@ const submit = () => {
                                                     </div>
                                                     <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
                                                         class="text-xs text-gray-500">
-                                                        {{ (parseFloat(selectedFeeding.quantity) /
+                                                        {{ (Number(selectedFeeding.quantity) /
                                                             selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
                                                     </div>
                                                 </div>
@@ -229,7 +251,7 @@ const submit = () => {
                                                         (total)</div>
                                                     <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
                                                         class="text-xs text-gray-500">
-                                                        {{ (parseFloat(form.leftover_quantity) /
+                                                        {{ (Number(form.leftover_quantity) /
                                                             selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
                                                     </div>
                                                 </div>
@@ -238,22 +260,22 @@ const submit = () => {
                                                 <span>Dimakan:</span>
                                                 <div class="text-right">
                                                     <div class="font-medium text-green-600">
-                                                        {{ (selectedFeeding.quantity -
-                                                            form.leftover_quantity).toFixed(2) }} kg
+                                                        {{ (Number(selectedFeeding.quantity) -
+                                                            Number(form.leftover_quantity)).toFixed(2) }} kg
                                                         (total)
                                                     </div>
                                                     <div v-if="selectedFeeding.livestock_count && selectedFeeding.livestock_count > 1"
                                                         class="text-xs text-gray-500">
-                                                        {{ ((selectedFeeding.quantity - form.leftover_quantity) /
-                                                            selectedFeeding.livestock_count).toFixed(2) }} kg/ekor
+                                                        {{ ((Number(selectedFeeding.quantity) - Number(form.leftover_quantity)) /
+                                                            (selectedFeeding.livestock_count || 1)).toFixed(2) }} kg/ekor
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="flex justify-between">
                                                 <span>Efisiensi:</span>
                                                 <span class="font-bold text-green-600">
-                                                    {{ Math.round(((selectedFeeding.quantity - form.leftover_quantity) /
-                                                        selectedFeeding.quantity) * 100) }}%
+                                                    {{ Math.round(((Number(selectedFeeding.quantity) - Number(form.leftover_quantity)) /
+                                                        Number(selectedFeeding.quantity)) * 100) }}%
                                                 </span>
                                             </div>
                                         </div>

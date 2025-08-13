@@ -1,40 +1,14 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Mars, Venus, ImageOff } from 'lucide-vue-next';
-import type { BreadcrumbItem } from '@/types';
-import { Button } from '@/components/ui/button';
-import { FloatingInput } from '@/components/ui/floating-input';
-import { MapInput } from '@/components/ui/map-input';
-import { ImageUpload } from '@/components/ui/image-upload';
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import InputError from '@/components/InputError.vue';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { differenceInYears, differenceInMonths, parseISO } from 'date-fns';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Profil Peternakan',
-        href: '/teams',
-    },
-];
 
 interface Livestock {
     id: string;
@@ -49,7 +23,7 @@ interface Livestock {
     };
 }
 
-const props = defineProps<{
+defineProps<{
     livestocks: Livestock[];
     male_count: number;
     female_count: number;
@@ -71,45 +45,7 @@ const calculateAge = (birthdate: string): string => {
     return `${months} bulan`;
 };
 
-const selectedCoordinates = ref<{ latitude: number; longitude: number } | null>(null);
-
-function handleCoordinateUpdate(coordinates: { latitude: number; longitude: number }) {
-    selectedCoordinates.value = coordinates;
-    console.log('Coordinates updated:', coordinates);
-}
-
-const profileImage = ref(null);
-
-const handlePhotoUpload = ({ blob, url, dimensions }: { blob: Blob, url: string, dimensions: { width: number, height: number } }) => {
-    console.log('Photo uploaded:', { blob, dimensions });
-    // Here you would typically upload the blob to your server
-    // For example:
-    // const formData = new FormData();
-    // formData.append('avatar', blob, 'profile.jpg');
-    // fetch('/api/upload-avatar', { method: 'POST', body: formData });
-};
-
-const handlePhotoRemove = () => {
-    console.log('Photo removed');
-    // Handle photo removal, e.g., delete from server
-};
-
-
-const form = useForm({
-    name: '',
-    email: '',
-    location: {
-        latitude: 0,
-        longitude: 0,
-    },
-});
-
-function submit() {
-}
-
 const show = (id: string) => router.visit(route('livestocks.show', { id }));
-
-const back = () => window.history.back();
 
 </script>
 

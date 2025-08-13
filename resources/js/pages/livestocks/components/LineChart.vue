@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -12,7 +12,7 @@ import {
   Filler
 } from 'chart.js'
 
-import { ref, watchEffect, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, Filler)
 

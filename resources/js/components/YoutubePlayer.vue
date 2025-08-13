@@ -1,6 +1,8 @@
-<script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
 import { PlayIcon } from 'lucide-vue-next' // ← install this package if you haven't!
+import Dialog from 'primevue/dialog';
+import Tag from 'primevue/tag';
 
 const props = defineProps({
     videoId: {

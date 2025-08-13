@@ -1,37 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
-import { FloatingInput } from '@/components/ui/floating-input';
 import { MapInput } from '@/components/ui/map-input';
 import { ImageUpload } from '@/components/ui/image-upload';
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/InputError.vue';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Profil Peternakan',
-        href: '/teams',
-    },
-];
 
 defineProps<{
     name?: string;
@@ -46,7 +28,10 @@ function handleCoordinateUpdate(coordinates: { latitude: number; longitude: numb
 
 const profileImage = ref(null);
 
-const handlePhotoUpload = ({ blob, url, dimensions }) => {
+const page = usePage();
+const villages = computed(() => page.props.villages || []);
+
+const handlePhotoUpload = ({ blob, dimensions }) => {
     console.log('Photo uploaded:', { blob, dimensions });
     // Here you would typically upload the blob to your server
     // For example:
@@ -129,7 +114,7 @@ const back = () => window.history.back();
                                 <Label for="village_id">Kecamatan</Label>
                                 <Input id="village_id" type="text" list="villages" required v-model="form.village_id" />
                                 <datalist id="villages">
-                                    <option v-for="village in $page.props.villages" :value="village.id">
+                                    <option v-for="village in villages" :key="village.id" :value="village.id">
                                         {{ village.name }}
                                     </option>
                                 </datalist>

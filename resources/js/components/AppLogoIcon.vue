@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue';
 import LogoIcon from '@/assets/logo-icon.png';
 
 defineOptions({
@@ -7,7 +6,7 @@ defineOptions({
 });
 
 interface Props {
-    className?: HTMLAttributes['class'];
+    className?: string;
 }
 
 defineProps<Props>();

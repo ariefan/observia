@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
@@ -12,14 +12,9 @@ import {
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Building2, Pencil, Trash, Plus } from 'lucide-vue-next';
-import { Badge } from '@/components/ui/badge';
+import { Pencil, Trash, Plus } from 'lucide-vue-next';
 
 import {
     Dialog,
@@ -27,11 +22,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogDescription,
-    DialogClose
 } from '@/components/ui/dialog';
-import { Select } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
 
 
 import { ref, watch, onMounted, computed as vueComputed } from 'vue';
@@ -165,8 +156,6 @@ const formatCurrency = (value) => {
     // Remove leading zero before the currency symbol if present (e.g., "Rp0" to "Rp")
     return formatted.replace(/^Rp0\b/, 'Rp');
 };
-
-const totalFeeds = (rationItems = []) => rationItems.length;
 
 const totalCost = (rationItems = []) => {
     return rationItems.reduce((acc, item) => acc + (item.price), 0);

@@ -1,33 +1,21 @@
 <script setup lang="ts">
-import { reactive, ref, computed, PropType } from 'vue';
-import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
+import { ref, PropType, computed } from 'vue';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import type { SharedData } from '@/types';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { BreadcrumbItem } from '@/types';
 import { toast } from 'vue-sonner';
-import 'vue-sonner/style.css'
 import { Button } from '@/components/ui/button';
-import { FloatingInput } from '@/components/ui/floating-input';
-import { MapInput } from '@/components/ui/map-input';
-import { LocationInput } from '@/components/ui/location-input';
-import { ImageUpload } from '@/components/ui/image-upload';
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/InputError.vue';
 import {
     Select,
     SelectContent,
-    SelectGroup,
     SelectItem,
-    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
@@ -51,11 +39,8 @@ import {
 } from '@/components/ui/dialog'
 import { getInitials } from '@/composables/useInitials';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Pencil, ChevronDown, Trash2, Building2, Users } from 'lucide-vue-next';
+import { ChevronDown, Trash2, Building2, Users } from 'lucide-vue-next';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Profil Peternakan', href: '/teams' },
-];
 
 const props = defineProps({
     farm: {
@@ -82,6 +67,9 @@ const props = defineProps({
         role: string
     }>>,
 })
+
+const page = usePage<SharedData>();
+const auth = computed(() => page.props.auth);
 
 const forms = ref<{ [key: string]: ReturnType<typeof useForm<any>> }>({})
 
@@ -208,8 +196,6 @@ function invite() {
         },
     })
 }
-
-const back = () => window.history.back();
 </script>
 
 <template>
@@ -220,7 +206,7 @@ const back = () => window.history.back();
             <!-- Sidebar -->
             <aside class="w-56 bg-teal-50 dark:bg-teal-950 p-2 shadow-xl -mt-2">
                 <nav class="space-y-2">
-                    <Link :href="route('farms.edit', $page.props.auth.user.current_farm.id)"
+                    <Link :href="route('farms.edit', auth.user.current_farm.id)"
                         class="flex items-center gap-2 text-sm font-semibold hover:bg-primary hover:text-white rounded-full px-4 py-2 transition-colors">
                     <Building2 class="size-4" /> Profil Peternakan
                     </Link>
@@ -262,8 +248,8 @@ const back = () => window.history.back();
             <div class="flex-1 flex flex-col gap-4 p-4 max-w-7xl mx-auto">
                 <div>
                     <h1 class="text-xl font-semibold text-primary">
-                        {{ $page.props.auth.user.role }}
-                        Anggota {{ $page.props.auth.user.current_farm.name }}
+                        {{ auth.user.role }}
+                        Anggota {{ auth.user.current_farm.name }}
                     </h1>
                 </div>
                 <Card class="border-0">
@@ -309,7 +295,7 @@ const back = () => window.history.back();
                                                 <TableCell>
                                                     <DropdownMenu
                                                         v-if="user.pivot.role !== 'owner' &&
-                                                            ['owner', 'admin'].includes($page.props.auth.user.current_farm.role)">
+                                                            ['owner', 'admin'].includes(auth.user.current_farm.role)">
                                                         <DropdownMenuTrigger>
                                                             <Button variant="secondary" size="sm">
                                                                 {{
@@ -333,7 +319,7 @@ const back = () => window.history.back();
                                                 <TableCell>
                                                     <Button
                                                         v-if="user.pivot.role !== 'owner' &&
-                                                            ['owner', 'admin'].includes($page.props.auth.user.current_farm.role)"
+                                                            ['owner', 'admin'].includes(auth.user.current_farm.role)"
                                                         variant="destructive" size="sm" @click="removeUser(user)">
                                                         <Trash2 class="w-4 h-4 mr-1" /> Keluarkan
                                                     </Button>

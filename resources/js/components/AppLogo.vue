@@ -1,7 +1,5 @@
 <script setup lang="ts">
-// import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import Logo from '@/assets/logo.png';
-// import { useSidebar } from '@/components/ui/sidebar/utils';
 
 interface Props {
     class?: string;

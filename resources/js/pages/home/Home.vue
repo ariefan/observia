@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Link, Head, router } from '@inertiajs/vue3';
+import { Link, Head, router, usePage } from '@inertiajs/vue3';
 import Rank from './Rank.vue';
 import Tips from './Tips.vue';
 import Welcome1 from '@/assets/welcome-1.jpg';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import type { SharedData } from '@/types';
+import { computed } from 'vue';
 
 const props = defineProps<{
     name?: string;
@@ -28,6 +30,9 @@ const acceptInvite = (inviteId: number) => {
 const rejectInvite = (inviteId: number) => {
     router.post(`/farm-invites/${inviteId}/reject`);
 };
+
+const page = usePage<SharedData>();
+const auth = computed(() => page.props.auth);
 </script>
 
 <template>
@@ -47,7 +52,7 @@ const rejectInvite = (inviteId: number) => {
             </div> -->
             <!-- MIDDLE BIG CHONK -->
             <div class="relative flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-                v-if="!($page.props.auth.user.farms && $page.props.auth.user.farms.length > 0)">
+                v-if="!(auth.farms && auth.farms.length > 0)">
 
                 <!-- Farm Invitation Alerts -->
                 <div v-if="props.farmInvites && props.farmInvites.length > 0" class="space-y-3 mb-4">
@@ -79,12 +84,12 @@ const rejectInvite = (inviteId: number) => {
 
                     <template #title>
                         <div class="flex justify-between items-center text-white md:text-lg text-base lg:text-xl">
-                            <span>Hi, {{ $page.props.auth.user.name }}</span>
+                            <span>Hi, {{ auth.user.name }}</span>
                             <span>Selamat Datang</span>
                         </div>
                     </template>
 
-                    <template #footer v-if="!$page.props.auth.user.current_farm_id">
+                    <template #footer v-if="!auth.user.current_farm_id">
                         <div class="relative w-full h-[150px] lg:h-[180px] rounded-xl overflow-hidden">
                             <!-- The sacred image, now behaving like a good zoomed boy -->
                             <img :src="Welcome1" alt="Welcome 1"
@@ -103,8 +108,7 @@ const rejectInvite = (inviteId: number) => {
 
                                 <!-- Bottom Button of Glory -->
                                 <Link :href="route('farms.create')">
-                                <Button size="small" rounded variant="outlined"
-                                    class="!bg-white dark:!bg-black hover:!bg-zinc-200 dark:hover:!bg-zinc-800 font-bold w-full sm:w-64">
+                                <Button class="rounded-full">
                                     Mulai kelola peternakan Anda
                                 </Button>
                                 </Link>

@@ -1,30 +1,22 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import type { SharedData } from '@/types';
+import { computed } from 'vue';
 import Rank from './Rank.vue';
 import Tips from './Tips.vue';
 import Guide from './Guide.vue';
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
-import PlaceholderPattern from '../../components/PlaceholderPattern.vue';
 import RealtimeClock from '@/components/ui/realtime-clock/RealtimeClock.vue';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-];
 
 const props = defineProps<{
     name?: string;
@@ -57,6 +49,9 @@ const acceptInvite = (inviteId: number) => {
 const rejectInvite = (inviteId: number) => {
     router.post(`/farm-invites/${inviteId}/reject`);
 };
+
+const page = usePage<SharedData>();
+const auth = computed(() => page.props.auth);
 </script>
 
 <template>
@@ -70,7 +65,7 @@ const rejectInvite = (inviteId: number) => {
                     <CardHeader class="pt-4 pb-2">
                         <CardTitle class="flex justify-between items-center">
                             <div class="text-lg md:text-xl">
-                                Hi, {{ $page.props.auth.user.name }}
+                                Hi, {{ auth.user.name }}
                             </div>
                             <div class="text-sm md:text-base lg:text-lg">
                                 <RealtimeClock class="text-white" />

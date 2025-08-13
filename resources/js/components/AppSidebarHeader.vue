@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, Search, Plus } from 'lucide-vue-next';
+import { Search } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import UserMenuContent from '@/components/UserMenuContent.vue';
@@ -10,13 +10,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/compon
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItemType, NavItem } from '@/types';
 import type { Auth } from '@/types';
 import { useAppearance } from '@/composables/useAppearance';
-import { Monitor, Moon, Sun, SunMoon, Building2, Bell } from 'lucide-vue-next';
-import type { SharedData, User } from '@/types';
+import { SunMoon, Building2 } from 'lucide-vue-next';
+import Menu from 'primevue/menu';
+import type { SharedData } from '@/types';
 
 const props = defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
@@ -27,7 +27,6 @@ const breadcrumbs = props.breadcrumbs ?? [];
 const description = props.description ?? '';
 const page = usePage<SharedData>();
 const auth = computed<Auth>(() => page.props.auth as Auth);
-const user = page.props.auth.user as User;
 
 const rightNavItems: NavItem[] = [
     // {
@@ -56,13 +55,6 @@ const getNextAppearance = (current: Appearance): Appearance => {
 };
 
 const nextAppearance = computed(() => getNextAppearance(appearance.value));
-const appearanceIcon = computed(() => {
-    switch (appearance.value) {
-        case 'dark': return Monitor;
-        case 'system': return Sun;
-        default: return Moon;
-    }
-});
 
 function updateCurrentAppearance(newAppearance?: Appearance) {
     updateAppearance(newAppearance ?? nextAppearance.value);
@@ -70,9 +62,9 @@ function updateCurrentAppearance(newAppearance?: Appearance) {
 
 const appearanceMenu = ref();
 const appearanceItems = ref([
-    { label: 'System', value: 'system', icon: Monitor },
-    { label: 'Light', value: 'light', icon: Sun },
-    { label: 'Dark', value: 'dark', icon: Moon },
+    { label: 'System', value: 'system', icon: 'pi pi-desktop' },
+    { label: 'Light', value: 'light', icon: 'pi pi-sun' },
+    { label: 'Dark', value: 'dark', icon: 'pi pi-moon' },
 ]);
 const toggleAppearance = (event: Event) => {
     appearanceMenu.value.toggle(event);
@@ -117,12 +109,12 @@ const toggleAppearance = (event: Event) => {
                     </div>
                 </div>
 
-                <DropdownMenu v-if="$page.props.auth.farms && $page.props.auth.farms.length > 0">
+                <DropdownMenu v-if="auth.farms && auth.farms.length > 0">
                     <DropdownMenuTrigger :as-child="true">
                         <Button variant="outline" size="sm"
                             class="relative w-auto rounded-full focus-within:ring-2 focus-within:ring-primary">
                             <Building2 class="size-4" />
-                            {{ $page.props.auth.user.current_farm?.name || 'Pilih Peternakan' }}
+                            {{ auth.user.current_farm?.name || 'Pilih Peternakan' }}
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-80 p-0 bg-teal-950 text-white rounded-xl">
@@ -151,7 +143,7 @@ const toggleAppearance = (event: Event) => {
                     <template #item="{ item, props }">
                         <a v-ripple class="flex items-center" v-bind="props.action"
                             @click="updateCurrentAppearance(item.value)">
-                            <component :is="item.icon" class="size-4 opacity-80 group-hover:opacity-100" />
+                            <i :class="item.icon + ' size-4 opacity-80 group-hover:opacity-100'"></i>
                             <span class="text-sm ms-2">{{ item.label }}</span>
                             <span class="ml-auto">{{ appearance === item.value ? '✓' : '' }}</span>
                         </a>

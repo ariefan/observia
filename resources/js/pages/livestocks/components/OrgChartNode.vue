@@ -19,8 +19,10 @@
     </div>
   </template>
   
-  <script setup>
-  defineProps({
+  <script setup lang="ts">
+import { computed } from 'vue'
+
+defineProps({
     node: {
       type: Object,
       required: true

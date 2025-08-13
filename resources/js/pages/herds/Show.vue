@@ -1,14 +1,11 @@
-<script setup>
-import { ref, reactive } from 'vue';
-import { router } from '@inertiajs/vue3';
+<script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { Card, CardContent } from '@/components/ui/card'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Venus, Mars, Plus, ArrowLeft, ImageOff } from 'lucide-vue-next';
-import LivestockDefault from "@/assets/livestock-default.png";
+import { Venus, Mars, ArrowLeft, ImageOff } from 'lucide-vue-next';
 
 defineProps({
     herd: Object,

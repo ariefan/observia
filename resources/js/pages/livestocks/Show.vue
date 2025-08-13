@@ -1,30 +1,22 @@
 <script setup lang="ts">
 // Core Vue imports
-import { ref, computed } from "vue";
-import { Head, Link, useForm, usePage, router } from "@inertiajs/vue3";
+import { computed } from "vue";
+import { Head, Link, router } from "@inertiajs/vue3";
 
 // Layout and Components
 import AppLayout from "@/layouts/AppLayout.vue";
 import { Button } from "@/components/ui/button";
-import { FloatingInput } from "@/components/ui/floating-input";
-import { MapInput } from "@/components/ui/map-input";
-import { ImageUpload } from "@/components/ui/image-upload";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import InputError from "@/components/InputError.vue";
 
 // Icons
 import {
   Mars,
   Venus,
   ArrowLeft,
-  Megaphone,
   ChartNoAxesColumnIncreasing,
   ThumbsUp,
   ThumbsDown,
@@ -32,26 +24,18 @@ import {
   Pencil,
   Trash2,
   ImageOff,
-  Scale,
-  Milk,
   TreeDeciduous,
   Award,
   Skull,
 } from "lucide-vue-next";
 
 // Types
-import type { BreadcrumbItem } from "@/types";
 
 // Local components
-import AlertBanner from "./components/AlertBanner.vue";
 import LineChart from "./components/LineChart.vue";
 import HealthHistoryCard from "./components/HealthHistoryCard.vue";
 import FeedHistoryCard from "./components/FeedHistoryCard.vue";
-import FamilyTree from "./components/FamilyTree.vue";
 import PedigreeCard from "./components/PedigreeCard.vue";
-
-// Assets
-import Example2 from "@/assets/example-2.png";
 
 // Props
 const props = defineProps<{
@@ -66,30 +50,11 @@ const props = defineProps<{
 }>();
 
 // Breadcrumb navigation
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: "Profil Peternakan",
-    href: "/teams",
-  },
-];
 
-// Form state and handlers
-const form = useForm({
-  name: "",
-  email: "",
-  location: {
-    latitude: 0,
-    longitude: 0,
-  },
-});
 
 const isDarkMode = computed(() => document.documentElement.classList.contains('dark'));
 
-const submit = () => { };
 
-// Navigation functions
-const show = (id: string) => router.visit(route("livestocks.show", { livestock: id }));
-const back = () => window.history.back();
 
 const deleteLivestock = () => {
   if (confirm('Are you sure you want to delete this livestock?')) {
