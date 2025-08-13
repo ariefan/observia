@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('farm_invites', function (Blueprint $table) {
             $table->id();
-            $table->foreignUuid('farm_id');
+            $table->foreignUuid('farm_id')->constrained()->onDelete('cascade');
             $table->string('email');
             $table->string('role')->nullable();
             $table->timestamps();

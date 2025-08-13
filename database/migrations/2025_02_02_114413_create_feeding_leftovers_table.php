@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('date');
             $table->time('time')->nullable();
             $table->text('notes')->nullable();
-            $table->foreignUuid('user_id');
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
 
             // Ensure one leftover record per feeding
@@ -33,6 +33,7 @@ return new class extends Migration
     {
         Schema::table('feeding_leftovers', function (Blueprint $table) {
             $table->dropForeign(['feeding_id']);
+            $table->dropForeign(['user_id']);
         });
         Schema::dropIfExists('feeding_leftovers');
     }

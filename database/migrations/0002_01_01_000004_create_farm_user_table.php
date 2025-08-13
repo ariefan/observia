@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('farm_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignUuid('farm_id');
-            $table->foreignUuid('user_id');
+            $table->foreignUuid('farm_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
             $table->string('role')->nullable();
             $table->timestamps();
 

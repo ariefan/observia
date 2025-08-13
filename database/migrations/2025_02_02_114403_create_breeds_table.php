@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('breeds', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('species_id')->nullable();
+            $table->foreignUuid('species_id')->nullable()->constrained()->onDelete('set null');
             $table->string('code')->unique()->nullable();
             $table->string('name');
             $table->string('origin')->nullable();
@@ -27,6 +27,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('breeds', function (Blueprint $table) {
+            $table->dropForeign(['species_id']);
+        });
         Schema::dropIfExists('breeds');
     }
 };

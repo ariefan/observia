@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('weight', 8, 2);
             $table->date('date');
             $table->string('device_id')->nullable();
-            $table->foreignUuid('user_id');
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

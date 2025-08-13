@@ -20,7 +20,7 @@ return new class extends Migration
             $table->time('time')->nullable();
             $table->string('session')->nullable();
             $table->string('device_id')->nullable();
-            $table->foreignUuid('user_id');
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
             $table->text('notes')->nullable();
             $table->timestamps();
         });
@@ -34,6 +34,7 @@ return new class extends Migration
         Schema::table('herd_feedings', function (Blueprint $table) {
             $table->dropForeign(['herd_id']);
             $table->dropForeign(['ration_id']);
+            $table->dropForeign(['user_id']);
         });
         Schema::dropIfExists('herd_feedings');
     }
