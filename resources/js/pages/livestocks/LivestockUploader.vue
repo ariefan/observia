@@ -418,7 +418,10 @@ const initializeExistingImages = async (files: (File | string)[]) => {
             let imageUrl: string
 
             if (typeof file === 'string') {
-                // Existing photo path from database
+                // Existing photo path from database                
+                if (file.includes('firebasestorage.googleapis.com')) {
+                    return file;
+                }
                 imageUrl = `/storage/${file}`
                 console.log('Adding existing photo:', file, 'URL:', imageUrl)
                 uploadedImages.value.push({

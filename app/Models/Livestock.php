@@ -106,7 +106,7 @@ class Livestock extends Model
                 b.name as breed_name,
                 l.photo,
                 0 AS depth,
-                l.id AS path
+                l.id::text AS path
             FROM
                 livestocks l
             JOIN breeds b ON b.id = l.breed_id
@@ -125,7 +125,7 @@ class Livestock extends Model
                 b.name as breed_name,
                 parent.photo,
                 child.depth + 1 AS depth,
-                child.path || ',' || parent.id AS path
+                child.path || ',' || parent.id::text AS path
             FROM
                 livestocks parent
             INNER JOIN

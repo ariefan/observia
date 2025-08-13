@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Mars, Venus, ImageOff } from 'lucide-vue-next';
 import {
@@ -30,6 +30,9 @@ defineProps<{
 }>();
 
 const getPhotoUrl = (photoPath: string) => {
+    if (photoPath.includes('firebasestorage.googleapis.com')) {
+        return photoPath;
+    }
     return photoPath ? `/storage/${photoPath}` : '';
 };
 

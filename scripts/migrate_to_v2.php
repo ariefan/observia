@@ -359,6 +359,24 @@ function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMappin
         if (!empty($goat['image2_url'])) $photos[] = $goat['image2_url'];
         if (!empty($goat['image3_url'])) $photos[] = $goat['image3_url'];
 
+        // Map origin
+        $originSource = getValue($goat, 'origin');
+        $originTarget = 4; // Default to 'Other'
+        if ($originSource === 'Beli') {
+            $originTarget = 2;
+        } elseif ($originSource === 'Lahir di kandang') {
+            $originTarget = 1;
+        }
+
+        // Map status
+        $statusSource = getValue($goat, 'status');
+        $statusTarget = 1; // Default to 'Available'
+        if ($statusSource == 9) { // Sold
+            $statusTarget = 2;
+        } elseif ($statusSource == 8) { // Dead
+            $statusTarget = 3;
+        }
+
         $livestocksToInsert[] = [
             'id' => generateUuid(),
             'farm_id' => $farmUuid,
@@ -368,8 +386,8 @@ function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMappin
             'name' => getValue($goat, 'name'),
             'birthdate' => getValue($goat, 'birth_date'),
             'sex' => getValue($goat, 'gender') === 'm' ? 'M' : 'F',
-            'origin' => getValue($goat, 'origin', '1'),
-            'status' => getValue($goat, 'status', '1'),
+            'origin' => $originTarget,
+            'status' => $statusTarget,
             'tag_id' => getValue($goat, 'ear_tag', ''),
             'birth_weight' => getValue($goat, 'birth_weight'),
             'weight' => getValue($goat, 'weight'),
@@ -384,8 +402,10 @@ function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMappin
 
     DB::table('livestocks')->insert($livestocksToInsert);
     $stats['livestocks'] = count($livestocksToInsert);
-    echo "✅ Migrated {$stats['livestocks']} livestocks.\n";
+    echo "✅ Migrated {" . $stats['livestocks'] . "} livestocks.\n";
 }
+
+
 
 /**
  * Updates passwords for users with non-bcrypt hashes.

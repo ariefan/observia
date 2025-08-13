@@ -63,6 +63,9 @@ const deleteLivestock = () => {
 }
 
 const getPhotoUrl = (path: string) => {
+  if (path.includes('firebasestorage.googleapis.com')) {
+    return path;
+  }
   if (path.startsWith('public/')) {
     return `/storage/${path.substring(7)}`;
   }
