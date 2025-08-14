@@ -11,6 +11,9 @@ import {
 } from '@/components/ui/tabs';
 import {
     Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
     CardContent,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -551,7 +554,7 @@ const months = [
                                                     <TableCell>
                                                         <div class="flex flex-col">
                                                             <span class="font-semibold text-lg">{{ feeding.quantity
-                                                            }}</span>
+                                                                }}</span>
                                                             <span class="text-xs text-muted-foreground">kg</span>
                                                         </div>
                                                     </TableCell>

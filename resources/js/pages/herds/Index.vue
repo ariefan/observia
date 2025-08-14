@@ -132,10 +132,10 @@ function confirmDelete() {
             <!-- Sidebar -->
             <aside class="w-56 bg-teal-50 dark:bg-teal-950 p-2 shadow-xl -mt-2">
                 <nav class="space-y-2">
-                    <Link :href="route('rations.index')"
+                    <a :href="route('rations.index')"
                         class="flex items-center gap-2 text-sm font-semibold hover:bg-primary hover:text-white rounded-full px-4 py-2 transition-colors">
-                    Pakan
-                    </Link>
+                        Pakan
+                    </a>
                     <Link :href="route('herds.index')"
                         class="flex items-center gap-2 text-sm font-semibold text-white bg-primary rounded-full px-4 py-2 transition-colors">
                     Kandang
