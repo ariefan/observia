@@ -258,6 +258,9 @@ function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMappin
             }
         }
 
+        // Store the filenames in JSON array format
+        $photoJson = !empty($photos) ? json_encode($photos) : null;
+
         $originMap = ['Beli'=>2,'Lahir di kandang'=>1];
         $origin = $originMap[$goat['origin'] ?? ''] ?? 4;
 
@@ -278,7 +281,7 @@ function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMappin
             'tag_id' => $goat['ear_tag'] ?? '',
             'birth_weight' => $goat['birth_weight'] ?? null,
             'weight' => $goat['weight'] ?? null,
-            'photo' => !empty($photos) ? json_encode($photos) : null,
+            'photo' => $photoJson,
             'purchase_date' => !empty($goat['entry_date']) ? date('Y-m-d H:i:s', strtotime($goat['entry_date'])) : null,
             'purchase_price' => $goat['purchase_price'] ?? null,
             'entry_date' => !empty($goat['entry_date']) ? date('Y-m-d', strtotime($goat['entry_date'])) : null,
@@ -289,7 +292,7 @@ function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMappin
 
     DB::table('livestocks')->insert($livestocksToInsert);
     $stats['livestocks'] = count($livestocksToInsert);
-    echo "✅ Migrated {$stats['livestocks']} livestocks.\n";
+    echo "✅ Migrated {$stats['livestocks']} livestocks with photos stored as JSON.\n";
 }
 
 function processLivestockImage(string $url, ImageManager $manager): ?string {
@@ -318,7 +321,6 @@ function processLivestockImage(string $url, ImageManager $manager): ?string {
             echo "🔧 Cropped and resized portrait image to height 768px.\n";
         }
 
-        // Save directly to public/livestocks
         $filename = generateUuid() . '.jpg';
         $publicPath = __DIR__ . '/../public/storage/livestocks/';
         if (!file_exists($publicPath)) mkdir($publicPath, 0777, true);
@@ -327,6 +329,8 @@ function processLivestockImage(string $url, ImageManager $manager): ?string {
         $image->toJpg(85)->save($fullPath);
 
         echo "💾 Image saved to '{$fullPath}' successfully.\n";
+
+        // Return **filename only**, will be stored as JSON in photo column
         return $filename;
 
     } catch (\Exception $e) {
