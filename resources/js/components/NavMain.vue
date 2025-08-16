@@ -49,7 +49,7 @@ function goToFeed(route: string) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent class="w-56 ml-8">
                     <DropdownMenuGroup>
-                        <DropdownMenuItem @click="router.get('/livestocks/create')">
+                        <DropdownMenuItem @click="router.get(route('livestocks.create'))">
                             <IconHorse class="mr-2 h-4 w-4" />
                             <span>Ternak</span>
                         </DropdownMenuItem>
@@ -57,11 +57,11 @@ function goToFeed(route: string) {
                             <Wheat class="mr-2 h-4 w-4" />
                             <span>Pakan</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem @click="router.get('/livestocks/milking')">
+                        <DropdownMenuItem @click="router.get(route('livestocks.milking'))">
                             <IconMilk class="mr-2 h-4 w-4" />
                             <span>Perah</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem @click="router.get('/livestocks/weight')">
+                        <DropdownMenuItem @click="router.get(route('livestocks.weighting'))">
                             <IconScaleOutline class="mr-2 h-4 w-4" />
                             <span>Bobot ternak</span>
                         </DropdownMenuItem>

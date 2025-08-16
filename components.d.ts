@@ -13,12 +13,8 @@ declare module 'vue' {
     Card: typeof import('primevue/card')['default']
     Carousel: typeof import('primevue/carousel')['default']
     Divider: typeof import('primevue/divider')['default']
-    Menu: typeof import('primevue/menu')['default']
     TabPanel: typeof import('primevue/tabpanel')['default']
     TabPanels: typeof import('primevue/tabpanels')['default']
     Tabs: typeof import('primevue/tabs')['default']
-  }
-  export interface GlobalDirectives {
-    Ripple: typeof import('primevue/ripple')['default']
   }
 }

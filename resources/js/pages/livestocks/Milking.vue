@@ -1,8 +1,7 @@
 <script setup lang="ts">
 // Core Vue imports
-import { ref, watch, onMounted, nextTick } from "vue";
+import { ref, watch, nextTick } from "vue";
 import { Head, useForm } from "@inertiajs/vue3";
-import axios from "axios";
 
 // Layout and Components
 import AppLayout from "@/layouts/AppLayout.vue";
@@ -11,22 +10,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import InputError from "@/components/InputError.vue";
 import { Card, CardContent } from "@/components/ui/card";
-import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxList, ComboboxTrigger } from '@/components/ui/combobox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import LivestockSearchCombobox from "@/components/LivestockSearchCombobox.vue";
+
+// Composables
+import { useNavigation } from "@/composables/useNavigation";
 
 // Icons
-import { ArrowLeft, Check, ChevronsUpDown, Milk } from "lucide-vue-next";
+import { ArrowLeft, Milk } from "lucide-vue-next";
 
 // Props
 const props = defineProps<{
     livestock: any;
 }>();
 
-// Form state and handlers
-const getDisplayValue = (livestock: any) => {
-    if (!livestock) return '';
-    return `${livestock.aifarm_id} - ${livestock.name}`;
-};
+// Composables
+const { back } = useNavigation();
 
 // Get current date and time
 const now = new Date();
@@ -43,40 +42,7 @@ const form = useForm({
 });
 
 const selectedLivestock = ref<any>(props.livestock.id ? props.livestock : null);
-const searchQuery = ref('');
-const searchResults = ref<any[]>([]);
 const isUpdatingAutomatically = ref(false);
-
-// Load initial livestock data
-const loadLivestock = async (query: string = '') => {
-    try {
-        const response = await axios.get(route('livestocks.search', { q: query, sex: 'F' }));
-        searchResults.value = response.data;
-    } catch (error) {
-        console.error(error);
-        searchResults.value = [];
-    }
-};
-
-// Watch for search query changes
-watch(searchQuery, async (newQuery) => {
-    if (!newQuery || newQuery.length === 0) {
-        // Load all livestock when search is empty
-        await loadLivestock();
-        return;
-    }
-
-    if (newQuery.length < 2) {
-        return; // Don't search for very short queries
-    }
-
-    await loadLivestock(newQuery);
-});
-
-// Load initial data on component mount
-onMounted(() => {
-    loadLivestock();
-});
 
 watch(selectedLivestock, (newValue) => {
     if (newValue) {
@@ -118,9 +84,6 @@ watch(() => form.time, async (newTime) => {
 const submit = () => {
     form.post(route('livestocks.milking.store'));
 };
-
-// Navigation functions
-const back = () => window.history.back();
 </script>
 
 <template>
@@ -160,30 +123,11 @@ const back = () => window.history.back();
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <Label for="livestock_id">ID Ternak</Label>
-                        <Combobox v-model="selectedLivestock" v-model:search-term="searchQuery"
-                            :display-value="getDisplayValue">
-                            <ComboboxAnchor as-child>
-                                <ComboboxTrigger as-child>
-                                    <Button variant="outline" class="justify-between w-full">
-                                        {{ selectedLivestock ? getDisplayValue(selectedLivestock) : 'Pilih Ternak' }}
-                                        <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                </ComboboxTrigger>
-                            </ComboboxAnchor>
-
-                            <ComboboxList class="w-full">
-                                <ComboboxInput v-model="searchQuery" placeholder="Cari ternak..." />
-                                <ComboboxEmpty>Ternak tidak ditemukan.</ComboboxEmpty>
-                                <ComboboxGroup>
-                                    <ComboboxItem v-for="result in searchResults" :key="result.id" :value="result">
-                                        {{ result.tag_id }} - {{ result.name }}
-                                        <ComboboxItemIndicator>
-                                            <Check class="ml-auto h-4 w-4" />
-                                        </ComboboxItemIndicator>
-                                    </ComboboxItem>
-                                </ComboboxGroup>
-                            </ComboboxList>
-                        </Combobox>
+                        <LivestockSearchCombobox 
+                            v-model="selectedLivestock" 
+                            sex-filter="F" 
+                            placeholder="Pilih Ternak" 
+                        />
                         <InputError :message="form.errors.livestock_id" />
                     </div>
 

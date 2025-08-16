@@ -14,6 +14,9 @@ import InputError from '@/components/InputError.vue';
 import LivestockUploader from "./LivestockUploader.vue";
 import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxList, ComboboxTrigger } from '@/components/ui/combobox'
 
+// Composables
+import { useNavigation } from '@/composables/useNavigation';
+
 interface Props {
   livestock: Livestock;
   species: Species[];
@@ -286,7 +289,8 @@ watch(searchQuery, (newQuery) => {
 
 
 
-const back = () => window.history.back();
+// Composables
+const { back } = useNavigation();
 
 </script>
 

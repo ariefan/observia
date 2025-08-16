@@ -78,9 +78,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'rations' => RationController::class,
         'feeds' => FeedController::class,
     ]);
+    
+    // Route::get('/livestocks/photo/{path}', [LivestockController::class, 'showPhoto'])->where('path', '.*')->name('livestocks.photo');
 });
-
-Route::get('/livestocks/photo/{path}', [LivestockController::class, 'showPhoto'])->where('path', '.*')->name('livestocks.photo');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

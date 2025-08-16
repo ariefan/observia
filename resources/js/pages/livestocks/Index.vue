@@ -7,7 +7,10 @@ import {
     CardContent,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { differenceInYears, differenceInMonths, parseISO } from 'date-fns';
+
+// Composables
+import { usePhotoUrl } from '@/composables/usePhotoUrl';
+import { useAgeCalculation } from '@/composables/useAgeCalculation';
 
 
 interface Livestock {
@@ -29,24 +32,9 @@ defineProps<{
     female_count: number;
 }>();
 
-const getPhotoUrl = (photoPath: string) => {
-    if (photoPath.includes('firebasestorage.googleapis.com')) {
-        return photoPath;
-    }
-    return photoPath ? `/storage/${photoPath}` : '';
-};
-
-const calculateAge = (birthdate: string): string => {
-    if (!birthdate) return 'Unknown age';
-    const birthDate = parseISO(birthdate);
-    const now = new Date();
-    const years = differenceInYears(now, birthDate);
-    if (years > 0) {
-        return `${years} tahun`;
-    }
-    const months = differenceInMonths(now, birthDate);
-    return `${months} bulan`;
-};
+// Composables
+const { getPhotoUrl } = usePhotoUrl();
+const { calculateAge } = useAgeCalculation();
 
 const show = (id: string) => router.visit(route('livestocks.show', { id }));
 

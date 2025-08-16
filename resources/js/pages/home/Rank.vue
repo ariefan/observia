@@ -50,7 +50,7 @@ const getPhotoUrl = (livestock: LivestockRanking) => {
 
 // Navigate to livestock detail
 const viewLivestock = (id: string) => {
-    window.location.href = `/livestocks/${id}`;
+    window.location.href = route('livestocks.show', { livestock: id });
 };
 
 // Load rankings data

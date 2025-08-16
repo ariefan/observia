@@ -233,7 +233,7 @@ const getPhotoUrl = (photoPath: string) => {
 
 const navigateToLivestock = (node: OrgNode) => {
   if (node.isClickable && node.id) {
-    router.visit(`/livestocks/${node.id}`)
+    router.visit(route('livestocks.show', { livestock: node.id }))
   }
 }
 

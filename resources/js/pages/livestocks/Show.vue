@@ -54,22 +54,13 @@ const props = defineProps<{
 
 const isDarkMode = computed(() => document.documentElement.classList.contains('dark'));
 
-
+// Composables
+const { getPhotoUrl } = usePhotoUrl();
 
 const deleteLivestock = () => {
   if (confirm('Are you sure you want to delete this livestock?')) {
     router.delete(route('livestocks.destroy', props.livestock.id));
   }
-}
-
-const getPhotoUrl = (path: string) => {
-  if (path.includes('firebasestorage.googleapis.com')) {
-    return path;
-  }
-  if (path.startsWith('public/')) {
-    return `/storage/${path.substring(7)}`;
-  }
-  return `/storage/${path}`;
 }
 
 // Data for health and feed history
@@ -278,7 +269,7 @@ const milkingTrend = computed(() => {
       <!-- Header Section -->
       <div class="flex items-start justify-between space-x-4">
         <div class="flex items-start space-x-4">
-          <Button @click="router.get('/livestocks')" variant="outline" size="icon" class="h-10 w-10 shrink-0">
+          <Button @click="router.get(route('livestocks.index'))" variant="outline" size="icon" class="h-10 w-10 shrink-0">
             <ArrowLeft class="h-5 w-5" />
           </Button>
           <div class="space-y-1">

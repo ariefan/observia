@@ -23,8 +23,18 @@ class LivestockController extends Controller
      */
     public function index()
     {
+        $currentFarmId = Auth::user()->current_farm_id;
+        
+        if (!$currentFarmId) {
+            return Inertia::render('livestocks/Index', [
+                'livestocks' => collect([]),
+                'male_count' => 0,
+                'female_count' => 0,
+            ]);
+        }
+        
         $livestocks = Livestock::query()
-            ->where('farm_id', Auth::user()->current_farm_id)
+            ->where('farm_id', $currentFarmId)
             ->with('breed')
             ->get();
 
