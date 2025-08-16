@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Search } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
@@ -14,8 +14,7 @@ import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItemType, NavItem } from '@/types';
 import type { Auth } from '@/types';
 import { useAppearance } from '@/composables/useAppearance';
-import { SunMoon, Building2 } from 'lucide-vue-next';
-import Menu from 'primevue/menu';
+import { Sun, Moon, Building2 } from 'lucide-vue-next';
 import type { SharedData } from '@/types';
 
 const props = defineProps<{
@@ -43,32 +42,21 @@ const rightNavItems: NavItem[] = [
 
 
 // Appearance
-type Appearance = 'light' | 'dark' | 'system';
+type Appearance = 'light' | 'dark';
 const { appearance, updateAppearance } = useAppearance();
 
-const getNextAppearance = (current: Appearance): Appearance => {
-    switch (current) {
-        case 'dark': return 'system';
-        case 'system': return 'light';
-        default: return 'dark';
-    }
-};
-
-const nextAppearance = computed(() => getNextAppearance(appearance.value));
-
-function updateCurrentAppearance(newAppearance?: Appearance) {
-    updateAppearance(newAppearance ?? nextAppearance.value);
+function toggleAppearanceMode() {
+    const nextMode: Appearance = appearance.value === 'light' ? 'dark' : 'light';
+    updateAppearance(nextMode);
 }
 
-const appearanceMenu = ref();
-const appearanceItems = ref([
-    { label: 'System', value: 'system', icon: 'pi pi-desktop' },
-    { label: 'Light', value: 'light', icon: 'pi pi-sun' },
-    { label: 'Dark', value: 'dark', icon: 'pi pi-moon' },
-]);
-const toggleAppearance = (event: Event) => {
-    appearanceMenu.value.toggle(event);
-};
+const getThemeIcon = computed(() => {
+    return appearance.value === 'light' ? Sun : Moon;
+});
+
+const getThemeLabel = computed(() => {
+    return appearance.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode';
+});
 
 </script>
 
@@ -125,30 +113,17 @@ const toggleAppearance = (event: Event) => {
                 <TooltipProvider :delay-duration="0">
                     <Tooltip>
                         <TooltipTrigger>
-                            <Button @click="toggleAppearance" variant="ghost" size="icon" as-child
+                            <Button @click="toggleAppearanceMode" variant="ghost" size="icon"
                                 class="group h-9 w-9 cursor-pointer">
-                                <span rel="noopener noreferrer">
-                                    <span class="sr-only">{{ nextAppearance }}</span>
-                                    <component :is="SunMoon" class="size-5 opacity-80 group-hover:opacity-100" />
-                                </span>
+                                <span class="sr-only">{{ getThemeLabel }}</span>
+                                <component :is="getThemeIcon" class="size-5 opacity-80 group-hover:opacity-100" />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Tampilan</p>
+                            <p>{{ getThemeLabel }}</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-
-                <Menu ref="appearanceMenu" id="overlay_menu" :model="appearanceItems" :popup="true">
-                    <template #item="{ item, props }">
-                        <a v-ripple class="flex items-center" v-bind="props.action"
-                            @click="updateCurrentAppearance(item.value)">
-                            <i :class="item.icon + ' size-4 opacity-80 group-hover:opacity-100'"></i>
-                            <span class="text-sm ms-2">{{ item.label }}</span>
-                            <span class="ml-auto">{{ appearance === item.value ? '✓' : '' }}</span>
-                        </a>
-                    </template>
-                </Menu>
 
                 <!-- <DropdownMenu>
                     <DropdownMenuTrigger as-child>

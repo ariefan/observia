@@ -294,7 +294,7 @@ const back = () => window.history.back();
   <AppLayout title="Form Ternak">
     <template #header>
       <div class="flex items-center gap-4">
-        <h3 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h3 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
           Form Ternak
         </h3>
       </div>
@@ -302,13 +302,13 @@ const back = () => window.history.back();
 
     <div class="py-2">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
           <form ref="form_1" @submit.prevent="saveAction">
             <div class="flex items-center gap-4">
               <Button @click="back" variant="ghost" size="icon" class="h-10 w-10 shrink-0">
                 <ArrowLeft class="h-5 w-5" />
               </Button>
-              <h3 class="text-primary font-semibold">Data Ternak</h3>
+              <h3 class="text-primary dark:text-primary-foreground font-semibold">Data Ternak</h3>
             </div>
             <div class="mt-2">
               <LivestockUploader ref="livestockUploaderRef" v-model="form.photo" />
@@ -499,7 +499,7 @@ const back = () => window.history.back();
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
               <div>
-                <h3 class="text-primary font-semibold mt-6">Data Induk Jantan</h3>
+                <h3 class="text-primary dark:text-primary-foreground font-semibold mt-6">Data Induk Jantan</h3>
                 <Label for="male_parent">Cari Induk Jantan</Label>
                 <Combobox v-model="selectedMaleParent" v-model:search-term="maleParentQuery"
                   :display-value="(item: Livestock | null) => item ? `${item.aifarm_id} - ${item.name}` : ''">
@@ -530,9 +530,9 @@ const back = () => window.history.back();
                 </Combobox>
                 <InputError :message="form.errors.male_parent_id" />
                 <div v-if="selectedMaleParent"
-                  class="mt-2 p-4 rounded-lg border border-blue-300 bg-blue-50 flex items-center justify-between">
+                  class="mt-2 p-4 rounded-lg border border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20 flex items-center justify-between">
                   <div>
-                    <div class="font-semibold text-blue-800">Induk Jantan Terpilih</div>
+                    <div class="font-semibold text-blue-800 dark:text-blue-200">Induk Jantan Terpilih</div>
                     <div><strong>ID Aifarm:</strong> {{ selectedMaleParent.aifarm_id }}</div>
                     <div><strong>ID Tag:</strong> {{ selectedMaleParent.tag_id }}</div>
                     <div><strong>Nama:</strong> {{ selectedMaleParent.name }}</div>
@@ -548,7 +548,7 @@ const back = () => window.history.back();
                 </div>
               </div>
               <div>
-                <h3 class="text-primary font-semibold mt-6">Data Induk Betina</h3>
+                <h3 class="text-primary dark:text-primary-foreground font-semibold mt-6">Data Induk Betina</h3>
                 <Label for="female_parent">Cari Induk Betina</Label>
                 <Combobox v-model="selectedFemaleParent" v-model:search-term="femaleParentQuery"
                   :display-value="(item: Livestock | null) => item ? `${item.aifarm_id} - ${item.name}` : ''">
@@ -579,9 +579,9 @@ const back = () => window.history.back();
                 </Combobox>
                 <InputError :message="form.errors.female_parent_id" />
                 <div v-if="selectedFemaleParent"
-                  class="mt-2 p-4 rounded-lg border border-pink-300 bg-pink-50 flex items-center justify-between">
+                  class="mt-2 p-4 rounded-lg border border-pink-300 dark:border-pink-600 bg-pink-50 dark:bg-pink-900/20 flex items-center justify-between">
                   <div>
-                    <div class="font-semibold text-pink-800">Induk Betina Terpilih</div>
+                    <div class="font-semibold text-pink-800 dark:text-pink-200">Induk Betina Terpilih</div>
                     <div><strong>ID Aifarm:</strong> {{ selectedFemaleParent.aifarm_id }}</div>
                     <div><strong>ID Tag:</strong> {{ selectedFemaleParent.tag_id }}</div>
                     <div><strong>Nama:</strong> {{ selectedFemaleParent.name }}</div>

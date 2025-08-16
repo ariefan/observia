@@ -1,28 +1,17 @@
 <?php
 /**
- * SAFE Migration Script: MySQL to PostgreSQL v2 with Automatic Rollback
- *
- * This script migrates a single tenant's data from a legacy MySQL database to the new
- * PostgreSQL structure. It ensures data integrity through a specific migration order and
- * uses a full transaction to allow for automatic rollback on any failure.
- *
- * Migration Order:
- * 1. Tenant -> Farm
- * 2. Users -> Users
- * 3. Goat Types -> Breeds (linked to 'CAPRA' species)
- * 4. Cages -> Herds
- * 5. Goats -> Livestocks
+ * SAFE Migration Script: MySQL to PostgreSQL v2 with Automatic Rollback + Image Processing
  */
 
-// Bootstrap Laravel application
 require_once __DIR__ . '/../vendor/autoload.php';
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 use Illuminate\Support\Facades\DB;
+use Intervention\Image\ImageManager;
+use Illuminate\Support\Facades\Storage;
 
 // --- Configuration ---
-// Get the tenant database name from the command-line argument, defaulting to 'mulia_farm'
 $tenantDatabaseName = $argv[1] ?? 'mulia_farm';
 
 $mysqlConfig = [
@@ -32,62 +21,36 @@ $mysqlConfig = [
     'charset' => 'utf8mb4'
 ];
 
-// Source databases
 $databases = [
-    'client' => $tenantDatabaseName, // The specific tenant database to migrate
-    'main' => 'aifarm'             // The central database with user and tenant metadata
+    'client' => $tenantDatabaseName,
+    'main' => 'aifarm'
 ];
 
-// --- Main Execution ---
 echo "🚀 Starting SAFE Migration for tenant '{$tenantDatabaseName}'\n";
-if (!isset($argv[1])) {
-    echo "ℹ️  No tenant database name provided. Using default: 'mulia_farm'.\n";
-}
 echo "🔒 All changes will be rolled back automatically if ANY error occurs\n";
 echo str_repeat("=", 70) . "\n";
-
 
 $stats = [
     'farms' => 0, 'users' => 0, 'breeds' => 0, 'herds' => 0, 'livestocks' => 0,
 ];
 
 try {
-    // Start the master transaction
     DB::beginTransaction();
     echo "🔒 Database transaction started.\n";
 
-    // Establish connections to source MySQL databases
     $connections = connectToMySQL($mysqlConfig, $databases);
-
-    // Ensure target PostgreSQL connection is alive
     DB::connection()->getPdo();
     echo "✅ Connected to PostgreSQL target database.\n\n";
 
-    // --- Step 1: Identify Tenant ---
     list($tenantId, $tenantInfo) = identifyTenant($connections['main'], $databases['client']);
-
-    // --- Step 2: Migrate Users ---
     list($userMapping, $ownerId, $allUsers) = migrateUsers($connections['main'], $tenantId, $stats);
-
-    // --- Step 3: Migrate Farm ---
     $farmUuid = migrateFarm($tenantInfo, $ownerId, $stats);
-
-    // --- Step 4: Associate Users with Farm ---
     associateUsersToFarm($farmUuid, $userMapping, $allUsers, $stats);
-
-    // --- Step 5: Migrate Breeds ---
     $breedMapping = migrateBreeds($connections['client'], $stats);
-
-    // --- Step 6: Migrate Herds ---
     $herdMapping = migrateHerds($connections['client'], $farmUuid, $stats);
-
-    // --- Step 7: Migrate Livestocks ---
     migrateLivestocks($connections['client'], $farmUuid, $breedMapping, $herdMapping, $stats);
-
-    // --- Step 8: Update User Passwords ---
     updateUserPasswords($stats);
 
-    // --- Finalize ---
     DB::commit();
     echo "\n🔓 Transaction committed successfully!\n";
     printSuccessSummary($stats);
@@ -100,14 +63,11 @@ try {
 
 echo "🎉 Migration script finished.\n";
 
+// ------------------
+// Helper Functions
+// ------------------
 
-// --- Helper Functions ---
-
-/**
- * Establishes and returns PDO connections to the source MySQL databases.
- */
-function connectToMySQL(array $config, array $databases): array
-{
+function connectToMySQL(array $config, array $databases): array {
     $connections = [];
     foreach ($databases as $key => $dbName) {
         $dsn = "mysql:host={$config['host']};dbname={$dbName};charset={$config['charset']}";
@@ -120,92 +80,62 @@ function connectToMySQL(array $config, array $databases): array
     return $connections;
 }
 
-/**
- * Identifies and returns the tenant to be migrated.
- */
-function identifyTenant(PDO $connection, string $tenantDbName): array
-{
+function identifyTenant(PDO $connection, string $tenantDbName): array {
     echo "\n---\n🔍 Step 1: Identifying Tenant...\n";
     $stmt = $connection->prepare("SELECT * FROM tenant WHERE `database` = ? AND active = 1");
     $stmt->execute([$tenantDbName]);
     $tenant = $stmt->fetch();
-
-    if (!$tenant) {
-        throw new Exception("Active tenant with database '{$tenantDbName}' not found.");
-    }
+    if (!$tenant) throw new Exception("Active tenant with database '{$tenantDbName}' not found.");
     echo "✅ Found tenant '{$tenant['name']}' (ID: {$tenant['id']}).\n";
-    return [
-        $tenant['id'],
-        $tenant
-    ];
+    return [$tenant['id'], $tenant];
 }
 
-/**
- * Migrates users for a given tenant and returns the user mapping, owner's UUID, and original user data.
- */
-function migrateUsers(PDO $connection, int $tenantId, array &$stats): array
-{
+function migrateUsers(PDO $connection, int $tenantId, array &$stats): array {
     echo "\n---\n👤 Step 2: Migrating Users...\n";
     $stmt = $connection->prepare("SELECT * FROM user WHERE tenant_id = ? AND status = 'verified' ORDER BY id");
     $stmt->execute([$tenantId]);
     $users = $stmt->fetchAll();
-
-    if (empty($users)) {
-        echo "⚠️ No verified users found for this tenant.\n";
-        return [[], null, []];
-    }
+    if (empty($users)) return [[], null, []];
 
     $userMapping = [];
     $usersToInsert = [];
     $firstUserUuid = null;
-
     foreach ($users as $user) {
         $uuid = generateUuid();
         $userMapping[$user['id']] = $uuid;
-        if (is_null($firstUserUuid)) {
-            $firstUserUuid = $uuid;
-        }
+        if (is_null($firstUserUuid)) $firstUserUuid = $uuid;
 
         $usersToInsert[] = [
             'id' => $uuid,
-            'name' => getValue($user, 'name', 'Unknown User'),
-            'email' => getValue($user, 'email') ?: 'user' . $user['id'] . '@aifarm.local',
-            'phone' => getValue($user, 'phone'),
-            'password' => getValue($user, 'password'), // Keep original password to check format later
-            'is_super_user' => getValue($user, 'role') === 'superadmin',
-            'profile_photo_path' => getValue($user, 'photo'),
-            'created_at' => getValue($user, 'created_at', now()),
+            'name' => $user['name'] ?? 'Unknown User',
+            'email' => $user['email'] ?? 'user'.$user['id'].'@aifarm.local',
+            'phone' => $user['phone'] ?? null,
+            'password' => $user['password'] ?? null,
+            'is_super_user' => ($user['role'] ?? '') === 'superadmin',
+            'profile_photo_path' => $user['photo'] ?? null,
+            'created_at' => $user['created_at'] ?? now(),
             'updated_at' => now(),
         ];
     }
 
     DB::table('users')->insert($usersToInsert);
     $stats['users'] = count($usersToInsert);
-
     echo "✅ Migrated {$stats['users']} users.\n";
     return [$userMapping, $firstUserUuid, $users];
 }
 
-/**
- * Migrates the specified tenant to a farm.
- */
-function migrateFarm(array $tenant, ?string $ownerId, array &$stats): string
-{
+function migrateFarm(array $tenant, ?string $ownerId, array &$stats): string {
     echo "\n---\n🏢 Step 3: Migrating Tenant to Farm...\n";
-    
     $farmUuid = generateUuid();
-    $cityId = getValue($tenant, 'city_id', 1);
-    if ($cityId && !DB::table('cities')->where('id', $cityId)->exists()) {
-        echo "⚠️ Warning: City ID '{$cityId}' not found. Defaulting to 1.\n";
-        $cityId = 1;
-    }
+    $cityId = $tenant['city_id'] ?? 1;
+    if ($cityId && !DB::table('cities')->where('id', $cityId)->exists()) $cityId = 1;
 
     DB::table('farms')->insert([
         'id' => $farmUuid,
-        'name' => getValue($tenant, 'name', 'Unknown Farm'),
-        'address' => getValue($tenant, 'address'),
-        'picture' => getValue($tenant, 'photo'),
-        'owner' => getValue($tenant, 'name'),
+        'name' => $tenant['name'] ?? 'Unknown Farm',
+        'address' => $tenant['address'] ?? null,
+        'picture' => $tenant['photo'] ?? null,
+        'owner' => $tenant['name'] ?? null,
         'city_id' => $cityId,
         'user_id' => $ownerId,
         'created_at' => now(),
@@ -214,22 +144,13 @@ function migrateFarm(array $tenant, ?string $ownerId, array &$stats): string
 
     $stats['farms']++;
     echo "✅ Farm '{$tenant['name']}' created with UUID: {$farmUuid}.\n";
-    if ($ownerId) {
-        echo "✅ Farm owner assigned with user UUID: {$ownerId}.\n";
-    }
+    if ($ownerId) echo "✅ Farm owner assigned with user UUID: {$ownerId}.\n";
     return $farmUuid;
 }
 
-/**
- * Associates the migrated users with the new farm.
- */
-function associateUsersToFarm(string $farmUuid, array $userMapping, array $originalUsers, array &$stats): void
-{
+function associateUsersToFarm(string $farmUuid, array $userMapping, array $originalUsers, array &$stats): void {
     echo "\n---\n🔗 Step 4: Associating Users with Farm...\n";
-    if (empty($userMapping)) {
-        echo "⚠️ No users to associate with the farm.\n";
-        return;
-    }
+    if (empty($userMapping)) return;
 
     $farmUserInserts = [];
     foreach ($originalUsers as $user) {
@@ -237,7 +158,7 @@ function associateUsersToFarm(string $farmUuid, array $userMapping, array $origi
             $farmUserInserts[] = [
                 'farm_id' => $farmUuid,
                 'user_id' => $userMapping[$user['id']],
-                'role' => getValue($user, 'role'),
+                'role' => $user['role'] ?? null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -247,22 +168,14 @@ function associateUsersToFarm(string $farmUuid, array $userMapping, array $origi
     if (!empty($farmUserInserts)) {
         DB::table('farm_user')->insert($farmUserInserts);
         $stats['farm_users'] = count($farmUserInserts);
-        echo "✅ Associated {" . $stats['farm_users'] . "} users with the farm.\n";
+        echo "✅ Associated {$stats['farm_users']} users with the farm.\n";
     }
 }
 
-/**
- * Migrates goat types as breeds under the 'CAPRA' species.
- */
-function migrateBreeds(PDO $connection, array &$stats): array
-{
-    echo "\n---\n";
-    echo "🐐 Step 5: Migrating Goat Types to Breeds...\n";
+function migrateBreeds(PDO $connection, array &$stats): array {
+    echo "\n---\n🐐 Step 5: Migrating Goat Types to Breeds...\n";
     $capraSpeciesId = DB::table('species')->where('code', 'CAPRA')->value('id');
-    if (!$capraSpeciesId) {
-        throw new Exception("Species with code 'CAPRA' not found. Please seed the species table first.");
-    }
-    echo "✅ Found 'CAPRA' species with ID: {$capraSpeciesId}.\n";
+    if (!$capraSpeciesId) throw new Exception("Species 'CAPRA' not found.");
 
     $stmt = $connection->query("SELECT DISTINCT type FROM goat WHERE type IS NOT NULL AND type != '' ORDER BY type");
     $types = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -274,7 +187,6 @@ function migrateBreeds(PDO $connection, array &$stats): array
         $breedName = trim($breedName);
         if (empty($breedName)) continue;
 
-        // Check if breed already exists to prevent duplicates
         $existingBreed = DB::table('breeds')->where('name', $breedName)->where('species_id', $capraSpeciesId)->first();
         if ($existingBreed) {
             $breedMapping[$breedName] = $existingBreed->id;
@@ -301,32 +213,22 @@ function migrateBreeds(PDO $connection, array &$stats): array
     return $breedMapping;
 }
 
-/**
- * Migrates cages to herds for the given farm.
- */
-function migrateHerds(PDO $connection, string $farmUuid, array &$stats): array
-{
-    echo "\n---\n";
-    echo "🏠 Step 6: Migrating Cages to Herds...\n";
+function migrateHerds(PDO $connection, string $farmUuid, array &$stats): array {
+    echo "\n---\n🏠 Step 6: Migrating Cages to Herds...\n";
     $cages = $connection->query("SELECT * FROM cage ORDER BY id")->fetchAll();
-
-    if (empty($cages)) {
-        echo "⚠️ No cages found to migrate.\n";
-        return [];
-    }
+    if (empty($cages)) return [];
 
     $herdMapping = [];
     $herdsToInsert = [];
-
     foreach ($cages as $cage) {
         $uuid = generateUuid();
         $herdMapping[$cage['id']] = $uuid;
         $herdsToInsert[] = [
             'id' => $uuid,
             'farm_id' => $farmUuid,
-            'name' => getValue($cage, 'name', 'Unnamed Herd'),
-            'description' => getValue($cage, 'status') . ' - ' . getValue($cage, 'category'),
-            'capacity' => getValue($cage, 'capacity', 0),
+            'name' => $cage['name'] ?? 'Unnamed Herd',
+            'description' => ($cage['status'] ?? '') . ' - ' . ($cage['category'] ?? ''),
+            'capacity' => $cage['capacity'] ?? 0,
             'created_at' => now(),
             'updated_at' => now(),
         ];
@@ -338,83 +240,103 @@ function migrateHerds(PDO $connection, string $farmUuid, array &$stats): array
     return $herdMapping;
 }
 
-/**
- * Migrates goats to livestocks.
- */
-function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMapping, array $herdMapping, array &$stats): void
-{
-    echo "\n---\n";
-    echo "🐑 Step 7: Migrating Goats to Livestocks...\n";
+function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMapping, array $herdMapping, array &$stats): void {
+    echo "\n---\n🐑 Step 7: Migrating Goats to Livestocks...\n";
     $goats = $connection->query("SELECT * FROM goat WHERE is_active = 1 ORDER BY id")->fetchAll();
+    if (empty($goats)) return;
 
-    if (empty($goats)) {
-        echo "⚠️ No active goats found to migrate.\n";
-        return;
-    }
-
+    $manager = new ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
     $livestocksToInsert = [];
+
     foreach ($goats as $goat) {
         $photos = [];
-        if (!empty($goat['image1_url'])) $photos[] = $goat['image1_url'];
-        if (!empty($goat['image2_url'])) $photos[] = $goat['image2_url'];
-        if (!empty($goat['image3_url'])) $photos[] = $goat['image3_url'];
-
-        // Map origin
-        $originSource = getValue($goat, 'origin');
-        $originTarget = 4; // Default to 'Other'
-        if ($originSource === 'Beli') {
-            $originTarget = 2;
-        } elseif ($originSource === 'Lahir di kandang') {
-            $originTarget = 1;
+        for ($i = 1; $i <= 3; $i++) {
+            $key = "image{$i}_url";
+            if (!empty($goat[$key])) {
+                $processed = processLivestockImage($goat[$key], $manager);
+                if ($processed) $photos[] = $processed;
+            }
         }
 
-        // Map status
-        $statusSource = getValue($goat, 'status');
-        $statusTarget = 1; // Default to 'Available'
-        if ($statusSource == 9) { // Sold
-            $statusTarget = 2;
-        } elseif ($statusSource == 8) { // Dead
-            $statusTarget = 3;
-        }
+        $originMap = ['Beli'=>2,'Lahir di kandang'=>1];
+        $origin = $originMap[$goat['origin'] ?? ''] ?? 4;
+
+        $statusMap = [9=>2, 8=>3];
+        $status = $statusMap[$goat['status'] ?? 0] ?? 1;
 
         $livestocksToInsert[] = [
             'id' => generateUuid(),
             'farm_id' => $farmUuid,
-            'breed_id' => getValue($breedMapping, $goat['type']),
-            'herd_id' => getValue($herdMapping, $goat['cage_id']),
-            'aifarm_id' => getValue($goat, 'ear_tag'),
-            'name' => getValue($goat, 'name'),
-            'birthdate' => getValue($goat, 'birth_date'),
-            'sex' => getValue($goat, 'gender') === 'm' ? 'M' : 'F',
-            'origin' => $originTarget,
-            'status' => $statusTarget,
-            'tag_id' => getValue($goat, 'ear_tag', ''),
-            'birth_weight' => getValue($goat, 'birth_weight'),
-            'weight' => getValue($goat, 'weight'),
+            'breed_id' => $breedMapping[$goat['type']] ?? null,
+            'herd_id' => $herdMapping[$goat['cage_id']] ?? null,
+            'aifarm_id' => $goat['ear_tag'] ?? null,
+            'name' => $goat['name'] ?? null,
+            'birthdate' => $goat['birth_date'] ?? null,
+            'sex' => ($goat['gender'] ?? 'f') === 'm' ? 'M' : 'F',
+            'origin' => $origin,
+            'status' => $status,
+            'tag_id' => $goat['ear_tag'] ?? '',
+            'birth_weight' => $goat['birth_weight'] ?? null,
+            'weight' => $goat['weight'] ?? null,
             'photo' => !empty($photos) ? json_encode($photos) : null,
-            'purchase_date' => getValue($goat, 'entry_date') ? date('Y-m-d H:i:s', strtotime($goat['entry_date'])) : null,
-            'purchase_price' => getValue($goat, 'purchase_price'),
-            'entry_date' => getValue($goat, 'entry_date') ? date('Y-m-d', strtotime($goat['entry_date'])) : null,
-            'created_at' => getValue($goat, 'created_at', now()),
-            'updated_at' => getValue($goat, 'updated_at', now()),
+            'purchase_date' => !empty($goat['entry_date']) ? date('Y-m-d H:i:s', strtotime($goat['entry_date'])) : null,
+            'purchase_price' => $goat['purchase_price'] ?? null,
+            'entry_date' => !empty($goat['entry_date']) ? date('Y-m-d', strtotime($goat['entry_date'])) : null,
+            'created_at' => $goat['created_at'] ?? now(),
+            'updated_at' => $goat['updated_at'] ?? now(),
         ];
     }
 
     DB::table('livestocks')->insert($livestocksToInsert);
     $stats['livestocks'] = count($livestocksToInsert);
-    echo "✅ Migrated {" . $stats['livestocks'] . "} livestocks.\n";
+    echo "✅ Migrated {$stats['livestocks']} livestocks.\n";
 }
 
+function processLivestockImage(string $url, ImageManager $manager): ?string {
+    try {
+        echo "⬇️ Downloading image from '{$url}'...\n";
 
+        $contents = file_get_contents($url);
+        if (!$contents) {
+            echo "⚠️ Failed to download image.\n";
+            return null;
+        }
 
-/**
- * Updates passwords for users with non-bcrypt hashes.
- */
-function updateUserPasswords(array &$stats): void
-{
+        $image = $manager->read($contents);
+        $width = $image->width();
+        $height = $image->height();
+
+        echo "ℹ️ Original image size: {$width}x{$height}\n";
+
+        if ($width >= $height) {
+            $image->resize(1024, null, fn($c) => $c->aspectRatio());
+            echo "🔧 Resized landscape image to width 1024px.\n";
+        } else {
+            $cropHeight = $height * 0.8;
+            $image->crop($width, $cropHeight, 0, $height * 0.1);
+            $image->resize(null, 768, fn($c) => $c->aspectRatio());
+            echo "🔧 Cropped and resized portrait image to height 768px.\n";
+        }
+
+        // Save directly to public/livestocks
+        $filename = generateUuid() . '.jpg';
+        $publicPath = __DIR__ . '/../public/storage/livestocks/';
+        if (!file_exists($publicPath)) mkdir($publicPath, 0777, true);
+
+        $fullPath = $publicPath . $filename;
+        $image->toJpg(85)->save($fullPath);
+
+        echo "💾 Image saved to '{$fullPath}' successfully.\n";
+        return $filename;
+
+    } catch (\Exception $e) {
+        echo "⚠️ Failed to process image '{$url}': {$e->getMessage()}\n";
+        return null;
+    }
+}
+
+function updateUserPasswords(array &$stats): void {
     echo "\n---\n🔑 Step 8: Securing User Passwords...\n";
-    
-    // Default password hash for '12345678'
     $newPasswordHash = '$2y$10$xIIrWcC5pbXHvQ2A6cWiX.gZc0z2eGXXWK/O4Stc/zDJrBkhs1HqO';
 
     $updatedCount = DB::table('users')
@@ -429,11 +351,7 @@ function updateUserPasswords(array &$stats): void
     }
 }
 
-/**
- * Generates a UUID v4.
- */
-function generateUuid(): string
-{
+function generateUuid(): string {
     return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
         mt_rand(0, 0xffff), mt_rand(0, 0xffff),
         mt_rand(0, 0xffff),
@@ -443,41 +361,23 @@ function generateUuid(): string
     );
 }
 
-/**
- * Safely gets a value from an array.
- */
-function getValue(array $array, string $key, $default = null)
-{
-    return $array[$key] ?? $default;
-}
+function now(): string { return date('Y-m-d H:i:s'); }
 
-/**
- * Prints a summary of the successful migration.
- */
-function printSuccessSummary(array $stats): void
-{
+function printSuccessSummary(array $stats): void {
     echo "\n" . str_repeat("=", 70) . "\n";
     echo "🎉 MIGRATION COMPLETED SUCCESSFULLY!\n";
     echo str_repeat("-", 40) . "\n";
     echo "✅ Farms migrated:     {$stats['farms']}\n";
     echo "✅ Users migrated:     {$stats['users']}\n";
-    if (isset($stats['farm_users']) && $stats['farm_users'] > 0) {
-        echo "✅ Farm Users created: {$stats['farm_users']}\n";
-    }
+    if (isset($stats['farm_users'])) echo "✅ Farm Users created: {$stats['farm_users']}\n";
     echo "✅ Breeds migrated:    {$stats['breeds']}\n";
     echo "✅ Herds migrated:     {$stats['herds']}\n";
     echo "✅ Livestocks migrated:{$stats['livestocks']}\n";
-    if (isset($stats['passwords_updated']) && $stats['passwords_updated'] > 0) {
-        echo "✅ Passwords updated:  {$stats['passwords_updated']}\n";
-    }
+    if (isset($stats['passwords_updated'])) echo "✅ Passwords updated:  {$stats['passwords_updated']}\n";
     echo str_repeat("=", 70) . "\n";
 }
 
-/**
- * Prints a summary of the failed migration.
- */
-function printFailureSummary(Exception $e, array $stats): void
-{
+function printFailureSummary(Exception $e, array $stats): void {
     echo "\n" . str_repeat("!", 70) . "\n";
     echo "💥 MIGRATION FAILED - ROLLING BACK ALL CHANGES!\n";
     echo "❌ Error: " . $e->getMessage() . "\n";
@@ -485,4 +385,3 @@ function printFailureSummary(Exception $e, array $stats): void
     echo "✅ All database changes have been rolled back.\n";
     echo str_repeat("!", 70) . "\n";
 }
-

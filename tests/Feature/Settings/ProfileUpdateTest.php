@@ -43,6 +43,66 @@ class ProfileUpdateTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
+    public function test_profile_information_can_be_updated_with_username()
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/settings/profile', [
+                'name' => 'Test User',
+                'username' => 'testuser123',
+                'email' => 'test@example.com',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/settings/profile');
+
+        $user->refresh();
+
+        $this->assertSame('Test User', $user->name);
+        $this->assertSame('testuser123', $user->username);
+        $this->assertSame('test@example.com', $user->email);
+    }
+
+    public function test_username_must_be_unique()
+    {
+        $existingUser = User::factory()->create(['username' => 'existinguser']);
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/settings/profile', [
+                'name' => 'Test User',
+                'username' => 'existinguser',
+                'email' => 'test@example.com',
+            ]);
+
+        $response->assertSessionHasErrors('username');
+    }
+
+    public function test_username_can_be_null()
+    {
+        $user = User::factory()->create(['username' => 'oldusername']);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/settings/profile', [
+                'name' => 'Test User',
+                'username' => '',
+                'email' => 'test@example.com',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/settings/profile');
+
+        $user->refresh();
+
+        $this->assertNull($user->username);
+    }
+
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged()
     {
         $user = User::factory()->create();
@@ -68,7 +128,7 @@ class ProfileUpdateTest extends TestCase
         $response = $this
             ->actingAs($user)
             ->delete('/settings/profile', [
-                'password' => 'password',
+                'email' => $user->email,
             ]);
 
         $response
@@ -79,7 +139,7 @@ class ProfileUpdateTest extends TestCase
         $this->assertNull($user->fresh());
     }
 
-    public function test_correct_password_must_be_provided_to_delete_account()
+    public function test_correct_email_must_be_provided_to_delete_account()
     {
         $user = User::factory()->create();
 
@@ -87,11 +147,11 @@ class ProfileUpdateTest extends TestCase
             ->actingAs($user)
             ->from('/settings/profile')
             ->delete('/settings/profile', [
-                'password' => 'wrong-password',
+                'email' => 'wrong@email.com',
             ]);
 
         $response
-            ->assertSessionHasErrors('password')
+            ->assertSessionHasErrors('email')
             ->assertRedirect('/settings/profile');
 
         $this->assertNotNull($user->fresh());

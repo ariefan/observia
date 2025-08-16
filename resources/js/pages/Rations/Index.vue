@@ -27,6 +27,17 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 
+interface RationItem {
+    id?: string;
+    quantity?: number;
+    price?: number;
+    leftover?: number;
+}
+
+interface Ration {
+    id: string;
+    ration_items?: RationItem[];
+}
 
 import { ref, watch, onMounted, computed as vueComputed } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
@@ -125,7 +136,7 @@ const saveLeftover = () => {
     });
 };
 
-const calculateEfficiency = (quantity, leftover) => {
+const calculateEfficiency = (quantity: number, leftover: number) => {
     if (!leftover || leftover === 0) return 100;
     return Math.round(((quantity - leftover) / quantity) * 100);
 };
@@ -154,14 +165,14 @@ onMounted(() => {
     }
 });
 
-const formatCurrency = (value) => {
+const formatCurrency = (value: number) => {
     const formatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
     // Remove leading zero before the currency symbol if present (e.g., "Rp0" to "Rp")
     return formatted.replace(/^Rp0\b/, 'Rp');
 };
 
-const totalCost = (rationItems = []) => {
-    return rationItems.reduce((acc, item) => acc + (item.price), 0);
+const totalCost = (rationItems: RationItem[] = []) => {
+    return rationItems.reduce((acc, item) => acc + (item.price || 0), 0);
 };
 
 

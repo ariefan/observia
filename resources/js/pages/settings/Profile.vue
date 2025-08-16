@@ -31,6 +31,7 @@ const user = page.props.auth.user as User;
 
 const form = useForm({
     name: user.name,
+    username: user.username || '',
     email: user.email,
 });
 
@@ -48,7 +49,7 @@ const submit = () => {
 
         <SettingsLayout>
             <div class="flex flex-col space-y-6">
-                <HeadingSmall title="Profile information" description="Update your name and email address" />
+                <HeadingSmall title="Profile information" description="Update your name, username, and email address" />
 
                 <form @submit.prevent="submit" class="space-y-4">
                     <div class="grid gap-2">
@@ -58,8 +59,14 @@ const submit = () => {
                     </div>
 
                     <div class="grid gap-2">
+                        <FloatingInput label="Username (optional)" id="username" class="mt-1 block w-full" v-model="form.username"
+                            autocomplete="username" placeholder="Unique username" />
+                        <InputError class="mt-2" :message="form.errors.username" />
+                    </div>
+
+                    <div class="grid gap-2">
                         <FloatingInput label="Email address" id="email" type="email" class="mt-1 block w-full"
-                            v-model="form.email" required autocomplete="username" placeholder="Email address" />
+                            v-model="form.email" required autocomplete="email" placeholder="Email address" />
                         <InputError class="mt-2" :message="form.errors.email" />
                     </div>
 

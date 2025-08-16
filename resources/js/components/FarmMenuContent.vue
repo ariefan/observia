@@ -28,13 +28,13 @@ const auth = computed(() => page.props.auth);
             <p class="text-xs opacity-80 leading-tight mt-0.5">{{ auth.user.current_farm.address }}</p>
 
             <div class="mt-2 flex gap-2 w-full justify-center">
-                <Link :href="route('farms.edit', auth.user.current_farm.id)">
+                <Link :href="route('farms.edit', { farm: auth.user.current_farm.id })">
                 <Button variant="outline"
                     class="bg-white/10 text-white border-white/30 hover:bg-white/80 text-xs px-3 py-1 h-auto gap-1">
                     <Building2 class="w-4 h-4" /> Profile Peternakan
                 </Button>
                 </Link>
-                <Link :href="route('farms.show', auth.user.current_farm.id)">
+                <Link :href="route('farms.show', { farm: auth.user.current_farm.id })">
                 <Button variant="outline"
                     class="bg-white/10 text-white border-white/30 hover:bg-white/80 text-xs px-3 py-1 h-auto gap-1"
                     title="Lihat anggota peternakan">
@@ -58,7 +58,7 @@ const auth = computed(() => page.props.auth);
                 <li v-for="(farm, i) in auth.farms.filter(
                     (farm) => farm.id !== (auth.user.current_farm?.id || '')
                 )" :key="i">
-                    <Link :href="route('farms.switch', farm.id)"
+                    <Link :href="route('farms.switch', { farm: farm.id })"
                         class="flex items-center gap-2 cursor-pointer hover:bg-teal-800 rounded-full px-2 py-2 transition-all duration-150">
                     <Avatar class="size-8 overflow-hidden rounded-full">
                         <AvatarImage v-if="farm.picture" :src="farm.picture" :alt="farm.name" />

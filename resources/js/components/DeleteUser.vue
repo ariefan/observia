@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 // Components
 import HeadingSmall from '@/components/HeadingSmall.vue';
@@ -22,6 +23,8 @@ const form = useForm({
     password: '',
     email: '',
 });
+
+const passwordInput = ref<HTMLInputElement>();
 
 const deleteUser = (e: Event) => {
     e.preventDefault();

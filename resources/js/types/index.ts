@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-vue-next';
 import type { PageProps } from '@inertiajs/core';
+import type { Component } from 'vue';
 
 export interface Auth {
     user: User;
@@ -14,7 +15,7 @@ export interface BreadcrumbItem {
 export interface NavItem {
     title: string;
     href: string;
-    icon?: LucideIcon;
+    icon?: LucideIcon | Component;
     isActive?: boolean;
 }
 
@@ -29,11 +30,13 @@ export interface Farm {
     name: string;
     address?: string;
     picture?: string;
+    users_count?: number;
 }
 
 export interface User {
     id: number;
     name: string;
+    username?: string;
     email: string;
     avatar?: string;
     email_verified_at: string | null;

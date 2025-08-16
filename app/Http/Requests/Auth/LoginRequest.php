@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -41,7 +41,13 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $field = $this->getLoginField();
+        $credentials = [
+            $field => $this->string('email'),
+            'password' => $this->string('password')
+        ];
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -73,6 +79,15 @@ class LoginRequest extends FormRequest
                 'minutes' => ceil($seconds / 60),
             ]),
         ]);
+    }
+
+    /**
+     * Determine if the input is an email or username.
+     */
+    public function getLoginField(): string
+    {
+        $login = $this->string('email');
+        return filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
     }
 
     /**

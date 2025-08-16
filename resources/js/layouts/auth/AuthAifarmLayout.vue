@@ -3,8 +3,11 @@ import AppLogo from '@/components/AppLogo.vue';
 import { Button } from '@/components/ui/button';
 import Autoplay from 'embla-carousel-autoplay';
 import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { watchOnce } from '@vueuse/core';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useAppearance } from '@/composables/useAppearance';
+import { Sun, Moon } from 'lucide-vue-next';
 import Landing1 from '@/assets/landing-1.png';
 import Landing2 from '@/assets/landing-2.png';
 import Landing3 from '@/assets/landing-3.png';
@@ -44,6 +47,23 @@ const plugin = Autoplay({
     delay: 3000,
     stopOnMouseEnter: true,
     stopOnInteraction: false,
+});
+
+// Theme toggle functionality
+type Appearance = 'light' | 'dark';
+const { appearance, updateAppearance } = useAppearance();
+
+function toggleAppearanceMode() {
+    const nextMode: Appearance = appearance.value === 'light' ? 'dark' : 'light';
+    updateAppearance(nextMode);
+}
+
+const getThemeIcon = computed(() => {
+    return appearance.value === 'light' ? Sun : Moon;
+});
+
+const getThemeLabel = computed(() => {
+    return appearance.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode';
 });
 </script>
 
@@ -101,7 +121,22 @@ const plugin = Autoplay({
                 <div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
                     <div class="flex justify-between">
                         <AppLogo class="mr-2 size-8 fill-current dark:text-white" />
-                        <Button variant="outline" size="icon" class="text-xs">ID</Button>
+                        <div class="flex items-center gap-2">
+                            <TooltipProvider :delay-duration="0">
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Button @click="toggleAppearanceMode" variant="outline" size="icon">
+                                            <span class="sr-only">{{ getThemeLabel }}</span>
+                                            <component :is="getThemeIcon" class="size-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{{ getThemeLabel }}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            <Button variant="outline" size="icon" class="text-xs">ID</Button>
+                        </div>
                     </div>
                     <div class="flex flex-col space-y-2 text-center">
                         <h1 class="text-2xl font-semibold tracking-tight" v-if="title">{{ title }}</h1>

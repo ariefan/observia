@@ -28,10 +28,15 @@ function handleCoordinateUpdate(coordinates: { latitude: number; longitude: numb
 
 const profileImage = ref(null);
 
-const page = usePage();
+interface Village {
+    id: string;
+    name: string;
+}
+
+const page = usePage<{ villages?: Village[] }>();
 const villages = computed(() => page.props.villages || []);
 
-const handlePhotoUpload = ({ blob, dimensions }) => {
+const handlePhotoUpload = ({ blob, dimensions }: { blob: Blob; dimensions: { width: number; height: number } }) => {
     console.log('Photo uploaded:', { blob, dimensions });
     // Here you would typically upload the blob to your server
     // For example:
@@ -49,6 +54,9 @@ const handlePhotoRemove = () => {
 const form = useForm({
     name: '',
     email: '',
+    phone: '',
+    owner: '',
+    village_id: '',
     location: {
         latitude: 0,
         longitude: 0,

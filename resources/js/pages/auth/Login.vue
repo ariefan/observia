@@ -42,8 +42,8 @@ const submit = () => {
             <div class="grid gap-4">
 
                 <div class="grid w-full max-w-sm items-center gap-1.5">
-                    <Label for="email">Email</Label>
-                    <Input id="email" type="email" required autofocus v-model="form.email" />
+                    <Label for="email">Email atau Username</Label>
+                    <Input id="email" type="text" required autofocus v-model="form.email" placeholder="Email atau username" />
                     <InputError :message="form.errors.email" />
                 </div>
 

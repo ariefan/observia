@@ -489,35 +489,44 @@ onMounted(async () => {
         <div class="grid grid-cols-1 lg:grid-cols-7 gap-4">
             <!-- Left Side - Upload Guidelines -->
             <div class="space-y-2 col-span-3">
-                <div class="bg-white rounded-lg p-6 shadow-sm border">
-                    <h3 class="text-lg font-semibold mb-2">Panduan Unggah Foto</h3>
-                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
+                <div
+                    class="bg-white dark:bg-gray-900 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                        Panduan Unggah Foto
+                    </h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-300">
                         <li>Foto dari dari berbagai sisi: depan, belakang, samping.</li>
                         <li>Pastikan pencahayaan cukup dan gambar tidak buram.</li>
                         <li>Ukuran file akan otomatis dioptimalkan maksimal 20MB per foto.</li>
                         <li>Format file yang diizinkan: .jpg, .jpeg, .png.</li>
                         <li>Anda dapat mengunggah maksimal 5 foto.</li>
-                        <li>Gambar akan otomatis diubah ke rasio 16:9 dengan lebar maksimal 1080px.</li>
+                        <li>
+                            Gambar akan otomatis diubah ke rasio 16:9 dengan lebar maksimal
+                            1080px.
+                        </li>
                     </ul>
                 </div>
 
                 <!-- Example Images -->
-                <div class="bg-white rounded-lg p-6 shadow-sm border">
-                    <h3 class="text-lg font-semibold mb-2">Contoh Foto yang Baik</h3>
+                <div
+                    class="bg-white dark:bg-gray-900 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                        Contoh Foto yang Baik
+                    </h3>
                     <div class="grid grid-cols-2 gap-4">
-                        <img :src="Example3" alt="Contoh foto ternak 1" class="rounded-lg object-cover w-full h-32">
-                        <img :src="Example4" alt="Contoh foto ternak 2" class="rounded-lg object-cover w-full h-32">
+                        <img :src="Example3" alt="Contoh foto ternak 1" class="rounded-lg object-cover w-full h-32" />
+                        <img :src="Example4" alt="Contoh foto ternak 2" class="rounded-lg object-cover w-full h-32" />
                     </div>
                 </div>
             </div>
 
             <!-- Right Side - Upload Area / Carousel -->
             <div
-                class="bg-white rounded-lg p-6 shadow-sm border flex flex-col justify-center items-center space-y-4 col-span-4">
+                class="bg-white dark:bg-gray-900 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-center items-center space-y-4 col-span-4">
                 <div v-if="uploadedImages.length === 0"
-                    class="upload-area w-full h-full flex flex-col justify-center items-center border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                    class="upload-area w-full h-full flex flex-col justify-center items-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     @click="triggerFileInput" @dragover.prevent @drop.prevent="handleDrop">
-                    <div class="text-gray-400">
+                    <div class="text-gray-400 dark:text-gray-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
@@ -527,7 +536,9 @@ onMounted(async () => {
                             Seret & Lepas atau
                             <span class="font-semibold text-primary">Klik untuk Unggah</span>
                         </p>
-                        <p class="text-xs mt-1">JPG, JPEG, PNG (Maks. 20MB) - Otomatis diubah ke 16:9</p>
+                        <p class="text-xs mt-1 text-gray-500 dark:text-gray-400">
+                            JPG, JPEG, PNG (Maks. 20MB) - Otomatis diubah ke 16:9
+                        </p>
                     </div>
                 </div>
 
@@ -539,7 +550,7 @@ onMounted(async () => {
                                 <div class="p-1">
                                     <div class="relative w-full" style="aspect-ratio: 16/9;">
                                         <img :src="image.url" alt="Uploaded image"
-                                            class="rounded-lg object-cover w-full h-full">
+                                            class="rounded-lg object-cover w-full h-full" />
                                         <Button type="button" variant="destructive" size="icon"
                                             class="absolute top-2 right-2 h-7 w-7 rounded-full"
                                             @click="removeImage(index)">
@@ -561,13 +572,16 @@ onMounted(async () => {
 
                 <!-- Hidden file input -->
                 <input ref="fileInput" type="file" accept=".jpg,.jpeg,.png" multiple class="hidden"
-                    @change="handleFileSelect">
+                    @change="handleFileSelect" />
             </div>
         </div>
 
         <!-- Error Messages -->
-        <div v-if="errorMessage" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p class="text-red-700 text-sm">{{ errorMessage }}</p>
+        <div v-if="errorMessage"
+            class="mt-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg">
+            <p class="text-red-700 dark:text-red-400 text-sm">
+                {{ errorMessage }}
+            </p>
         </div>
     </div>
 </template>
