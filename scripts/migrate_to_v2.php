@@ -254,12 +254,12 @@ function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMappin
             $key = "image{$i}_url";
             if (!empty($goat[$key])) {
                 $processed = processLivestockImage($goat[$key], $manager);
-                if ($processed) $photos[] = $processed;
+                if ($processed) $photos[] = 'livestocks/' . $processed; 
             }
         }
 
         // Store the filenames in JSON array format
-        $photoJson = !empty($photos) ? json_encode('livestocks/'.$photos) : null;
+        $photoJson = !empty($photos) ? json_encode($photos) : null;
 
         $originMap = ['Beli'=>2,'Lahir di kandang'=>1];
         $origin = $originMap[$goat['origin'] ?? ''] ?? 4;
