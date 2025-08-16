@@ -17,4 +17,7 @@ declare module 'vue' {
     TabPanels: typeof import('primevue/tabpanels')['default']
     Tabs: typeof import('primevue/tabs')['default']
   }
+  export interface GlobalDirectives {
+    Ripple: typeof import('primevue/ripple')['default']
+  }
 }

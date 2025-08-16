@@ -16,6 +16,7 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 use Illuminate\Support\Facades\DB;
 use App\Models\Farm;
+use Illuminate\Support\Facades\Storage;
 
 // --- Main Execution ---
 
@@ -82,6 +83,46 @@ try {
     $livestockIds = DB::table('livestocks')->where('farm_id', $farmUuid)->pluck('id');
     $rationIds = DB::table('rations')->where('farm_id', $farmUuid)->pluck('id');
     $herdFeedingIds = DB::table('herd_feedings')->whereIn('herd_id', $herdIds)->pluck('id');
+
+    // 🐮 DELETE photos before nuking livestocks
+    $photos = DB::table('livestocks')->where('farm_id', $farmUuid)->pluck('photo');
+    $totalPhotos = 0;
+    $deletedPhotos = 0;
+
+    foreach ($photos as $photoJson) {
+        if ($photoJson) {
+            $paths = json_decode($photoJson, true);
+            if (is_array($paths)) {
+                $totalPhotos += count($paths);
+            }
+        }
+    }
+
+    echo "📸 Found {$totalPhotos} livestock photo(s) scheduled for deletion.\n";
+
+    foreach ($photos as $photoJson) {
+        if ($photoJson) {
+            $paths = json_decode($photoJson, true);
+            if (is_array($paths)) {
+                foreach ($paths as $path) {
+                    $fullPath = public_path('storage/' . ltrim($path, '/'));
+                    if (file_exists($fullPath)) {
+                        if (@unlink($fullPath)) {
+                            echo "✅ Deleted: {$fullPath}\n";
+                            $deletedPhotos++;
+                        } else {
+                            echo "❌ Failed to delete: {$fullPath}\n";
+                        }
+                    } else {
+                        echo "⚠️ File not found: {$fullPath}\n";
+                    }
+                }
+            }
+        }
+    }
+
+    echo "🖼️ Deleted {$deletedPhotos}/{$totalPhotos} livestock photo(s).\n";
+
 
     $stats['livestock_weights'] = DB::table('livestock_weights')->whereIn('livestock_id', $livestockIds)->delete();
     $stats['livestock_milkings'] = DB::table('livestock_milkings')->whereIn('livestock_id', $livestockIds)->delete();

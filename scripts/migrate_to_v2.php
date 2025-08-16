@@ -109,6 +109,7 @@ function migrateUsers(PDO $connection, int $tenantId, array &$stats): array {
             'id' => $uuid,
             'name' => $user['name'] ?? 'Unknown User',
             'email' => $user['email'] ?? 'user'.$user['id'].'@aifarm.local',
+            'username' => $user['username'] ?? null,
             'phone' => $user['phone'] ?? null,
             'password' => $user['password'] ?? null,
             'is_super_user' => ($user['role'] ?? '') === 'superadmin',
@@ -295,10 +296,10 @@ function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMappin
     echo "✅ Migrated {$stats['livestocks']} livestocks with photos stored as JSON.\n";
 }
 
-function processLivestockImage(string $url, ImageManager $manager): ?string {
+function processLivestockImage(string $url, ImageManager $manager): ?string
+{
     try {
         echo "⬇️ Downloading image from '{$url}'...\n";
-
         $contents = file_get_contents($url);
         if (!$contents) {
             echo "⚠️ Failed to download image.\n";
@@ -306,33 +307,65 @@ function processLivestockImage(string $url, ImageManager $manager): ?string {
         }
 
         $image = $manager->read($contents);
-        $width = $image->width();
-        $height = $image->height();
+        $originalWidth = $image->width();
+        $originalHeight = $image->height();
+        echo "ℹ️ Original image size: {$originalWidth}x{$originalHeight}\n";
 
-        echo "ℹ️ Original image size: {$width}x{$height}\n";
-
-        if ($width >= $height) {
-            $image->resize(1024, null, fn($c) => $c->aspectRatio());
-            echo "🔧 Resized landscape image to width 1024px.\n";
+        if ($originalHeight > $originalWidth) {
+            // Portrait image processing
+            echo "🔧 Processing portrait image...\n";
+            
+            // Crop 15% from top and 15% from bottom
+            $cropY = (int)($originalHeight * 0.20);
+            $cropHeight = (int)($originalHeight * 0.7); // Keep middle 70%
+            
+            echo "🔧 Cropping: Y={$cropY}, Height={$cropHeight} (from original {$originalHeight})\n";
+            $image->crop($originalWidth, $cropHeight, 0, $cropY);
+            
+            // Get dimensions after cropping
+            $croppedWidth = $image->width();
+            $croppedHeight = $image->height();
+            echo "ℹ️ After crop: {$croppedWidth}x{$croppedHeight}\n";
+            
+            // Calculate what the height should be when width becomes 1024
+            $aspectRatio = $croppedWidth / $croppedHeight;
+            $targetWidth = 1024;
+            $targetHeight = (int)($targetWidth / $aspectRatio);
+            
+            echo "🔧 Aspect ratio: {$aspectRatio}, Target: {$targetWidth}x{$targetHeight}\n";
+            
+            // Resize to exact dimensions to maintain aspect ratio
+            $image->resize($targetWidth, $targetHeight);
+            echo "🔧 Final portrait size: {$targetWidth}x{$targetHeight}\n";
+            
         } else {
-            $cropHeight = $height * 0.8;
-            $image->crop($width, $cropHeight, 0, $height * 0.1);
-            $image->resize(null, 768, fn($c) => $c->aspectRatio());
-            echo "🔧 Cropped and resized portrait image to height 768px.\n";
+            // Landscape or square image
+            echo "🔧 Processing landscape/square image...\n";
+            $image->resize(1024, null, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+            $finalWidth = $image->width();
+            $finalHeight = $image->height();
+            echo "🔧 Final landscape size: {$finalWidth}x{$finalHeight}\n";
         }
 
         $filename = generateUuid() . '.jpg';
         $publicPath = __DIR__ . '/../public/storage/livestocks/';
-        if (!file_exists($publicPath)) mkdir($publicPath, 0777, true);
-
+        if (!file_exists($publicPath)) {
+            mkdir($publicPath, 0777, true);
+        }
+        
         $fullPath = $publicPath . $filename;
         $image->toJpg(85)->save($fullPath);
+        
+        // Verify final saved image dimensions
+        $savedImage = $manager->read($fullPath);
+        $savedWidth = $savedImage->width();
+        $savedHeight = $savedImage->height();
+        echo "💾 Image saved to '{$filename}' - Final size: {$savedWidth}x{$savedHeight}\n";
 
-        echo "💾 Image saved to '{$fullPath}' successfully.\n";
-
-        // Return **filename only**, will be stored as JSON in photo column
         return $filename;
-
     } catch (\Exception $e) {
         echo "⚠️ Failed to process image '{$url}': {$e->getMessage()}\n";
         return null;

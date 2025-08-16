@@ -2,6 +2,7 @@
 // Core Vue imports
 import { computed } from "vue";
 import { Head, Link, router } from "@inertiajs/vue3";
+import { usePhotoUrl } from '@/composables/usePhotoUrl';
 
 // Layout and Components
 import AppLayout from "@/layouts/AppLayout.vue";
