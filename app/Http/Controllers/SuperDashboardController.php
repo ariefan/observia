@@ -8,9 +8,13 @@ use App\Models\Livestock;
 use App\Models\Herd;
 use App\Models\Ration;
 use App\Models\Feed;
+use App\Models\HerdFeeding;
+use App\Models\LivestockWeight;
+use App\Models\LivestockMilking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Carbon\Carbon;
 
 class SuperDashboardController extends Controller
 {
@@ -30,40 +34,84 @@ class SuperDashboardController extends Controller
         }
 
         // Get comprehensive statistics
-        $stats = [
-            // Farm statistics
-            'total_farms' => Farm::count(),
-            'active_farms' => Farm::whereHas('users')->count(),
-            'farms_with_livestock' => Farm::whereHas('livestocks')->count(),
-            
-            // User statistics
-            'total_users' => User::count(),
-            'super_users' => User::where('is_super_user', true)->count(),
-            'users_with_farms' => User::whereHas('farms')->count(),
-            
-            // Livestock statistics
-            'total_livestock' => Livestock::count(),
-            'male_livestock' => Livestock::where('sex', 'M')->count(),
-            'female_livestock' => Livestock::where('sex', 'F')->count(),
-            'livestock_with_photos' => Livestock::whereNotNull('photo')
-                ->whereRaw("photo::text != '[]'")
-                ->whereRaw("photo::text != 'null'")
-                ->whereRaw("json_array_length(photo::json) > 0")
-                ->count(),
-            
-            // Herd statistics
-            'total_herds' => Herd::count(),
-            'herds_with_livestock' => Herd::whereHas('livestocks')->count(),
-            
-            // Feed and Ration statistics
-            'total_rations' => Ration::count(),
-            'total_feeds' => Feed::count(),
-            
-            // Recent activity
-            'farms_created_last_30_days' => Farm::where('created_at', '>=', now()->subDays(30))->count(),
-            'users_registered_last_30_days' => User::where('created_at', '>=', now()->subDays(30))->count(),
-            'livestock_added_last_30_days' => Livestock::where('created_at', '>=', now()->subDays(30))->count(),
-        ];
+        if ($selectedFarm) {
+            // Farm-specific statistics
+            $stats = [
+                // Farm statistics (single farm)
+                'total_farms' => 1,
+                'active_farms' => $selectedFarm->users()->exists() ? 1 : 0,
+                'farms_with_livestock' => $selectedFarm->livestocks()->exists() ? 1 : 0,
+                
+                // User statistics (farm members)
+                'total_users' => $selectedFarm->users()->count(),
+                'super_users' => $selectedFarm->users()->where('is_super_user', true)->count(),
+                'users_with_farms' => $selectedFarm->users()->count(), // All users in this farm have farms
+                
+                // Livestock statistics (farm-specific)
+                'total_livestock' => $selectedFarm->livestocks()->count(),
+                'male_livestock' => $selectedFarm->livestocks()->where('sex', 'M')->count(),
+                'female_livestock' => $selectedFarm->livestocks()->where('sex', 'F')->count(),
+                'livestock_with_photos' => $selectedFarm->livestocks()
+                    ->whereNotNull('photo')
+                    ->whereRaw("photo::text != '[]'")
+                    ->whereRaw("photo::text != 'null'")
+                    ->whereRaw("json_array_length(photo::json) > 0")
+                    ->count(),
+                
+                // Herd statistics (farm-specific)
+                'total_herds' => $selectedFarm->herds()->count(),
+                'herds_with_livestock' => $selectedFarm->herds()->whereHas('livestocks')->count(),
+                
+                // Feed and Ration statistics (farm-specific)
+                'total_rations' => $selectedFarm->rations()->count(),
+                'total_feeds' => Feed::count(), // Feeds are global
+                
+                // Recent activity (farm-specific)
+                'farms_created_last_30_days' => 0, // Not applicable for single farm
+                'users_registered_last_30_days' => User::where('created_at', '>=', now()->subDays(30))
+                    ->whereHas('farms', function($query) use ($selectedFarm) {
+                        $query->where('farm_id', $selectedFarm->id);
+                    })->count(),
+                'livestock_added_last_30_days' => $selectedFarm->livestocks()
+                    ->where('created_at', '>=', now()->subDays(30))->count(),
+            ];
+        } else {
+            // Global statistics (all farms)
+            $stats = [
+                // Farm statistics
+                'total_farms' => Farm::count(),
+                'active_farms' => Farm::whereHas('users')->count(),
+                'farms_with_livestock' => Farm::whereHas('livestocks')->count(),
+                
+                // User statistics
+                'total_users' => User::count(),
+                'super_users' => User::where('is_super_user', true)->count(),
+                'users_with_farms' => User::whereHas('farms')->count(),
+                
+                // Livestock statistics
+                'total_livestock' => Livestock::count(),
+                'male_livestock' => Livestock::where('sex', 'M')->count(),
+                'female_livestock' => Livestock::where('sex', 'F')->count(),
+                'livestock_with_photos' => Livestock::whereNotNull('photo')
+                    ->whereRaw("photo::text != '[]'")
+                    ->whereRaw("photo::text != 'null'")
+                    ->whereRaw("json_array_length(photo::json) > 0")
+                    ->count(),
+                
+                // Herd statistics
+                'total_herds' => Herd::count(),
+                'herds_with_livestock' => Herd::whereHas('livestocks')->count(),
+                
+                // Feed and Ration statistics
+                'total_rations' => Ration::count(),
+                'total_feeds' => Feed::count(),
+                
+                // Recent activity
+                'farms_created_last_30_days' => Farm::where('created_at', '>=', now()->subDays(30))->count(),
+                'users_registered_last_30_days' => User::where('created_at', '>=', now()->subDays(30))->count(),
+                'livestock_added_last_30_days' => Livestock::where('created_at', '>=', now()->subDays(30))->count(),
+            ];
+        }
 
         // Get top farms by livestock count
         $topFarmsByLivestock = Farm::withCount('livestocks')
@@ -116,6 +164,14 @@ class SuperDashboardController extends Controller
             ->orderBy('name')
             ->get();
 
+        // Get all farms for the dropdown
+        $allFarms = Farm::select('id', 'name', 'address')
+            ->orderBy('name')
+            ->get();
+
+        // Generate chart data for last 12 months
+        $chartData = $this->generateChartData($selectedFarm);
+
         return Inertia::render('SuperDashboard', [
             'stats' => $stats,
             'topFarmsByLivestock' => $topFarmsByLivestock,
@@ -123,6 +179,10 @@ class SuperDashboardController extends Controller
             'farmsByRegion' => $farmsByRegion,
             'livestockBySpecies' => $livestockBySpecies,
             'superusers' => $superusers,
+            'allFarms' => $allFarms,
+            'selectedFarm' => $selectedFarm,
+            'selectedFarmId' => $selectedFarmId ?? 'all',
+            'chartData' => $chartData,
         ]);
     }
 
@@ -172,5 +232,73 @@ class SuperDashboardController extends Controller
         $user->update(['is_super_user' => false]);
 
         return back()->with('success', "Superuser privileges removed from {$user->name} ({$user->email}).");
+    }
+
+    private function generateChartData($selectedFarm = null)
+    {
+        // Generate labels for last 12 months
+        $months = [];
+        $currentMonth = Carbon::now();
+        
+        for ($i = 11; $i >= 0; $i--) {
+            $months[] = $currentMonth->copy()->subMonths($i)->format('M Y');
+        }
+
+        // Activity counts for feeding, weighing, and milking
+        $feedingData = [];
+        $weighingData = [];
+        $milkingData = [];
+        $livestockData = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+            $startDate = $currentMonth->copy()->subMonths($i)->startOfMonth();
+            $endDate = $currentMonth->copy()->subMonths($i)->endOfMonth();
+
+            if ($selectedFarm) {
+                // Farm-specific data
+                $feedingCount = HerdFeeding::whereHas('herd', function($query) use ($selectedFarm) {
+                    $query->where('farm_id', $selectedFarm->id);
+                })
+                ->whereBetween('date', [$startDate, $endDate])
+                ->count();
+
+                $weighingCount = LivestockWeight::whereHas('livestock', function($query) use ($selectedFarm) {
+                    $query->where('farm_id', $selectedFarm->id);
+                })
+                ->whereBetween('date', [$startDate, $endDate])
+                ->count();
+
+                $milkingCount = LivestockMilking::whereHas('livestock', function($query) use ($selectedFarm) {
+                    $query->where('farm_id', $selectedFarm->id);
+                })
+                ->whereBetween('date', [$startDate, $endDate])
+                ->count();
+
+                $livestockCount = $selectedFarm->livestocks()
+                    ->where('created_at', '<=', $endDate)
+                    ->count();
+            } else {
+                // Global data
+                $feedingCount = HerdFeeding::whereBetween('date', [$startDate, $endDate])->count();
+                $weighingCount = LivestockWeight::whereBetween('date', [$startDate, $endDate])->count();
+                $milkingCount = LivestockMilking::whereBetween('date', [$startDate, $endDate])->count();
+                $livestockCount = Livestock::where('created_at', '<=', $endDate)->count();
+            }
+
+            $feedingData[] = $feedingCount;
+            $weighingData[] = $weighingCount;
+            $milkingData[] = $milkingCount;
+            $livestockData[] = $livestockCount;
+        }
+
+        return [
+            'months' => $months,
+            'activities' => [
+                'feeding' => $feedingData,
+                'weighing' => $weighingData,
+                'milking' => $milkingData,
+            ],
+            'livestock' => $livestockData,
+        ];
     }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -8,11 +8,29 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Line } from 'vue-chartjs';
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  Filler
+} from 'chart.js';
+import {
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from '@headlessui/vue';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -32,8 +50,12 @@ import {
   Trash2,
   Users2,
   Mars,
-  Venus
+  Venus,
+  Check,
+  ChevronsUpDown
 } from 'lucide-vue-next';
+
+ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, Filler);
 
 interface Props {
   stats: {
@@ -81,6 +103,26 @@ interface Props {
     email: string;
     created_at: string;
   }>;
+  allFarms: Array<{
+    id: string;
+    name: string;
+    address?: string;
+  }>;
+  selectedFarm?: {
+    id: string;
+    name: string;
+    address?: string;
+  } | null;
+  selectedFarmId: string;
+  chartData: {
+    months: string[];
+    activities: {
+      feeding: number[];
+      weighing: number[];
+      milking: number[];
+    };
+    livestock: number[];
+  };
 }
 
 const props = defineProps<Props>();
@@ -92,10 +134,134 @@ const currentUser = page.props.auth.user;
 // Dialog state
 const open = ref(false);
 
+// Farm selection state
+const selectedFarmId = ref(props.selectedFarmId);
+const farmQuery = ref('');
+
+// Filtered farms for combobox
+const filteredFarms = computed(() => {
+  const farms = [
+    { id: 'all', name: 'Semua Peternakan', address: 'Lihat semua data peternakan' },
+    ...props.allFarms
+  ];
+
+  return farmQuery.value === ''
+    ? farms
+    : farms.filter((farm) =>
+      farm.name
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .includes(farmQuery.value.toLowerCase().replace(/\s+/g, ''))
+    )
+});
+
+// Selected farm object
+const selectedFarmObject = computed(() => {
+  if (selectedFarmId.value === 'all') {
+    return { id: 'all', name: 'Semua Peternakan', address: 'Lihat semua data peternakan' };
+  }
+  return props.allFarms.find(farm => farm.id === selectedFarmId.value) || null;
+});
+
 // Form for creating superuser
 const form = useForm({
   email: ''
 });
+
+// Chart configurations
+const chartKey = ref(0);
+
+// Activity chart data
+const activityChartData = computed(() => ({
+  labels: props.chartData.months,
+  datasets: [
+    {
+      label: 'Pemberian Pakan',
+      data: props.chartData.activities.feeding,
+      borderColor: '#3B82F6',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      tension: 0.4,
+      fill: false,
+    },
+    {
+      label: 'Penimbangan',
+      data: props.chartData.activities.weighing,
+      borderColor: '#10B981',
+      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+      tension: 0.4,
+      fill: false,
+    },
+    {
+      label: 'Pemerahan',
+      data: props.chartData.activities.milking,
+      borderColor: '#F59E0B',
+      backgroundColor: 'rgba(245, 158, 11, 0.1)',
+      tension: 0.4,
+      fill: false,
+    }
+  ]
+}));
+
+// Livestock chart data
+const livestockChartData = computed(() => ({
+  labels: props.chartData.months,
+  datasets: [{
+    label: 'Total Ternak',
+    data: props.chartData.livestock,
+    borderColor: '#8B5CF6',
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    tension: 0.4,
+    fill: true,
+  }]
+}));
+
+// Chart options
+const chartOptions = computed(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top' as const,
+    },
+    tooltip: {
+      mode: 'index' as const,
+      intersect: false,
+    },
+  },
+  scales: {
+    x: {
+      display: true,
+      title: {
+        display: true,
+        text: 'Bulan'
+      }
+    },
+    y: {
+      display: true,
+      title: {
+        display: true,
+        text: 'Jumlah'
+      },
+      beginAtZero: true
+    }
+  },
+  interaction: {
+    mode: 'nearest' as const,
+    axis: 'x' as const,
+    intersect: false
+  }
+}));
+
+// Handle farm selection change
+const handleFarmChange = (farmId: string) => {
+  selectedFarmId.value = farmId;
+
+  // Navigate to the same route with farm_id parameter
+  const params = farmId === 'all' ? undefined : { farm_id: farmId };
+
+  window.location.href = route('super.dashboard', params);
+};
 
 // Submit form
 const createSuperUser = () => {
@@ -116,7 +282,7 @@ const createSuperUser = () => {
 // Remove superuser
 const removeSuperUser = (userId: string, userName: string) => {
   if (confirm(`Apakah Anda yakin ingin menghapus hak akses pengguna super dari ${userName}?`)) {
-    useForm({}).delete(route('super.remove-user', userId), {
+    useForm({}).delete(route('super.remove-user', { user: userId }), {
       preserveScroll: true,
       onSuccess: () => {
         toast.success(`Hak akses pengguna super berhasil dihapus dari ${userName}`);
@@ -141,9 +307,58 @@ const removeSuperUser = (userId: string, userName: string) => {
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-bold tracking-tight text-primary">Dashboard Super</h1>
-          <p class="text-muted-foreground">Statistik dan wawasan seluruh peternakan</p>
+          <p class="text-muted-foreground">
+            {{ selectedFarmObject?.name === 'Semua Peternakan' ? 'Statistik dan wawasan seluruh peternakan' : `Statistik
+            peternakan: ${selectedFarmObject?.name}` }}
+          </p>
         </div>
         <div class="flex items-center gap-3">
+          <!-- Farm Selection Combobox -->
+          <Combobox v-model="selectedFarmId" @update:model-value="handleFarmChange">
+            <div class="relative">
+              <ComboboxButton
+                class="relative w-64 cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm border">
+                <span class="block truncate">{{ selectedFarmObject?.name || 'Pilih Peternakan' }}</span>
+                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                  <ChevronsUpDown class="h-4 w-4 text-gray-400" aria-hidden="true" />
+                </span>
+              </ComboboxButton>
+              <ComboboxOptions
+                class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                <div class="relative">
+                  <ComboboxInput
+                    class="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:outline-none focus:ring-0"
+                    :display-value="() => ''" @change="farmQuery = $event.target.value"
+                    placeholder="Cari peternakan..." />
+                </div>
+                <div v-if="filteredFarms.length === 0 && farmQuery !== ''"
+                  class="relative cursor-default select-none px-4 py-2 text-gray-700">
+                  Tidak ada peternakan ditemukan.
+                </div>
+                <ComboboxOption v-for="farm in filteredFarms" :key="farm.id" v-slot="{ selected, active }"
+                  :value="farm.id" as="template">
+                  <li :class="[
+                    active ? 'bg-primary text-white' : 'text-gray-900',
+                    'relative cursor-default select-none py-2 pl-10 pr-4',
+                  ]">
+                    <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
+                      {{ farm.name }}
+                    </span>
+                    <span v-if="farm.address"
+                      :class="[active ? 'text-white' : 'text-gray-500', 'block text-xs truncate']">
+                      {{ farm.address }}
+                    </span>
+                    <span v-if="selected" :class="[
+                      active ? 'text-white' : 'text-primary',
+                      'absolute inset-y-0 left-0 flex items-center pl-3',
+                    ]">
+                      <Check class="h-4 w-4" aria-hidden="true" />
+                    </span>
+                  </li>
+                </ComboboxOption>
+              </ComboboxOptions>
+            </div>
+          </Combobox>
           <Dialog v-model:open="open">
             <DialogTrigger as-child>
               <Button variant="outline" class="gap-2">
@@ -188,11 +403,11 @@ const removeSuperUser = (userId: string, userName: string) => {
                     <div class="flex-1">
                       <div class="font-medium">{{ superuser.name }}</div>
                       <div class="text-sm text-muted-foreground">{{ superuser.email }}</div>
-                      <div v-if="superuser.id === currentUser.id" class="text-xs text-blue-600 mt-1">
+                      <div v-if="superuser.id === String(currentUser.id)" class="text-xs text-blue-600 mt-1">
                         (Anda)
                       </div>
                     </div>
-                    <Button v-if="superuser.id !== currentUser.id"
+                    <Button v-if="superuser.id !== String(currentUser.id)"
                       @click="removeSuperUser(superuser.id, superuser.name)" variant="outline" size="sm"
                       class="text-red-600 hover:text-red-700 hover:bg-red-50">
                       <Trash2 class="w-4 h-4" />
@@ -274,7 +489,7 @@ const removeSuperUser = (userId: string, userName: string) => {
 
       <!-- Recent Activity -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card v-if="selectedFarmId === 'all'">
           <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle class="text-sm font-medium">Peternakan Baru (30h)</CardTitle>
             <TrendingUp class="h-4 w-4 text-green-600" />
@@ -305,10 +520,43 @@ const removeSuperUser = (userId: string, userName: string) => {
         </Card>
       </div>
 
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Activity Chart -->
+        <Card>
+          <CardHeader>
+            <CardTitle class="flex items-center gap-2">
+              <Activity class="h-5 w-5" />
+              Aktivitas 12 Bulan Terakhir
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="h-80">
+              <Line :key="`activity-${chartKey}`" :data="activityChartData" :options="chartOptions" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <!-- Livestock Count Chart -->
+        <Card>
+          <CardHeader>
+            <CardTitle class="flex items-center gap-2">
+              <Beef class="h-5 w-5" />
+              Jumlah Ternak 12 Bulan Terakhir
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="h-80">
+              <Line :key="`livestock-${chartKey}`" :data="livestockChartData" :options="chartOptions" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <!-- Top Lists and Analytics -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Top Farms by Livestock -->
-        <Card>
+        <!-- Top Farms by Livestock - Only show for global view -->
+        <Card v-if="selectedFarmId === 'all'">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
               <BarChart3 class="h-5 w-5" />
@@ -337,8 +585,8 @@ const removeSuperUser = (userId: string, userName: string) => {
           </CardContent>
         </Card>
 
-        <!-- Top Farms by Users -->
-        <Card>
+        <!-- Top Farms by Users - Only show for global view -->
+        <Card v-if="selectedFarmId === 'all'">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
               <Users class="h-5 w-5" />
@@ -367,8 +615,8 @@ const removeSuperUser = (userId: string, userName: string) => {
           </CardContent>
         </Card>
 
-        <!-- Farms by Region -->
-        <Card>
+        <!-- Farms by Region - Only show for global view -->
+        <Card v-if="selectedFarmId === 'all'">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
               <MapPin class="h-5 w-5" />
@@ -406,26 +654,28 @@ const removeSuperUser = (userId: string, userName: string) => {
 
       <!-- Additional Stats -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card v-if="selectedFarmId === 'all'">
           <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle class="text-sm font-medium">Peternakan dengan Ternak</CardTitle>
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">{{ stats.farms_with_livestock }}</div>
             <p class="text-xs text-muted-foreground">
-              {{ Math.round((stats.farms_with_livestock / stats.total_farms) * 100) }}% dari semua peternakan
+              {{ stats.total_farms > 0 ? Math.round((stats.farms_with_livestock / stats.total_farms) * 100) : 0 }}% dari
+              semua peternakan
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card v-if="selectedFarmId === 'all'">
           <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle class="text-sm font-medium">Pengguna dengan Peternakan</CardTitle>
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">{{ stats.users_with_farms }}</div>
             <p class="text-xs text-muted-foreground">
-              {{ Math.round((stats.users_with_farms / stats.total_users) * 100) }}% dari semua pengguna
+              {{ stats.total_users > 0 ? Math.round((stats.users_with_farms / stats.total_users) * 100) : 0 }}% dari
+              semua pengguna
             </p>
           </CardContent>
         </Card>
@@ -437,7 +687,8 @@ const removeSuperUser = (userId: string, userName: string) => {
           <CardContent>
             <div class="text-2xl font-bold">{{ stats.livestock_with_photos }}</div>
             <p class="text-xs text-muted-foreground">
-              {{ Math.round((stats.livestock_with_photos / stats.total_livestock) * 100) }}% memiliki foto
+              {{ stats.total_livestock > 0 ? Math.round((stats.livestock_with_photos / stats.total_livestock) * 100) : 0
+              }}% memiliki foto
             </p>
           </CardContent>
         </Card>
