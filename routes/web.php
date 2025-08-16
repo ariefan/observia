@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\SpeciesController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\RationController;
 use \App\Http\Controllers\HerdController;
+use App\Http\Controllers\SuperDashboardController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -39,6 +40,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+    
+    // Superuser routes
+    Route::get('/super-dashboard', [SuperDashboardController::class, 'index'])->name('super.dashboard');
+    Route::post('/super-dashboard/create-superuser', [SuperDashboardController::class, 'createSuperUser'])->name('super.create-user');
+    Route::delete('/super-dashboard/remove-superuser/{user}', [SuperDashboardController::class, 'removeSuperUser'])->name('super.remove-user');
 
     // Herds
     Route::get('/farms.logout', [HomeController::class, 'farmLogout'])->name('farms.logout');

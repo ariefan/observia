@@ -51,4 +51,36 @@ class Farm extends Model
     {
         return $this->belongsTo(City::class);
     }
+
+    /**
+     * Get the province through the city.
+     */
+    public function province()
+    {
+        return $this->hasOneThrough(Province::class, City::class, 'id', 'id', 'city_id', 'province_id');
+    }
+
+    /**
+     * Get the livestocks for the farm.
+     */
+    public function livestocks()
+    {
+        return $this->hasMany(Livestock::class);
+    }
+
+    /**
+     * Get the herds for the farm.
+     */
+    public function herds()
+    {
+        return $this->hasMany(Herd::class);
+    }
+
+    /**
+     * Get the rations for the farm.
+     */
+    public function rations()
+    {
+        return $this->hasMany(Ration::class);
+    }
 }

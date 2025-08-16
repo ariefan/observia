@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { LayoutGrid, Home, Folder, BookOpen } from 'lucide-vue-next';
+import { LayoutGrid, Home, Folder, BookOpen, Shield } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSidebar } from '@/components/ui/sidebar/utils';
@@ -15,6 +15,15 @@ import { IconFileText, IconHorse } from '@tabler/icons-vue';
 const page = usePage<SharedData>();
 
 const mainNavItems: NavItem[] = [
+    // Add Super Dashboard for superusers at the top
+    ...(page.props.auth.user?.is_super_user
+        ? [{
+            title: 'Super Dashboard',
+            href: '/super-dashboard',
+            icon: Shield,
+        }]
+        : []
+    ),
     ...(page.props.auth.farms && page.props.auth.user.current_farm_id
         ? [{
             title: 'Dashboard',
