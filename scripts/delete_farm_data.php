@@ -135,8 +135,12 @@ try {
     $stats['farm_invites'] = DB::table('farm_invites')->where('farm_id', $farmUuid)->delete();
     
     // --- Step 3: Delete Farm-User Associations and the Users Themselves ---
+    echo "👥 Removing farm-user associations...\n";
     $stats['farm_users'] = DB::table('farm_user')->where('farm_id', $farmUuid)->delete();
+    echo "✅ Deleted {$stats['farm_users']} farm-user association(s).\n";
+    
     if (!empty($usersToDelete)) {
+        echo "👤 Deleting user accounts exclusive to this farm...\n";
         $stats['users'] = DB::table('users')->whereIn('id', $usersToDelete)->delete();
         echo "✅ Deleted {$stats['users']} user account(s) exclusive to this farm.\n";
     } else {
