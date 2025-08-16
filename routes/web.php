@@ -45,6 +45,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/farms/{farm}/switch', [FarmController::class, 'switch'])->name('farms.switch');
     Route::post('/farms/{farm}/invite', [FarmController::class, 'inviteMember'])->name('farms.invite');
     Route::put('/farms/{farm}/users/{user}/role', [FarmController::class, 'updateRole'])->name('farms.user.role');
+    Route::put('/farms/{farm}/users/{user}/profile', [FarmController::class, 'updateUserProfile'])->name('farms.user.profile');
     Route::put('/farms/{farm}/email/{email}/role-invite', [FarmController::class, 'updateRoleInvite'])->name('farms.user.role-invite');
     Route::delete('/farms/{farm}/users/{user}', [FarmController::class, 'destroyMember'])->name('farms.user');
     Route::delete('/farms/{farm}/email/{email}', [FarmController::class, 'destroyMemberInvite'])->name('farms.user.remove-invite'); 

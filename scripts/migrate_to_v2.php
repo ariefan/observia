@@ -314,11 +314,11 @@ function processLivestockImage(string $url, ImageManager $manager): ?string
         if ($originalHeight > $originalWidth) {
             // Portrait image processing
             echo "🔧 Processing portrait image...\n";
-            
-            // Crop 15% from top and 15% from bottom
-            $cropY = (int)($originalHeight * 0.20);
-            $cropHeight = (int)($originalHeight * 0.7); // Keep middle 70%
-            
+
+            // Crop 20% from top and 20% from bottom
+            $cropY = (int)($originalHeight * 0.2);
+            $cropHeight = (int)($originalHeight * 0.6); // Keep middle 60%
+
             echo "🔧 Cropping: Y={$cropY}, Height={$cropHeight} (from original {$originalHeight})\n";
             $image->crop($originalWidth, $cropHeight, 0, $cropY);
             
@@ -357,7 +357,7 @@ function processLivestockImage(string $url, ImageManager $manager): ?string
         }
         
         $fullPath = $publicPath . $filename;
-        $image->toJpg(85)->save($fullPath);
+        $image->toJpg(70)->save($fullPath);
         
         // Verify final saved image dimensions
         $savedImage = $manager->read($fullPath);

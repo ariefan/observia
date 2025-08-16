@@ -146,6 +146,37 @@ class FarmController extends Controller
         return back()->with('success', 'Role updated!');
     }
     
+    public function updateUserProfile(Request $request, Farm $farm, User $user)
+    {
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'phone' => 'sometimes|required|string|max:20',
+            'email' => 'sometimes|required|email|max:255|unique:users,email,' . $user->id,
+        ]);
+
+        // Check if the user is actually related to this farm
+        if (!$farm->users()->where('user_id', $user->id)->exists()) {
+            return back()->with('error', 'Anda tidak memiliki akses ke peternakan ini.');
+        }
+
+        // Check if current user has permission (admin or owner)
+        $currentUserRole = $farm->users()->where('user_id', auth()->id())->first()->pivot->role;
+        if (!in_array($currentUserRole, ['admin', 'owner'])) {
+            return back()->with('error', 'Anda tidak memiliki izin untuk mengubah data anggota.');
+        }
+
+        // Prevent editing owner profile by non-owners
+        $targetUserRole = $farm->users()->where('user_id', $user->id)->first()->pivot->role;
+        if ($targetUserRole === 'owner' && $currentUserRole !== 'owner') {
+            return back()->with('error', 'Anda tidak dapat mengubah data pemilik peternakan.');
+        }
+
+        // Update user profile
+        $user->update($validated);
+
+        return back()->with('success', 'Data anggota berhasil diubah!');
+    }
+    
     public function switch(Request $request, Farm $farm)
     {
         $user = auth()->user();

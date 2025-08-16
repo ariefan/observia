@@ -12,6 +12,9 @@ import { Badge } from '@/components/ui/badge';
 import { usePhotoUrl } from '@/composables/usePhotoUrl';
 import { useAgeCalculation } from '@/composables/useAgeCalculation';
 
+// Components
+import ImagePreview from '@/components/ImagePreview.vue';
+
 
 interface Livestock {
     id: string;
@@ -102,15 +105,21 @@ const show = (id: string) => router.visit(route('livestocks.show', { id }));
                             <ImageOff class="w-12 h-12 text-gray-400" />
                         </div>
 
-                        <!-- Floating gender icon circle -->
-                        <div
-                            class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/25 backdrop-blur-md flex items-center justify-center shadow-sm">
-                            <span v-if="livestock.sex === 'M'" class="text-blue-300">
-                                <Mars />
-                            </span>
-                            <span v-else class="text-pink-300">
-                                <Venus />
-                            </span>
+                        <!-- Image preview and gender icons -->
+                        <div class="absolute top-2 right-2 flex gap-1">
+                            <ImagePreview 
+                                v-if="livestock.photo && livestock.photo.length > 0" 
+                                :photos="livestock.photo" 
+                                trigger-class="w-8 h-8 rounded-full bg-white/25 backdrop-blur-md text-white hover:bg-white/40" 
+                            />
+                            <div class="w-8 h-8 rounded-full bg-white/25 backdrop-blur-md flex items-center justify-center shadow-sm">
+                                <span v-if="livestock.sex === 'M'" class="text-blue-300">
+                                    <Mars />
+                                </span>
+                                <span v-else class="text-pink-300">
+                                    <Venus />
+                                </span>
+                            </div>
                         </div>
 
                         <Badge class="absolute bottom-2 right-2 bg-primary text-white rounded-full">{{

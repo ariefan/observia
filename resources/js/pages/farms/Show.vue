@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
+    CardFooter,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,7 +40,7 @@ import {
 } from '@/components/ui/dialog'
 import { getInitials } from '@/composables/useInitials';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Trash2, Building2, Users } from 'lucide-vue-next';
+import { ChevronDown, Trash2, Building2, Users, Check, X, Edit } from 'lucide-vue-next';
 
 
 const props = defineProps({
@@ -72,12 +73,35 @@ const page = usePage<SharedData>();
 const auth = computed(() => page.props.auth);
 
 const forms = ref<{ [key: string]: ReturnType<typeof useForm<any>> }>({})
+const editForms = ref<{ [key: string]: ReturnType<typeof useForm<any>> }>({})
+const originalValues = ref<{ [key: string]: { name: string, phone: string, email: string } }>({})
+const editingStates = ref<{ [key: string]: { name: boolean, phone: boolean, email: boolean } }>({})
 
 // init form per user
 props.farm.users.forEach((user) => {
     forms.value[user.id] = useForm({
         role: user.pivot.role ?? '',
     })
+    editForms.value[user.id] = useForm({
+        name: user.name ?? '',
+        phone: user.phone ?? '',
+        email: user.email ?? '',
+    })
+    originalValues.value[user.id] = {
+        name: user.name ?? '',
+        phone: user.phone ?? '',
+        email: user.email ?? '',
+    }
+    editingStates.value[user.id] = {
+        name: false,
+        phone: false,
+        email: false,
+    }
+})
+
+// Check if current user has permission to edit
+const canEdit = computed(() => {
+    return ['owner', 'admin'].includes(auth.value.user.current_farm.role)
 })
 
 function updateRole(user: typeof props.farm.users[0], role: string) {
@@ -97,6 +121,51 @@ function updateRole(user: typeof props.farm.users[0], role: string) {
         },
         onError: (err: any) => {
             console.error('Failed to update role:', err)
+        },
+    })
+}
+
+function startEditing(userId: string, field: 'name' | 'phone' | 'email') {
+    editingStates.value[userId][field] = true
+}
+
+function cancelEdit(userId: string, field: 'name' | 'phone' | 'email') {
+    const form = editForms.value[userId]
+    if (!form) return
+    
+    // Revert to original value
+    form[field] = originalValues.value[userId][field]
+    editingStates.value[userId][field] = false
+}
+
+function saveField(user: typeof props.farm.users[0], field: 'name' | 'phone' | 'email') {
+    const form = editForms.value[user.id]
+    if (!form) return
+
+    // Check if there's actually a change
+    if (form[field] === originalValues.value[user.id][field]) {
+        editingStates.value[user.id][field] = false
+        return
+    }
+
+    const updateData = { [field]: form[field] }
+    
+    useForm(updateData).put(`/farms/${props.farm.id}/users/${user.id}/profile`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            console.log(`${field} updated for ${user.name}`)
+            toast.success(`${field === 'name' ? 'Nama' : field === 'phone' ? 'No HP' : 'Email'} berhasil diubah`, {
+                description: `Untuk user: ${user.name}`,
+            })
+            // Update original value and exit edit mode
+            originalValues.value[user.id][field] = form[field]
+            editingStates.value[user.id][field] = false
+        },
+        onError: (err: any) => {
+            console.error(`Failed to update ${field}:`, err)
+            toast.error(`Gagal mengubah ${field === 'name' ? 'nama' : field === 'phone' ? 'no HP' : 'email'}`, {
+                description: err.message || 'Terjadi kesalahan saat mengubah data.',
+            })
         },
     })
 }
@@ -278,20 +347,114 @@ function invite() {
                                     </TableHeader>
                                     <TableBody>
                                         <template v-for="user in farm.users" :key="user.email">
-                                            <TableRow>
+                                            <TableRow class="group">
                                                 <TableCell>
-                                                    <Avatar class="size-8 overflow-hidden rounded-full">
-                                                        <AvatarImage v-if="user.avatar" :src="user.avatar"
-                                                            :alt="user.name" />
-                                                        <AvatarFallback
-                                                            class="rounded-lg font-semibold text-black dark:text-white">
-                                                            {{ getInitials(user?.name) }}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    {{ user.name }}
+                                                    <div class="flex items-center gap-2">
+                                                        <Avatar class="size-8 overflow-hidden rounded-full">
+                                                            <AvatarImage v-if="user.avatar" :src="user.avatar"
+                                                                :alt="user.name" />
+                                                            <AvatarFallback
+                                                                class="rounded-lg font-semibold text-black dark:text-white">
+                                                                {{ getInitials(user?.name) }}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div class="flex-1">
+                                                            <template v-if="canEdit && user.pivot.role !== 'owner' && editingStates[user.id]?.name">
+                                                                <div class="flex items-center gap-1">
+                                                                    <Input 
+                                                                        v-model="editForms[user.id].name"
+                                                                        class="flex-1 h-8"
+                                                                        @keyup.enter="saveField(user, 'name')"
+                                                                    />
+                                                                    <Button @click="saveField(user, 'name')" size="icon" variant="ghost" class="h-6 w-6">
+                                                                        <Check class="h-3 w-3 text-green-600" />
+                                                                    </Button>
+                                                                    <Button @click="cancelEdit(user.id, 'name')" size="icon" variant="ghost" class="h-6 w-6">
+                                                                        <X class="h-3 w-3 text-red-600" />
+                                                                    </Button>
+                                                                </div>
+                                                            </template>
+                                                            <template v-else>
+                                                                <div class="flex items-center gap-1">
+                                                                    <span class="font-medium">{{ user.name }}</span>
+                                                                    <Button 
+                                                                        v-if="canEdit && user.pivot.role !== 'owner'" 
+                                                                        @click="startEditing(user.id, 'name')" 
+                                                                        size="icon" 
+                                                                        variant="ghost" 
+                                                                        class="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    >
+                                                                        <Edit class="h-3 w-3" />
+                                                                    </Button>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
                                                 </TableCell>
-                                                <TableCell>{{ user.phone }}</TableCell>
-                                                <TableCell>{{ user.email }}</TableCell>
+                                                <TableCell>
+                                                    <template v-if="canEdit && user.pivot.role !== 'owner' && editingStates[user.id]?.phone">
+                                                        <div class="flex items-center gap-1">
+                                                            <Input 
+                                                                v-model="editForms[user.id].phone"
+                                                                class="flex-1 h-8"
+                                                                type="tel"
+                                                                @keyup.enter="saveField(user, 'phone')"
+                                                            />
+                                                            <Button @click="saveField(user, 'phone')" size="icon" variant="ghost" class="h-6 w-6">
+                                                                <Check class="h-3 w-3 text-green-600" />
+                                                            </Button>
+                                                            <Button @click="cancelEdit(user.id, 'phone')" size="icon" variant="ghost" class="h-6 w-6">
+                                                                <X class="h-3 w-3 text-red-600" />
+                                                            </Button>
+                                                        </div>
+                                                    </template>
+                                                    <template v-else>
+                                                        <div class="flex items-center gap-1">
+                                                            <span>{{ user.phone }}</span>
+                                                            <Button 
+                                                                v-if="canEdit && user.pivot.role !== 'owner'" 
+                                                                @click="startEditing(user.id, 'phone')" 
+                                                                size="icon" 
+                                                                variant="ghost" 
+                                                                class="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            >
+                                                                <Edit class="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
+                                                    </template>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <template v-if="canEdit && user.pivot.role !== 'owner' && editingStates[user.id]?.email">
+                                                        <div class="flex items-center gap-1">
+                                                            <Input 
+                                                                v-model="editForms[user.id].email"
+                                                                class="flex-1 h-8"
+                                                                type="email"
+                                                                @keyup.enter="saveField(user, 'email')"
+                                                            />
+                                                            <Button @click="saveField(user, 'email')" size="icon" variant="ghost" class="h-6 w-6">
+                                                                <Check class="h-3 w-3 text-green-600" />
+                                                            </Button>
+                                                            <Button @click="cancelEdit(user.id, 'email')" size="icon" variant="ghost" class="h-6 w-6">
+                                                                <X class="h-3 w-3 text-red-600" />
+                                                            </Button>
+                                                        </div>
+                                                    </template>
+                                                    <template v-else>
+                                                        <div class="flex items-center gap-1">
+                                                            <span>{{ user.email }}</span>
+                                                            <Button 
+                                                                v-if="canEdit && user.pivot.role !== 'owner'" 
+                                                                @click="startEditing(user.id, 'email')" 
+                                                                size="icon" 
+                                                                variant="ghost" 
+                                                                class="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            >
+                                                                <Edit class="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
+                                                    </template>
+                                                </TableCell>
                                                 <TableCell>
                                                     <DropdownMenu
                                                         v-if="user.pivot.role !== 'owner' &&

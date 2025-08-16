@@ -37,6 +37,7 @@ import LineChart from "./components/LineChart.vue";
 import HealthHistoryCard from "./components/HealthHistoryCard.vue";
 import FeedHistoryCard from "./components/FeedHistoryCard.vue";
 import PedigreeCard from "./components/PedigreeCard.vue";
+import ImagePreview from "@/components/ImagePreview.vue";
 
 // Props
 const props = defineProps<{
@@ -270,7 +271,8 @@ const milkingTrend = computed(() => {
       <!-- Header Section -->
       <div class="flex items-start justify-between space-x-4">
         <div class="flex items-start space-x-4">
-          <Button @click="router.get(route('livestocks.index'))" variant="outline" size="icon" class="h-10 w-10 shrink-0">
+          <Button @click="router.get(route('livestocks.index'))" variant="outline" size="icon"
+            class="h-10 w-10 shrink-0">
             <ArrowLeft class="h-5 w-5" />
           </Button>
           <div class="space-y-1">
@@ -283,6 +285,8 @@ const milkingTrend = computed(() => {
               <p class="text-muted-foreground">{{ livestock.breed.species.name }} - {{ livestock.breed.name }}</p>
               <Mars v-if="livestock.sex == 'M'" class="text-blue-500" />
               <Venus v-else class="text-pink-500" />
+              <ImagePreview v-if="livestock.photo && livestock.photo.length > 0" :photos="livestock.photo"
+                trigger-class="h-6 w-6 text-muted-foreground hover:text-primary" />
             </div>
           </div>
         </div>
