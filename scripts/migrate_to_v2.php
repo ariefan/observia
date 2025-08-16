@@ -259,7 +259,7 @@ function migrateLivestocks(PDO $connection, string $farmUuid, array $breedMappin
         }
 
         // Store the filenames in JSON array format
-        $photoJson = !empty($photos) ? json_encode($photos) : null;
+        $photoJson = !empty($photos) ? json_encode('livestocks/'.$photos) : null;
 
         $originMap = ['Beli'=>2,'Lahir di kandang'=>1];
         $origin = $originMap[$goat['origin'] ?? ''] ?? 4;
