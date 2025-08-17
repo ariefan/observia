@@ -11,9 +11,11 @@ use App\Models\LivestockMilking;
 use App\Models\LivestockWeight;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Traits\HasCurrentFarm;
 
 class HomeController extends Controller
 {
+    use HasCurrentFarm;
     /**
      * Show the application dashboard.
      *
@@ -21,7 +23,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        if(auth()->user()->current_farm_id) {
+        if($this->hasCurrentFarm()) {
             return redirect()->route('dashboard');
         }
         // Get farm invitations for current user even when no current farm

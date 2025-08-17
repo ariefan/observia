@@ -12,11 +12,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use App\Traits\Auditable;
 
 class Livestock extends Model
 {
     use HasFactory;
     use HasUuids;
+    use Auditable;
 
     protected $appends = ['age_in_year', 'age_in_month'];
     protected $fillable = [

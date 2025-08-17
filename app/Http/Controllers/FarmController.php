@@ -11,9 +11,19 @@ use App\Http\Requests\StoreFarmRequest;
 use App\Http\Requests\UpdateFarmRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Traits\HasCurrentFarm;
+use App\Services\FileUploadService;
 
 class FarmController extends Controller
 {
+    use HasCurrentFarm;
+
+    protected $fileUploadService;
+
+    public function __construct(FileUploadService $fileUploadService)
+    {
+        $this->fileUploadService = $fileUploadService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -27,14 +37,14 @@ class FarmController extends Controller
      */
     public function create()
     {
-        // $user = Auth::user();
-        // $farm = Farm::where('id', $user->current_farm_id)->first();
+        $user = auth()->user();
+        $farm = $this->hasCurrentFarm() ? $this->getCurrentFarm() : null;
 
         return Inertia::render('farms/Form', [
             'provinces' => Province::all(),
             'cities' => City::all(),
-            'user' => $user ?? null,
-            'farm' => $farm ?? null,
+            'user' => $user,
+            'farm' => $farm,
         ]);
     }
 
@@ -47,9 +57,10 @@ class FarmController extends Controller
         $user = auth()->user();
 
         if ($request->hasFile('picture_blob')) {
-            $file = $request->file('picture_blob');
-            $path = $file->store('farm_pictures', 'public');
-            $data['picture'] = asset('storage/' . $path);
+            $data['picture'] = $this->fileUploadService->uploadImage(
+                $request->file('picture_blob'),
+                'farm_pictures'
+            );
         }
         $farm = Farm::create([
             ...$data,
@@ -69,7 +80,7 @@ class FarmController extends Controller
      */
     public function show(Farm $farm)
     {
-        $farm = Farm::findOrFail(auth()->user()->current_farm_id);
+        $farm = Farm::findOrFail($this->getCurrentFarmId());
         $farm->load(['users']);
         return Inertia::render('farms/Show', [
             'farm' => $farm ?? null,
@@ -82,13 +93,16 @@ class FarmController extends Controller
      */
     public function edit(Farm $farm)
     {
-        $farm = Farm::findOrFail(auth()->user()->current_farm_id);
-        $farm->load(['city.province']);
+        $user = auth()->user();
+        // Use the farm from route model binding, but load the current farm's data
+        $currentFarm = Farm::findOrFail($this->getCurrentFarmId());
+        $currentFarm->load(['city.province']);
+        
         return Inertia::render('farms/Form', [
             'provinces' => Province::all(),
             'cities' => City::all(),
-            'user' => $user ?? null,
-            'farm' => $farm ?? null,
+            'user' => $user,
+            'farm' => $currentFarm,
         ]);
     }
 
@@ -101,13 +115,27 @@ class FarmController extends Controller
 
         // Check if a new picture was uploaded
         if ($request->hasFile('picture_blob')) {
-            $file = $request->file('picture_blob');
-            $path = $file->store('farm_pictures', 'public');
-            $data['picture'] = asset('storage/' . $path);
+            // Extract old picture path for deletion
+            $oldPicture = $farm->picture;
+            $oldPath = null;
+            
+            if ($oldPicture) {
+                // Extract path from full URL if it contains storage/
+                if (str_contains($oldPicture, '/storage/')) {
+                    $oldPath = str_replace([asset(''), '/storage/'], '', $oldPicture);
+                    $oldPath = ltrim($oldPath, '/');
+                }
+            }
 
-            // Optional: delete the old picture from storage if it exists
-            if ($farm->picture && \Storage::disk('public')->exists($farm->picture)) {
-                \Storage::disk('public')->delete($farm->picture);
+            // Upload new picture
+            $data['picture'] = $this->fileUploadService->uploadImage(
+                $request->file('picture_blob'),
+                'farm_pictures'
+            );
+
+            // Delete old picture if it exists
+            if ($oldPath) {
+                $this->fileUploadService->deleteFile($oldPath);
             }
         }
 

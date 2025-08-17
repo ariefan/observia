@@ -12,6 +12,7 @@ use App\Http\Controllers\FeedController;
 use App\Http\Controllers\RationController;
 use \App\Http\Controllers\HerdController;
 use App\Http\Controllers\SuperDashboardController;
+use App\Http\Controllers\AuditController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -77,6 +78,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/livestocks/rankings', [LivestockController::class, 'rankings'])->name('livestocks.rankings');
     Route::get('/api/herds', [HerdController::class, 'search'])->name('herds.search');
     Route::get('/api/rations', [RationController::class, 'search'])->name('rations.search');
+
+    // Audit Trail Routes
+    Route::get('/audits', [AuditController::class, 'index'])->name('audits.index');
+    Route::get('/audits/export', [AuditController::class, 'export'])->name('audits.export');
+    Route::get('/audits/{audit}', [AuditController::class, 'show'])->name('audits.show');
+    Route::get('/api/audits/{modelType}/{modelId}', [AuditController::class, 'model'])->name('audits.model');
 
     Route::resources([
         'farms' => FarmController::class,

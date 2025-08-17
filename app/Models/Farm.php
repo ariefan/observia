@@ -4,11 +4,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\Auditable;
 
 class Farm extends Model
 {
     /** @use HasFactory<\Database\Factories\FarmFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, Auditable;
+
+    // Sensitive fields to exclude from auditing
+    protected $auditExclude = ['password', 'remember_token'];
 
     /**
      * The attributes that are mass assignable.

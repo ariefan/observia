@@ -3,17 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Feed;
+use App\Traits\HasCurrentFarm;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class FeedController extends Controller
 {
+    use HasCurrentFarm;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $feeds = Feed::where('farm_id', auth()->user()->current_farm_id)->get();
+        $feeds = Feed::where('farm_id', $this->getCurrentFarmId())->get();
 
         return Inertia::render('Feeds/Index', [
             'feeds' => $feeds,
@@ -39,7 +41,7 @@ class FeedController extends Controller
 
         Feed::create([
             'name' => $request->name,
-            'farm_id' => auth()->user()->current_farm_id,
+            'farm_id' => $this->getCurrentFarmId(),
         ]);
 
         return redirect()->route('feeds.index');

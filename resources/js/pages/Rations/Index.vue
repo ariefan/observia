@@ -172,7 +172,7 @@ const formatCurrency = (value: number) => {
 };
 
 const totalCost = (rationItems: RationItem[] = []) => {
-    return rationItems.reduce((acc, item) => acc + (item.price || 0), 0);
+    return rationItems.reduce((acc, item) => acc + (parseFloat(item.price) || 0), 0);
 };
 
 
@@ -281,7 +281,7 @@ const months = [
                                                         {{
                                                             ration.ration_items && ration.ration_items.length
                                                                 ? (ration.ration_items.reduce((sum, item) => sum +
-                                                                    (item.quantity || 0), 0)).toFixed(2)
+                                                                    (parseFloat(item.quantity) || 0), 0)).toFixed(2)
                                                                 : '0.00'
                                                         }} kg
                                                     </TableCell>
@@ -403,7 +403,7 @@ const months = [
                                                             ration.history_ration_items &&
                                                                 ration.history_ration_items.length
                                                                 ? ration.history_ration_items.reduce((sum, item) => sum +
-                                                                    (item.quantity || 0), 0)
+                                                                    (parseFloat(item.quantity) || 0), 0)
                                                                 : 0
                                                         }} kg
                                                     </TableCell>
@@ -511,8 +511,8 @@ const months = [
                                                     <div class="text-2xl font-bold">{{
                                                         Math.round(Object.values(leftoverMap).reduce((acc, leftover) =>
                                                             acc +
-                                                            calculateEfficiency(leftover.feeding?.quantity || 0,
-                                                                leftover.leftover_quantity), 0) /
+                                                            calculateEfficiency(parseFloat(leftover.feeding?.quantity) || 0,
+                                                                parseFloat(leftover.leftover_quantity) || 0), 0) /
                                                             Math.max(Object.keys(leftoverMap).length, 1))}}%</div>
                                                     <div class="text-xs text-muted-foreground">
                                                         Rata-rata Efisiensi
@@ -606,12 +606,12 @@ const months = [
                                                     <TableCell>
                                                         <div v-if="leftoverMap[feeding.id]" class="text-center">
                                                             <span class="font-semibold text-lg" :class="{
-                                                                'text-green-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) > 80,
-                                                                'text-yellow-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) > 60,
-                                                                'text-red-600': calculateEfficiency(feeding.quantity, leftoverMap[feeding.id].leftover_quantity) <= 60
+                                                                'text-green-600': calculateEfficiency(parseFloat(feeding.quantity) || 0, parseFloat(leftoverMap[feeding.id].leftover_quantity) || 0) > 80,
+                                                                'text-yellow-600': calculateEfficiency(parseFloat(feeding.quantity) || 0, parseFloat(leftoverMap[feeding.id].leftover_quantity) || 0) > 60,
+                                                                'text-red-600': calculateEfficiency(parseFloat(feeding.quantity) || 0, parseFloat(leftoverMap[feeding.id].leftover_quantity) || 0) <= 60
                                                             }">
-                                                                {{ calculateEfficiency(feeding.quantity,
-                                                                    leftoverMap[feeding.id].leftover_quantity) }}%
+                                                                {{ calculateEfficiency(parseFloat(feeding.quantity) || 0,
+                                                                    parseFloat(leftoverMap[feeding.id].leftover_quantity) || 0) }}%
                                                             </span>
                                                         </div>
                                                         <div v-else class="text-center">

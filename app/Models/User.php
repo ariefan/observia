@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Traits\HasFarmRoles;
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,7 +13,10 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasFarmRoles, HasUuids;
+    use HasFactory, Notifiable, HasFarmRoles, HasUuids, Auditable;
+
+    // Sensitive fields to exclude from auditing
+    protected $auditExclude = ['password', 'remember_token', 'email_verified_at'];
 
     /**
      * The attributes that are mass assignable.

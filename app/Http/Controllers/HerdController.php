@@ -6,17 +6,19 @@ use App\Models\Herd;
 use App\Models\Ration;
 use App\Http\Requests\StoreHerdRequest;
 use App\Http\Requests\UpdateHerdRequest;
+use App\Traits\HasCurrentFarm;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class HerdController extends Controller
 {
+    use HasCurrentFarm;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $herds = Herd::where('farm_id', auth()->user()->current_farm_id)
+        $herds = Herd::where('farm_id', $this->getCurrentFarmId())
             ->withCount('livestocks')
             ->get()
             ->map(function ($herd) {
@@ -42,7 +44,7 @@ class HerdController extends Controller
     public function store(StoreHerdRequest $request)
     {
         $data = $request->validated();
-        $data['farm_id'] = auth()->user()->current_farm_id;
+        $data['farm_id'] = $this->getCurrentFarmId();
         $herd = Herd::create($data);
         return redirect()->route('herds.index')->with('success', 'Kandang berhasil ditambahkan.');
     }
@@ -93,7 +95,7 @@ class HerdController extends Controller
         $id = $request->input('id');
 
         $herds = Herd::query()
-            ->where('farm_id', auth()->user()->current_farm_id)
+            ->where('farm_id', $this->getCurrentFarmId())
             ->when($id, fn ($q) => $q->where('id', $id))
             ->when(!$id && $query, function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%");

@@ -13,9 +13,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Traits\HasCurrentFarm;
 
 class RationController extends Controller
 {
+    use HasCurrentFarm;
     /**
      * Display a listing of the resource.
      */
@@ -25,11 +27,11 @@ class RationController extends Controller
         $year = request('year');
 
         $rations = Ration::with('rationItems')
-            ->where('farm_id', auth()->user()->current_farm_id)
+            ->where('farm_id', $this->getCurrentFarmId())
             ->get();
 
         $historyRationsQuery = HistoryRation::with('historyRationItems')
-            ->where('farm_id', auth()->user()->current_farm_id);
+            ->where('farm_id', $this->getCurrentFarmId());
 
         if ($month) {
             $historyRationsQuery->whereMonth('created_at', $month);
@@ -45,7 +47,7 @@ class RationController extends Controller
         // Get herd feedings for the current farm
         $herdFeedingsQuery = HerdFeeding::with(['herd.livestocks', 'ration'])
             ->whereHas('herd', function ($query) {
-                $query->where('farm_id', auth()->user()->current_farm_id);
+                $query->where('farm_id', $this->getCurrentFarmId());
             });
 
         if ($month) {
@@ -67,7 +69,7 @@ class RationController extends Controller
         // Get feeding leftovers for the current farm
         $feedingLeftoversQuery = FeedingLeftover::with(['feeding.herd', 'feeding.ration'])
             ->whereHas('feeding.herd', function ($query) {
-                $query->where('farm_id', auth()->user()->current_farm_id);
+                $query->where('farm_id', $this->getCurrentFarmId());
             });
 
         if ($month) {
@@ -263,7 +265,7 @@ class RationController extends Controller
         $id = $request->input('id');
 
         $rations = Ration::query()
-            ->where('farm_id', auth()->user()->current_farm_id)
+            ->where('farm_id', $this->getCurrentFarmId())
             ->when($id, fn ($q) => $q->where('id', $id))
             ->when(!$id && $query, function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%");
@@ -288,7 +290,7 @@ class RationController extends Controller
         // Get feedings without leftover records from last 7 days
         $availableFeedings = HerdFeeding::with(['herd.livestocks', 'ration'])
             ->whereHas('herd', function ($query) {
-                $query->where('farm_id', auth()->user()->current_farm_id);
+                $query->where('farm_id', $this->getCurrentFarmId());
             })
             ->whereDoesntHave('leftover')
             ->where('date', '>=', now()->subDays(7))

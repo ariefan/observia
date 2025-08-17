@@ -14,16 +14,26 @@ use Illuminate\Http\Request;
 use App\Models\LivestockWeight;
 use App\Models\LivestockMilking;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Traits\HasCurrentFarm;
+use App\Services\FileUploadService;
 
 class LivestockController extends Controller
 {
     use AuthorizesRequests;
+    use HasCurrentFarm;
+
+    protected $fileUploadService;
+
+    public function __construct(FileUploadService $fileUploadService)
+    {
+        $this->fileUploadService = $fileUploadService;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $currentFarmId = Auth::user()->current_farm_id;
+        $currentFarmId = $this->getCurrentFarmId();
         
         if (!$currentFarmId) {
             return Inertia::render('livestocks/Index', [
@@ -71,10 +81,9 @@ class LivestockController extends Controller
     public function store(StoreLivestockRequest $request)
     {
         $validated = $request->validated();
-        $validated['farm_id'] = auth()->user()->current_farm_id;
+        $validated['farm_id'] = $this->getCurrentFarmId();
 
         // Remove photo from validated data before filling the model
-        $photos = [];
         if (isset($validated['photo'])) {
             unset($validated['photo']);
         }
@@ -82,15 +91,13 @@ class LivestockController extends Controller
         $livestock = new Livestock();
         $livestock->fill($validated);
 
+        // Process photos using the file upload service
+        $photos = [];
         if (! is_null($request->photo) && ! empty($request->photo)) {
-            foreach ($request->photo as $photo) {
-                if (is_string($photo)) {
-                    $photos[] = $photo;
-                } else {
-                    $path = $photo->store('livestocks', 'public');
-                    $photos[] = $path;
-                }
-            }
+            $photos = $this->fileUploadService->processMixedFiles(
+                $request->photo,
+                'livestocks'
+            );
         }
 
         $countLivestock = Livestock::query()->count();
@@ -348,19 +355,13 @@ class LivestockController extends Controller
         
         $livestock->fill($validated);
 
+        // Process photos using the file upload service
         $photos = [];
-
         if (! is_null($request->photo) && ! empty($request->photo)) {
-            foreach ($request->photo as $photo) {
-                if (is_string($photo)) {
-                    // Existing photo path
-                    $photos[] = $photo;
-                } else {
-                    // New uploaded file
-                    $path = $photo->store('livestocks', 'public');
-                    $photos[] = $path;
-                }
-            }
+            $photos = $this->fileUploadService->processMixedFiles(
+                $request->photo,
+                'livestocks'
+            );
         }
 
         // If herd_id is changed, update herd_entry_date to now
@@ -390,7 +391,7 @@ class LivestockController extends Controller
         $sex = $request->input('sex');
 
         $livestocks = Livestock::query()
-            ->where('farm_id', Auth::user()->current_farm_id)
+            ->where('farm_id', $this->getCurrentFarmId())
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                     ->orWhere('aifarm_id', 'like', "%{$query}%")
@@ -414,7 +415,7 @@ class LivestockController extends Controller
      */
     public function rankings(Request $request)
     {
-        $currentFarmId = Auth::user()->current_farm_id;
+        $currentFarmId = $this->getCurrentFarmId();
         
         // Get all livestocks in the current farm with necessary relationships
         $livestocks = Livestock::whereHas('breed.species')
