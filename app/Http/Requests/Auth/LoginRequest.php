@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -49,6 +50,9 @@ class LoginRequest extends FormRequest
 
         if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
+            
+            // Trigger failed login event
+            event(new Failed('web', null, $credentials));
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),

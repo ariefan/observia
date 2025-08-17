@@ -13,6 +13,7 @@ use App\Http\Controllers\RationController;
 use \App\Http\Controllers\HerdController;
 use App\Http\Controllers\SuperDashboardController;
 use App\Http\Controllers\AuditController;
+use App\Http\Controllers\LoginLogController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -84,6 +85,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/audits/export', [AuditController::class, 'export'])->name('audits.export');
     Route::get('/audits/{audit}', [AuditController::class, 'show'])->name('audits.show');
     Route::get('/api/audits/{modelType}/{modelId}', [AuditController::class, 'model'])->name('audits.model');
+
+    // Login Log Routes
+    Route::get('/login-logs', [LoginLogController::class, 'index'])->name('login-logs.index');
+    Route::get('/login-logs/export', [LoginLogController::class, 'export'])->name('login-logs.export');
+    Route::get('/login-logs/{loginLog}', [LoginLogController::class, 'show'])->name('login-logs.show');
 
     Route::resources([
         'farms' => FarmController::class,

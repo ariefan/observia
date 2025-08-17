@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,7 +42,14 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+        
         Auth::guard('web')->logout();
+        
+        // Manually trigger logout event
+        if ($user) {
+            event(new Logout('web', $user));
+        }
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

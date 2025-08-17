@@ -28,7 +28,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Download, Eye, Calendar, User, Database, ChevronsUpDown } from 'lucide-vue-next';
+import { Search, Download, Eye, Calendar, User, LogIn, ChevronsUpDown } from 'lucide-vue-next';
 import {
   Combobox,
   ComboboxButton,
@@ -37,17 +37,12 @@ import {
   ComboboxOptions,
 } from '@headlessui/vue';
 
-interface Audit {
+interface LoginLog {
   id: number;
   user_name: string | null;
-  user_email: string | null;
-  auditable_type: string;
-  auditable_id: string;
+  email: string | null;
   event: string;
   event_name: string;
-  model_name: string;
-  old_values: Record<string, any> | null;
-  new_values: Record<string, any> | null;
   ip_address: string | null;
   created_at: string;
   user: {
@@ -58,13 +53,12 @@ interface Audit {
 }
 
 interface Props {
-  audits: {
-    data: Audit[];
+  loginLogs: {
+    data: LoginLog[];
     links?: any[];
     meta?: any;
   };
   filters?: {
-    model?: string;
     event?: string;
     user_id?: string;
     date_from?: string;
@@ -72,7 +66,6 @@ interface Props {
     search?: string;
     farm_id?: string;
   };
-  modelTypes?: Array<{ value: string; label: string }>;
   eventTypes?: Array<{ value: string; label: string }>;
   allFarms?: Array<{ id: string; name: string; address?: string }>;
   selectedFarmId?: string;
@@ -82,7 +75,6 @@ interface Props {
 const props = defineProps<Props>();
 
 const filters = ref({
-  model: props.filters?.model || '',
   event: props.filters?.event || '',
   user_id: props.filters?.user_id || '',
   date_from: props.filters?.date_from || '',
@@ -92,7 +84,7 @@ const filters = ref({
 });
 
 const search = () => {
-  router.get(route('audits.index'), filters.value, {
+  router.get(route('login-logs.index'), filters.value, {
     preserveState: true,
     replace: true,
   });
@@ -100,18 +92,13 @@ const search = () => {
 
 const clearFilters = () => {
   filters.value = {
-    model: '',
     event: '',
     user_id: '',
     date_from: '',
     date_to: '',
     search: '',
+    farm_id: 'all',
   };
-  search();
-};
-
-const clearModelFilter = () => {
-  filters.value.model = '';
   search();
 };
 
@@ -120,20 +107,18 @@ const clearEventFilter = () => {
   search();
 };
 
-const exportAudits = () => {
-  window.open(route('audits.export', filters.value), '_blank');
+const exportLogs = () => {
+  window.open(route('login-logs.export', filters.value), '_blank');
 };
 
 const getEventBadgeVariant = (event: string) => {
   switch (event) {
-    case 'created':
+    case 'login':
       return 'default';
-    case 'updated':
+    case 'logout':
       return 'secondary';
-    case 'deleted':
+    case 'failed_login':
       return 'destructive';
-    case 'restored':
-      return 'outline';
     default:
       return 'secondary';
   }
@@ -141,11 +126,6 @@ const getEventBadgeVariant = (event: string) => {
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleString();
-};
-
-const getChangesCount = (audit: Audit) => {
-  if (!audit.old_values || !audit.new_values) return 0;
-  return Object.keys(audit.new_values).length;
 };
 
 // Farm selection for super users
@@ -181,20 +161,20 @@ const handleFarmChange = (farmId: string) => {
 </script>
 
 <template>
-  <Head title="Jejak Audit" />
+  <Head title="Log Masuk" />
 
   <AppLayout>
     <div class="max-w-7xl mx-auto space-y-6">
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold tracking-tight">Jejak Audit</h1>
+          <h1 class="text-2xl font-bold tracking-tight">Log Masuk</h1>
           <p class="text-muted-foreground">
             {{ isSuperUser && selectedFarmObject?.name === 'Semua Peternakan' 
-                ? 'Lacak semua perubahan di seluruh peternakan' 
+                ? 'Lacak aktivitas masuk di seluruh peternakan' 
                 : isSuperUser 
-                  ? `Lacak perubahan di ${selectedFarmObject?.name}` 
-                  : 'Lacak semua perubahan yang dilakukan pada data peternakan Anda' }}
+                  ? `Lacak aktivitas masuk di ${selectedFarmObject?.name}` 
+                  : 'Lacak aktivitas masuk di peternakan Anda' }}
           </p>
         </div>
         <div class="flex items-center gap-3">
@@ -252,7 +232,7 @@ const handleFarmChange = (farmId: string) => {
             </div>
           </Combobox>
           
-          <Button @click="exportAudits" variant="outline">
+          <Button @click="exportLogs" variant="outline">
             <Download class="mr-2 h-4 w-4" />
             Ekspor CSV
           </Button>
@@ -264,7 +244,7 @@ const handleFarmChange = (farmId: string) => {
         <CardHeader>
           <CardTitle class="text-lg">Filter</CardTitle>
           <CardDescription>
-            Filter catatan audit berdasarkan model, event, tanggal, atau kata kunci
+            Filter log masuk berdasarkan event, tanggal, atau kata kunci
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -276,40 +256,11 @@ const handleFarmChange = (farmId: string) => {
                 <Input
                   id="search"
                   v-model="filters.search"
-                  placeholder="Cari pengguna, model, event..."
+                  placeholder="Cari pengguna, email..."
                   class="pl-8"
                   @keyup.enter="search"
                 />
               </div>
-            </div>
-
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <Label for="model">Jenis Model</Label>
-                <Button 
-                  v-if="filters.model" 
-                  @click="clearModelFilter" 
-                  variant="ghost" 
-                  size="sm"
-                  class="h-auto p-1 text-xs"
-                >
-                  Hapus
-                </Button>
-              </div>
-              <Select v-model="filters.model">
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih jenis model" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem 
-                    v-for="modelType in (modelTypes || [])" 
-                    :key="modelType.value"
-                    :value="modelType.value"
-                  >
-                    {{ modelType.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             <div class="space-y-2">
@@ -375,9 +326,9 @@ const handleFarmChange = (farmId: string) => {
       <Card>
         <CardHeader>
           <CardTitle class="text-lg">
-            Catatan Audit
+            Log Masuk
             <span class="text-sm font-normal text-muted-foreground ml-2">
-              ({{ audits.data?.length || 0 }} catatan)
+              ({{ loginLogs.data?.length || 0 }} catatan)
             </span>
           </CardTitle>
         </CardHeader>
@@ -388,19 +339,17 @@ const handleFarmChange = (farmId: string) => {
                 <TableRow>
                   <TableHead>Tanggal</TableHead>
                   <TableHead>Pengguna</TableHead>
-                  <TableHead>Model</TableHead>
                   <TableHead>Event</TableHead>
-                  <TableHead>Perubahan</TableHead>
                   <TableHead>Alamat IP</TableHead>
                   <TableHead class="w-24">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow v-for="audit in (audits.data || [])" :key="audit.id">
+                <TableRow v-for="log in (loginLogs.data || [])" :key="log.id">
                   <TableCell class="font-medium">
                     <div class="flex items-center space-x-2">
                       <Calendar class="h-4 w-4 text-muted-foreground" />
-                      <span class="text-sm">{{ formatDate(audit.created_at) }}</span>
+                      <span class="text-sm">{{ formatDate(log.created_at) }}</span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -408,52 +357,36 @@ const handleFarmChange = (farmId: string) => {
                       <User class="h-4 w-4 text-muted-foreground" />
                       <div>
                         <div class="text-sm font-medium">
-                          {{ audit.user_name || 'System' }}
+                          {{ log.user_name || 'Unknown' }}
                         </div>
                         <div class="text-xs text-muted-foreground">
-                          {{ audit.user_email }}
+                          {{ log.email }}
                         </div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div class="flex items-center space-x-2">
-                      <Database class="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <div class="text-sm font-medium">{{ audit.model_name }}</div>
-                        <div class="text-xs text-muted-foreground">
-                          ID: {{ audit.auditable_id }}
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge :variant="getEventBadgeVariant(audit.event)">
-                      {{ audit.event_name }}
+                    <Badge :variant="getEventBadgeVariant(log.event)">
+                      {{ log.event_name }}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div class="text-sm">
-                      {{ getChangesCount(audit) }} field berubah
-                    </div>
-                  </TableCell>
-                  <TableCell>
                     <span class="text-sm text-muted-foreground">
-                      {{ audit.ip_address || '-' }}
+                      {{ log.ip_address || '-' }}
                     </span>
                   </TableCell>
                   <TableCell>
                     <Link 
-                      :href="route('audits.show', audit.id)"
+                      :href="route('login-logs.show', log.id)"
                       class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
                     >
                       <Eye class="h-4 w-4" />
                     </Link>
                   </TableCell>
                 </TableRow>
-                <TableRow v-if="!audits.data || audits.data.length === 0">
-                  <TableCell colspan="7" class="text-center py-8 text-muted-foreground">
-                    Tidak ada catatan audit ditemukan
+                <TableRow v-if="!loginLogs.data || loginLogs.data.length === 0">
+                  <TableCell colspan="5" class="text-center py-8 text-muted-foreground">
+                    Tidak ada log masuk ditemukan
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -461,10 +394,10 @@ const handleFarmChange = (farmId: string) => {
           </div>
 
           <!-- Pagination -->
-          <div v-if="audits.links && audits.links.length > 3" class="mt-4 flex justify-center">
+          <div v-if="loginLogs.links && loginLogs.links.length > 3" class="mt-4 flex justify-center">
             <div class="flex space-x-1">
               <Link
-                v-for="link in (audits.links || [])"
+                v-for="link in (loginLogs.links || [])"
                 :key="link.label"
                 :href="link.url"
                 :class="[

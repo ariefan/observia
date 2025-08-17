@@ -317,39 +317,39 @@ const removeSuperUser = (userId: string, userName: string) => {
           <Combobox v-model="selectedFarmId" @update:model-value="handleFarmChange">
             <div class="relative">
               <ComboboxButton
-                class="relative w-64 cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm border">
-                <span class="block truncate">{{ selectedFarmObject?.name || 'Pilih Peternakan' }}</span>
+                class="relative w-64 cursor-default rounded-lg bg-background border border-input py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:text-sm">
+                <span class="block truncate text-foreground">{{ selectedFarmObject?.name || 'Pilih Peternakan' }}</span>
                 <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                  <ChevronsUpDown class="h-4 w-4 text-gray-400" aria-hidden="true" />
+                  <ChevronsUpDown class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 </span>
               </ComboboxButton>
               <ComboboxOptions
-                class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover border border-border py-1 text-base shadow-lg focus:outline-none sm:text-sm">
                 <div class="relative">
                   <ComboboxInput
-                    class="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:outline-none focus:ring-0"
+                    class="w-full border-none bg-transparent py-2 pl-3 pr-10 text-sm leading-5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
                     :display-value="() => ''" @change="farmQuery = $event.target.value"
                     placeholder="Cari peternakan..." />
                 </div>
                 <div v-if="filteredFarms.length === 0 && farmQuery !== ''"
-                  class="relative cursor-default select-none px-4 py-2 text-gray-700">
+                  class="relative cursor-default select-none px-4 py-2 text-muted-foreground">
                   Tidak ada peternakan ditemukan.
                 </div>
                 <ComboboxOption v-for="farm in filteredFarms" :key="farm.id" v-slot="{ selected, active }"
                   :value="farm.id" as="template">
                   <li :class="[
-                    active ? 'bg-primary text-white' : 'text-gray-900',
+                    active ? 'bg-accent text-accent-foreground' : 'text-foreground',
                     'relative cursor-default select-none py-2 pl-10 pr-4',
                   ]">
                     <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
                       {{ farm.name }}
                     </span>
                     <span v-if="farm.address"
-                      :class="[active ? 'text-white' : 'text-gray-500', 'block text-xs truncate']">
+                      :class="[active ? 'text-accent-foreground/70' : 'text-muted-foreground', 'block text-xs truncate']">
                       {{ farm.address }}
                     </span>
                     <span v-if="selected" :class="[
-                      active ? 'text-white' : 'text-primary',
+                      active ? 'text-accent-foreground' : 'text-primary',
                       'absolute inset-y-0 left-0 flex items-center pl-3',
                     ]">
                       <Check class="h-4 w-4" aria-hidden="true" />

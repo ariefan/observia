@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\FarmInvite;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
@@ -35,6 +36,9 @@ class GoogleLoginController extends Controller
 
 
         Auth::login($user);
+        
+        // Manually trigger login event for Google login
+        event(new Login('web', $user, false));
 
         return redirect()->route('home');
     }

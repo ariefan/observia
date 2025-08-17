@@ -1,0 +1,214 @@
+<script setup lang="ts">
+import { Head, Link } from '@inertiajs/vue3';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { 
+  ArrowLeft, 
+  Calendar, 
+  User, 
+  Globe, 
+  Monitor,
+  LogIn
+} from 'lucide-vue-next';
+
+interface LoginLog {
+  id: number;
+  user_name: string | null;
+  email: string | null;
+  event: string;
+  event_name?: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  created_at: string;
+  metadata: Record<string, any> | null;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+  farm: {
+    id: string;
+    name: string;
+    address?: string;
+  } | null;
+}
+
+interface Props {
+  loginLog: LoginLog;
+}
+
+const props = defineProps<Props>();
+
+const getEventBadgeVariant = (event: string) => {
+  switch (event) {
+    case 'login':
+      return 'default';
+    case 'logout':
+      return 'secondary';
+    case 'failed_login':
+      return 'destructive';
+    default:
+      return 'secondary';
+  }
+};
+
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleString();
+};
+</script>
+
+<template>
+  <Head :title="`Log Masuk #${loginLog.id}`" />
+
+  <AppLayout>
+    <div class="max-w-7xl mx-auto space-y-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <Link :href="route('login-logs.index')">
+            <Button variant="outline" size="icon">
+              <ArrowLeft class="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight">
+              Log Masuk #{{ loginLog.id }}
+            </h1>
+            <p class="text-muted-foreground">
+              {{ loginLog.event_name || loginLog.event }} 
+              pada {{ formatDate(loginLog.created_at) }}
+            </p>
+          </div>
+        </div>
+        <Badge :variant="getEventBadgeVariant(loginLog.event)" class="text-sm">
+          {{ loginLog.event_name || loginLog.event }}
+        </Badge>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Details -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Basic Information -->
+          <Card>
+            <CardHeader>
+              <CardTitle class="flex items-center space-x-2">
+                <LogIn class="h-5 w-5" />
+                <span>Informasi Event</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <Label class="text-sm font-medium text-muted-foreground">Jenis Event</Label>
+                  <p class="text-sm font-mono">{{ loginLog.event_name || loginLog.event }}</p>
+                </div>
+                <div>
+                  <Label class="text-sm font-medium text-muted-foreground">Email</Label>
+                  <p class="text-sm">{{ loginLog.email || '-' }}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <!-- Metadata -->
+          <Card v-if="loginLog.metadata">
+            <CardHeader>
+              <CardTitle class="flex items-center space-x-2">
+                <Monitor class="h-5 w-5" />
+                <span>Detail Tambahan</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre class="text-xs bg-muted p-3 rounded overflow-auto">{{ JSON.stringify(loginLog.metadata, null, 2) }}</pre>
+            </CardContent>
+          </Card>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+          <!-- User Information -->
+          <Card>
+            <CardHeader>
+              <CardTitle class="flex items-center space-x-2">
+                <User class="h-5 w-5" />
+                <span>Pengguna</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-3">
+              <div>
+                <Label class="text-sm font-medium text-muted-foreground">Nama</Label>
+                <p class="text-sm">{{ loginLog.user_name || 'Unknown' }}</p>
+              </div>
+              <div v-if="loginLog.email">
+                <Label class="text-sm font-medium text-muted-foreground">Email</Label>
+                <p class="text-sm">{{ loginLog.email }}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <!-- Timestamp -->
+          <Card>
+            <CardHeader>
+              <CardTitle class="flex items-center space-x-2">
+                <Calendar class="h-5 w-5" />
+                <span>Waktu</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p class="text-sm">{{ formatDate(loginLog.created_at) }}</p>
+            </CardContent>
+          </Card>
+
+          <!-- Request Information -->
+          <Card>
+            <CardHeader>
+              <CardTitle class="flex items-center space-x-2">
+                <Globe class="h-5 w-5" />
+                <span>Info Request</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-3">
+              <div v-if="loginLog.ip_address">
+                <Label class="text-sm font-medium text-muted-foreground">Alamat IP</Label>
+                <p class="text-sm font-mono">{{ loginLog.ip_address }}</p>
+              </div>
+              <div v-if="loginLog.user_agent">
+                <Label class="text-sm font-medium text-muted-foreground">User Agent</Label>
+                <p class="text-xs text-muted-foreground break-all">{{ loginLog.user_agent }}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <!-- Farm Information -->
+          <Card v-if="loginLog.farm">
+            <CardHeader>
+              <CardTitle class="flex items-center space-x-2">
+                <Monitor class="h-5 w-5" />
+                <span>Peternakan</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-3">
+              <div>
+                <Label class="text-sm font-medium text-muted-foreground">Nama Peternakan</Label>
+                <p class="text-sm">{{ loginLog.farm.name }}</p>
+              </div>
+              <div v-if="loginLog.farm.address">
+                <Label class="text-sm font-medium text-muted-foreground">Alamat</Label>
+                <p class="text-sm">{{ loginLog.farm.address }}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  </AppLayout>
+</template>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Audit;
+use App\Models\Farm;
 use App\Traits\HasCurrentFarm;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,14 +13,38 @@ class AuditController extends Controller
     use HasCurrentFarm;
 
     /**
-     * Display audit trail for current farm
+     * Display audit trail for current farm or all farms (for super users)
      */
     public function index(Request $request)
     {
+        // Handle super user farm selection
+        $farmId = null;
+        $allFarms = [];
+        
+        if (auth()->user()->is_super_user) {
+            $selectedFarmId = $request->get('farm_id', 'all');
+            
+            // Get all farms for super user dropdown
+            $allFarms = Farm::select('id', 'name', 'address')
+                ->orderBy('name')
+                ->get()
+                ->toArray();
+            
+            if ($selectedFarmId !== 'all') {
+                $farmId = $selectedFarmId;
+            }
+        } else {
+            $farmId = $this->getCurrentFarmId();
+        }
+
         $query = Audit::query()
             ->with(['user'])
-            ->where('farm_id', $this->getCurrentFarmId())
             ->latest();
+            
+        // Apply farm filter
+        if ($farmId) {
+            $query->where('farm_id', $farmId);
+        }
 
         // Filter by model type
         if ($request->has('model') && $request->model) {
@@ -58,9 +83,13 @@ class AuditController extends Controller
         $audits = $query->paginate(50)->withQueryString();
 
         // Get filter options
-        $modelTypes = Audit::where('farm_id', $this->getCurrentFarmId())
-            ->distinct()
-            ->pluck('auditable_type')
+        $modelTypesQuery = Audit::query()->distinct();
+        
+        if ($farmId) {
+            $modelTypesQuery->where('farm_id', $farmId);
+        }
+        
+        $modelTypes = $modelTypesQuery->pluck('auditable_type')
             ->map(function ($type) {
                 $baseName = class_basename($type);
                 $indonesianName = match($baseName) {
@@ -95,9 +124,12 @@ class AuditController extends Controller
 
         return Inertia::render('Audits/Index', [
             'audits' => $audits,
-            'filters' => $request->only(['model', 'event', 'user_id', 'date_from', 'date_to', 'search']),
+            'filters' => $request->only(['model', 'event', 'user_id', 'date_from', 'date_to', 'search', 'farm_id']),
             'modelTypes' => $modelTypes,
             'eventTypes' => $eventTypes,
+            'allFarms' => $allFarms,
+            'selectedFarmId' => auth()->user()->is_super_user ? $request->get('farm_id', 'all') : null,
+            'isSuperUser' => auth()->user()->is_super_user,
         ]);
     }
 
@@ -106,9 +138,11 @@ class AuditController extends Controller
      */
     public function show(Audit $audit)
     {
-        // Ensure audit belongs to current farm
-        if ($audit->farm_id !== $this->getCurrentFarmId()) {
-            abort(403, 'Unauthorized access to audit record.');
+        // Super users can view any audit, regular users only their farm's audits
+        if (!auth()->user()->is_super_user) {
+            if ($audit->farm_id !== $this->getCurrentFarmId()) {
+                abort(403, 'Unauthorized access to audit record.');
+            }
         }
 
         $audit->load(['user', 'auditable']);
@@ -142,10 +176,25 @@ class AuditController extends Controller
      */
     public function export(Request $request)
     {
+        $farmId = null;
+        
+        if (auth()->user()->is_super_user) {
+            $selectedFarmId = $request->get('farm_id', 'all');
+            if ($selectedFarmId !== 'all') {
+                $farmId = $selectedFarmId;
+            }
+        } else {
+            $farmId = $this->getCurrentFarmId();
+        }
+
         $query = Audit::query()
             ->with(['user'])
-            ->where('farm_id', $this->getCurrentFarmId())
             ->latest();
+            
+        // Apply farm filter
+        if ($farmId) {
+            $query->where('farm_id', $farmId);
+        }
 
         // Apply same filters as index
         if ($request->has('model') && $request->model) {
