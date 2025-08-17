@@ -40,16 +40,6 @@ const mainNavItems: NavItem[] = [
             href: '/rations',
             icon: IconFileText,
         },
-        {
-            title: 'Jejak Audit',
-            href: '/audits',
-            icon: History,
-        },
-        {
-            title: 'Log Masuk',
-            href: '/login-logs',
-            icon: LogIn,
-        }
             // {
             //     title: 'Produktivitas',
             //     href: '/dashboard',

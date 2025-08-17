@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, PlusCircle, X } from 'lucide-vue-next';
+import SecondSidebar from '@/components/SecondSidebar.vue';
 defineProps({
     herds: Array,
 });
@@ -130,18 +131,7 @@ function confirmDelete() {
 
         <div class="flex min-h-screen">
             <!-- Sidebar -->
-            <aside class="w-56 bg-teal-50 dark:bg-teal-950 p-2 shadow-xl -mt-2">
-                <nav class="space-y-2">
-                    <a :href="route('rations.index')"
-                        class="flex items-center gap-2 text-sm font-semibold hover:bg-primary hover:text-white rounded-full px-4 py-2 transition-colors">
-                        Pakan
-                    </a>
-                    <Link :href="route('herds.index')"
-                        class="flex items-center gap-2 text-sm font-semibold text-white bg-primary rounded-full px-4 py-2 transition-colors">
-                    Kandang
-                    </Link>
-                </nav>
-            </aside>
+            <SecondSidebar current-route="herds.index" />
 
             <div class="flex-1 flex flex-col gap-4 p-4 max-w-7xl mx-auto">
                 <div class="sm:rounded-lg">

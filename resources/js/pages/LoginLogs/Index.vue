@@ -36,6 +36,7 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from '@headlessui/vue';
+import SecondSidebar from '@/components/SecondSidebar.vue';
 
 interface LoginLog {
   id: number;
@@ -164,7 +165,17 @@ const handleFarmChange = (farmId: string) => {
   <Head title="Log Masuk" />
 
   <AppLayout>
-    <div class="max-w-7xl mx-auto space-y-6">
+    <template #header>
+      <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        Log Masuk
+      </h2>
+    </template>
+
+    <div class="flex min-h-screen">
+      <!-- Sidebar -->
+      <SecondSidebar current-route="login-logs.index" />
+
+      <div class="flex-1 flex flex-col gap-4 p-4 max-w-7xl mx-auto space-y-6">
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
@@ -413,6 +424,7 @@ const handleFarmChange = (farmId: string) => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   </AppLayout>
 </template>

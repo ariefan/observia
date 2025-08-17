@@ -2,6 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import SecondSidebar from '@/components/SecondSidebar.vue';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import {
     Tabs,
@@ -206,18 +207,7 @@ const months = [
 
         <div class="flex min-h-screen">
             <!-- Sidebar -->
-            <aside class="w-56 bg-teal-50 dark:bg-teal-950 p-2 shadow-xl -mt-2">
-                <nav class="space-y-2">
-                    <Link :href="route('rations.index')"
-                        class="flex items-center gap-2 text-sm font-semibold text-white bg-primary rounded-full px-4 py-2 transition-colors">
-                    Pakan
-                    </Link>
-                    <Link :href="route('herds.index')"
-                        class="flex items-center gap-2 text-sm font-semibold hover:bg-primary hover:text-white rounded-full px-4 py-2 transition-colors">
-                    Kandang
-                    </Link>
-                </nav>
-            </aside>
+            <SecondSidebar current-route="rations.index" />
 
             <div class="flex-1 flex flex-col gap-4 p-4 max-w-7xl mx-auto">
                 <Tabs :default-value="defaultTab" class="w-full">
