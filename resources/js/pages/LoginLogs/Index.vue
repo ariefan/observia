@@ -162,12 +162,12 @@ const handleFarmChange = (farmId: string) => {
 </script>
 
 <template>
-  <Head title="Log Masuk" />
+  <Head title="Riwayat Login" />
 
   <AppLayout>
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-        Log Masuk
+        Riwayat Login
       </h2>
     </template>
 
@@ -179,7 +179,7 @@ const handleFarmChange = (farmId: string) => {
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold tracking-tight">Log Masuk</h1>
+          <h1 class="text-2xl font-bold tracking-tight">Riwayat Login</h1>
           <p class="text-muted-foreground">
             {{ isSuperUser && selectedFarmObject?.name === 'Semua Peternakan' 
                 ? 'Lacak aktivitas masuk di seluruh peternakan' 
@@ -255,7 +255,7 @@ const handleFarmChange = (farmId: string) => {
         <CardHeader>
           <CardTitle class="text-lg">Filter</CardTitle>
           <CardDescription>
-            Filter log masuk berdasarkan event, tanggal, atau kata kunci
+            Filter riwayat login berdasarkan event, tanggal, atau kata kunci
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -337,7 +337,7 @@ const handleFarmChange = (farmId: string) => {
       <Card>
         <CardHeader>
           <CardTitle class="text-lg">
-            Log Masuk
+            Riwayat Login
             <span class="text-sm font-normal text-muted-foreground ml-2">
               ({{ loginLogs.data?.length || 0 }} catatan)
             </span>
@@ -397,7 +397,7 @@ const handleFarmChange = (farmId: string) => {
                 </TableRow>
                 <TableRow v-if="!loginLogs.data || loginLogs.data.length === 0">
                   <TableCell colspan="5" class="text-center py-8 text-muted-foreground">
-                    Tidak ada log masuk ditemukan
+                    Tidak ada riwayat login ditemukan
                   </TableCell>
                 </TableRow>
               </TableBody>

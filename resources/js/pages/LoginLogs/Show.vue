@@ -67,7 +67,7 @@ const formatDate = (date: string) => {
 </script>
 
 <template>
-  <Head :title="`Log Masuk #${loginLog.id}`" />
+  <Head :title="`Riwayat Login #${loginLog.id}`" />
 
   <AppLayout>
     <div class="max-w-7xl mx-auto space-y-6">
@@ -81,7 +81,7 @@ const formatDate = (date: string) => {
           </Link>
           <div>
             <h1 class="text-2xl font-bold tracking-tight">
-              Log Masuk #{{ loginLog.id }}
+              Riwayat Login #{{ loginLog.id }}
             </h1>
             <p class="text-muted-foreground">
               {{ loginLog.event_name || loginLog.event }} 

@@ -21,7 +21,7 @@ const navigationItems = [
     icon: IconHorse,
   },
   {
-    title: 'Log Masuk',
+    title: 'Riwayat Login',
     route: 'login-logs.index',
     icon: IconLock,
   },
