@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { History, LogIn } from 'lucide-vue-next';
-import { IconFileText, IconHorse, IconLock } from '@tabler/icons-vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { History, LogIn, Database } from 'lucide-vue-next';
+import { IconFileText, IconHorse, IconLock, IconDna } from '@tabler/icons-vue';
+import type { SharedData } from '@/types';
 
 interface Props {
   currentRoute?: string;
 }
 
 defineProps<Props>();
+
+const page = usePage<SharedData>();
 
 const navigationItems = [
   {
@@ -20,6 +23,22 @@ const navigationItems = [
     route: 'herds.index',
     icon: IconHorse,
   },
+  // Super user only items
+  ...(page.props.auth.user?.is_super_user
+    ? [
+        {
+          title: 'Spesies',
+          route: 'species.index',
+          icon: IconDna,
+        },
+        {
+          title: 'Ras',
+          route: 'breeds.index',
+          icon: Database,
+        },
+      ]
+    : []
+  ),
   {
     title: 'Riwayat Login',
     route: 'login-logs.index',
