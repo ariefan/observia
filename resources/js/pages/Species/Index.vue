@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Search, Plus, Edit2, Trash2 } from 'lucide-vue-next';
-import { ref } from 'vue';
-import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
+import { ref, watch } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import SecondSidebar from '@/components/SecondSidebar.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Species {
   id: string;
@@ -33,6 +35,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const search = ref(props.search || '');
+let searchTimeout: NodeJS.Timeout | null = null;
 
 const performSearch = () => {
   router.get(route('species.index'), { search: search.value }, { 
@@ -40,6 +43,14 @@ const performSearch = () => {
     replace: true 
   });
 };
+
+const debouncedSearch = () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(performSearch, 500);
+};
+
+// Watch for changes in search input
+watch(search, debouncedSearch);
 
 const deleteSpecies = (species: Species) => {
   if (species.livestocks_count > 0) {
@@ -56,37 +67,47 @@ const deleteSpecies = (species: Species) => {
 <template>
   <Head title="Manajemen Spesies" />
 
-  <AppHeaderLayout>
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Manajemen Spesies</h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Kelola spesies dan lihat statistik penggunaan ternak
-        </p>
-      </div>
-      <Link :href="route('species.create')">
-        <Button>
-          <Plus class="h-4 w-4 mr-2" />
-          Tambah Spesies
-        </Button>
-      </Link>
-    </div>
+  <AppLayout>
+    <template #header>
+      <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        Manajemen Spesies
+      </h2>
+    </template>
 
-    <div class="mt-6 bg-white dark:bg-gray-800 shadow-sm rounded-lg">
-      <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div class="relative max-w-md">
-          <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            v-model="search"
-            placeholder="Cari spesies..."
-            class="pl-10"
-            @keyup.enter="performSearch"
-          />
-        </div>
-      </div>
+    <div class="flex min-h-screen">
+      <!-- Sidebar -->
+      <SecondSidebar current-route="species.index" />
 
-      <div class="overflow-x-auto">
-        <Table>
+      <div class="flex-1 flex flex-col gap-4 p-4 max-w-7xl mx-auto">
+        <Card class="min-h-[600px]">
+          <CardHeader>
+            <div class="flex items-center justify-between">
+              <div>
+                <CardTitle>Manajemen Spesies</CardTitle>
+                <CardDescription>
+                  Kelola spesies dan lihat statistik penggunaan ternak
+                </CardDescription>
+              </div>
+              <Link :href="route('species.create')">
+                <Button>
+                  <Plus class="h-4 w-4 mr-2" />
+                  Tambah Spesies
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent class="space-y-2">
+            <div class="relative max-w-md mb-4">
+              <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                v-model="search"
+                placeholder="Cari spesies..."
+                class="pl-10"
+              />
+            </div>
+
+            <div class="relative overflow-x-auto sm:rounded-lg">
+              <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Nama</TableHead>
@@ -133,38 +154,41 @@ const deleteSpecies = (species: Species) => {
               </TableCell>
             </TableRow>
           </TableBody>
-        </Table>
-      </div>
+              </Table>
+            </div>
 
-      <div v-if="props.species.data.length === 0" class="text-center py-12">
-        <p class="text-gray-500 dark:text-gray-400">Tidak ada spesies ditemukan.</p>
-      </div>
+            <div v-if="props.species.data.length === 0" class="text-center py-12">
+              <p class="text-gray-500 dark:text-gray-400">Tidak ada spesies ditemukan.</p>
+            </div>
 
-      <!-- Pagination -->
-      <div v-if="props.species.last_page > 1" class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-        <div class="flex items-center justify-between">
-          <div class="text-sm text-gray-500 dark:text-gray-400">
-            Menampilkan {{ ((props.species.current_page - 1) * props.species.per_page) + 1 }} sampai 
-            {{ Math.min(props.species.current_page * props.species.per_page, props.species.total) }} 
-            dari {{ props.species.total }} hasil
-          </div>
-          <div class="flex gap-1">
-            <Link 
-              v-for="link in props.species.links" 
-              :key="link.label"
-              :href="link.url || '#'"
-              :class="[
-                'px-3 py-1 text-sm rounded',
-                link.active 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700',
-                !link.url && 'opacity-50 cursor-not-allowed'
-              ]"
-              v-html="link.label"
-            />
-          </div>
-        </div>
+            <!-- Pagination -->
+            <div v-if="props.species.last_page > 1" class="mt-4">
+              <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  Menampilkan {{ ((props.species.current_page - 1) * props.species.per_page) + 1 }} sampai 
+                  {{ Math.min(props.species.current_page * props.species.per_page, props.species.total) }} 
+                  dari {{ props.species.total }} hasil
+                </div>
+                <div class="flex gap-1">
+                  <Link 
+                    v-for="link in props.species.links" 
+                    :key="link.label"
+                    :href="link.url || '#'"
+                    :class="[
+                      'px-3 py-1 text-sm rounded',
+                      link.active 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700',
+                      !link.url && 'opacity-50 cursor-not-allowed'
+                    ]"
+                    v-html="link.label"
+                  />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
-  </AppHeaderLayout>
+  </AppLayout>
 </template>

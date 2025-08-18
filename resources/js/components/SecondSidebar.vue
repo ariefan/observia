@@ -34,7 +34,7 @@ const navigationItems = [
         {
           title: 'Ras',
           route: 'breeds.index',
-          icon: Database,
+          icon: IconDna,
         },
       ]
     : []
