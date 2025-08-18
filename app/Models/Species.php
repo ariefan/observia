@@ -20,4 +20,9 @@ class Species extends Model
     {
         return $this->hasMany(Breed::class);
     }
+
+    public function livestocks()
+    {
+        return $this->hasManyThrough(Livestock::class, Breed::class);
+    }
 }

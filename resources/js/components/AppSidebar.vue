@@ -5,12 +5,12 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { LayoutGrid, Home, Folder, BookOpen, Shield, History, LogIn, TrendingUp } from 'lucide-vue-next';
+import { LayoutGrid, Home, Folder, BookOpen, Shield, History, LogIn, TrendingUp, Database } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSidebar } from '@/components/ui/sidebar/utils';
 import type { SharedData } from '@/types';
-import { IconFileText, IconHorse } from '@tabler/icons-vue';
+import { IconFileText, IconHorse, IconDna } from '@tabler/icons-vue';
 
 const page = usePage<SharedData>();
 
@@ -21,6 +21,16 @@ const mainNavItems: NavItem[] = [
             title: 'Super Dashboard',
             href: '/super-dashboard',
             icon: Shield,
+        },
+        {
+            title: 'Species',
+            href: '/species',
+            icon: IconDna,
+        },
+        {
+            title: 'Breeds',
+            href: '/breeds',
+            icon: Database,
         }]
         : []
     ),

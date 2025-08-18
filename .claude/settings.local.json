@@ -15,8 +15,12 @@
       "Bash(rg:*)",
       "Bash(curl:*)",
       "Bash(taskkill:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(git add:*)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "C:\\c\\Users\\arief\\Herd"
+    ]
   }
 }

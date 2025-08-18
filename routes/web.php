@@ -48,6 +48,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/super-dashboard', [SuperDashboardController::class, 'index'])->name('super.dashboard');
     Route::post('/super-dashboard/create-superuser', [SuperDashboardController::class, 'createSuperUser'])->name('super.create-user');
     Route::delete('/super-dashboard/remove-superuser/{user}', [SuperDashboardController::class, 'removeSuperUser'])->name('super.remove-user');
+    
+    // Super admin only routes for Species and Breeds management
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::resource('species', \App\Http\Controllers\SpeciesController::class);
+        Route::resource('breeds', \App\Http\Controllers\BreedController::class);
+    });
 
     // Herds
     Route::get('/farms.logout', [HomeController::class, 'farmLogout'])->name('farms.logout');

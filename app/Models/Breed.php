@@ -20,4 +20,9 @@ class Breed extends Model
     {
         return $this->belongsTo(Species::class);
     }
+
+    public function livestocks()
+    {
+        return $this->hasMany(Livestock::class);
+    }
 }
