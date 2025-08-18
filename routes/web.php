@@ -14,6 +14,7 @@ use \App\Http\Controllers\HerdController;
 use App\Http\Controllers\SuperDashboardController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\LoginLogController;
+use App\Http\Controllers\ProduktivitasController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -90,6 +91,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/login-logs', [LoginLogController::class, 'index'])->name('login-logs.index');
     Route::get('/login-logs/export', [LoginLogController::class, 'export'])->name('login-logs.export');
     Route::get('/login-logs/{loginLog}', [LoginLogController::class, 'show'])->name('login-logs.show');
+
+    // Productivity Routes
+    Route::get('/productivity', [ProduktivitasController::class, 'susu'])->name('productivity.index');
+    Route::get('/productivity/milk', [ProduktivitasController::class, 'susu'])->name('productivity.milk');
+    Route::get('/productivity/weight', [ProduktivitasController::class, 'bobot'])->name('productivity.weight');
 
     Route::resources([
         'farms' => FarmController::class,

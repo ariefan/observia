@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { LayoutGrid, Home, Folder, BookOpen, Shield, History, LogIn } from 'lucide-vue-next';
+import { LayoutGrid, Home, Folder, BookOpen, Shield, History, LogIn, TrendingUp } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSidebar } from '@/components/ui/sidebar/utils';
@@ -36,15 +36,15 @@ const mainNavItems: NavItem[] = [
             icon: IconHorse,
         },
         {
+            title: 'Produktivitas',
+            href: '/productivity',
+            icon: TrendingUp,
+        },
+        {
             title: 'Data',
             href: '/rations',
             icon: IconFileText,
         },
-            // {
-            //     title: 'Produktivitas',
-            //     href: '/dashboard',
-            //     icon: ChartLine,
-            // },
             // {
             //     title: 'Transaksi',
             //     href: '/dashboard',
