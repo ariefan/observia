@@ -181,6 +181,11 @@ class Livestock extends Model
         return $this->belongsTo(Livestock::class, 'female_parent_id')->withDefault();
     }
 
+    public function endings(): HasMany
+    {
+        return $this->hasMany(LivestockEnding::class);
+    }
+
     protected static function boot()
     {
         parent::boot();

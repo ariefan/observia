@@ -49,6 +49,7 @@ const props = defineProps<{
   totalRanked?: number;
   feedingHistory?: any[];
   pedigreeData?: any[];
+  latestEnding?: any;
 }>();
 
 // Breadcrumb navigation
@@ -64,6 +65,21 @@ const deleteLivestock = () => {
     router.delete(route('livestocks.destroy', props.livestock.id));
   }
 }
+
+// Helper function to get status badge variant and label
+const getEndingStatusInfo = () => {
+  if (!props.latestEnding) return null;
+  
+  const statusMap = {
+    'sold': { label: 'Dijual', variant: 'default' },
+    'gifted': { label: 'Hibah', variant: 'secondary' },
+    'loaned': { label: 'Dipinjam', variant: 'outline' },
+    'died': { label: 'Mati', variant: 'destructive' },
+    'slaughtered': { label: 'Dipotong', variant: 'destructive' },
+  };
+  
+  return statusMap[props.latestEnding.ending_status] || { label: props.latestEnding.ending_status, variant: 'secondary' };
+};
 
 // Data for health and feed history
 const healthData = [
@@ -280,6 +296,9 @@ const milkingTrend = computed(() => {
               <h1 class="text-2xl font-bold tracking-tight">{{ livestock.name }}</h1>
               <Badge :variant="livestock.status.value == 1 ? 'default' : 'destructive'">
                 {{ livestock.tag_id }}</Badge>
+              <Badge v-if="latestEnding" :variant="getEndingStatusInfo()?.variant as any" class="ml-2">
+                {{ getEndingStatusInfo()?.label }}
+              </Badge>
             </div>
             <div class="flex items-center gap-2">
               <p class="text-muted-foreground">{{ livestock.breed.species.name }} - {{ livestock.breed.name }}</p>
@@ -320,10 +339,10 @@ const milkingTrend = computed(() => {
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem as-child>
-                <div class="flex items-center gap-2">
+                <Link :href="route('livestock-endings.create', { livestock_id: livestock.id })" class="flex items-center gap-2">
                   <Skull class="h-4 w-4" />
                   <span>Data end</span>
-                </div>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem @click="deleteLivestock" class="flex items-center gap-2 text-red-600">
                 <Trash2 class="h-4 w-4" />

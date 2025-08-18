@@ -31,30 +31,76 @@ class LivestockController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $currentFarmId = $this->getCurrentFarmId();
         
         if (!$currentFarmId) {
             return Inertia::render('livestocks/Index', [
-                'livestocks' => collect([]),
+                'livestocks' => [
+                    'data' => [],
+                    'links' => [],
+                    'total' => 0,
+                ],
                 'male_count' => 0,
                 'female_count' => 0,
+                'filters' => [],
             ]);
         }
         
-        $livestocks = Livestock::query()
+        $query = Livestock::query()
             ->where('farm_id', $currentFarmId)
-            ->with('breed')
-            ->get();
+            ->with(['breed.species'])
+            ->orderBy('created_at', 'desc');
 
-        $male_count = $livestocks->where('sex', 'M')->count();
-        $female_count = $livestocks->where('sex', 'F')->count();
+        // Filter by status - only show active livestock unless specifically filtering for ended ones
+        if ($request->filled('status')) {
+            if ($request->status === 'ended') {
+                // Show livestock that have endings
+                $query->whereHas('endings');
+            } else if ($request->status === 'active') {
+                // Show only active livestock
+                $query->where('status', 1);
+            }
+        } else {
+            // Default: only show active livestock
+            $query->where('status', 1);
+        }
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('aifarm_id', 'like', "%{$search}%")
+                  ->orWhere('tag_id', 'like', "%{$search}%")
+                  ->orWhereHas('breed', function ($breedQuery) use ($search) {
+                      $breedQuery->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Gender filter
+        if ($request->filled('gender') && in_array($request->gender, ['M', 'F'])) {
+            $query->where('sex', $request->gender);
+        }
+
+        // Paginate results
+        $livestocks = $query->paginate(12)->withQueryString();
+
+        // Get counts for active livestock only
+        $activeLivestocks = Livestock::where('farm_id', $currentFarmId)
+            ->where('status', 1)
+            ->get();
+        
+        $male_count = $activeLivestocks->where('sex', 'M')->count();
+        $female_count = $activeLivestocks->where('sex', 'F')->count();
 
         return Inertia::render('livestocks/Index', [
             'livestocks' => $livestocks,
             'male_count' => $male_count,
             'female_count' => $female_count,
+            'filters' => $request->only(['search', 'gender', 'status']),
         ]);
     }
 
@@ -232,6 +278,11 @@ class LivestockController extends Controller
         // Get pedigree data
         $pedigreeData = \App\Models\Livestock::pedigree($livestock->id);
 
+        // Get latest livestock ending (if any)
+        $latestEnding = $livestock->endings()
+            ->orderBy('ending_date', 'desc')
+            ->first();
+
         return Inertia::render('livestocks/Show', [
             'livestock' => $livestock,
             'weightHistory' => $weightHistory,
@@ -241,6 +292,7 @@ class LivestockController extends Controller
             'totalRanked' => $totalRanked,
             'feedingHistory' => $feedingHistory,
             'pedigreeData' => $pedigreeData,
+            'latestEnding' => $latestEnding,
         ]);
     }
 

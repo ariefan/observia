@@ -209,8 +209,8 @@ class FarmController extends Controller
     {
         $user = auth()->user();
 
-        // Check if the farm belongs to the user
-        if (!$user->farms()->where('farms.id', $farm->id)->exists()) {
+        // Check if the farm belongs to the user (skip this check for super users)
+        if (!$user->is_super_user && !$user->farms()->where('farms.id', $farm->id)->exists()) {
             return redirect()->route('farms.index')->with('error', 'Anda tidak memiliki akses ke peternakan ini.');
         }
 

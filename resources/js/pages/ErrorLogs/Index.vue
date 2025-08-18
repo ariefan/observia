@@ -28,7 +28,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Download, Eye, Calendar, User, Bug, ChevronsUpDown } from 'lucide-vue-next';
+import { Search, Download, Eye, Calendar, User, Bug, ChevronsUpDown, Check } from 'lucide-vue-next';
 import {
   Combobox,
   ComboboxButton,
@@ -248,7 +248,7 @@ const handleFarmChange = (farmId: string) => {
                         active ? 'text-accent-foreground' : 'text-primary',
                       ]"
                     >
-                      ✓
+                      <Check class="h-4 w-4" aria-hidden="true" />
                     </span>
                   </li>
                 </ComboboxOption>

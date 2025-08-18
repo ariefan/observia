@@ -48,9 +48,15 @@ class HandleInertiaRequests extends Middleware
                 }
             ]);
 
-            $userFarms = $user->farms()
-                ->select('farms.id', 'farms.name', 'farms.picture')
-                ->get();
+            if ($user->is_super_user) {
+                // Super users can see all farms
+                $userFarms = \App\Models\Farm::select('id', 'name', 'picture')->get();
+            } else {
+                // Regular users only see their associated farms
+                $userFarms = $user->farms()
+                    ->select('farms.id', 'farms.name', 'farms.picture')
+                    ->get();
+            }
 
             if ($user->current_farm_id) {
                 // Get pivot role from many-to-many

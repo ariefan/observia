@@ -44,13 +44,13 @@ interface Props {
 const props = defineProps<Props>();
 
 const search = ref(props.search || '');
-const speciesFilter = ref(props.speciesFilter || '');
+const speciesFilter = ref(props.speciesFilter || 'all');
 let searchTimeout: NodeJS.Timeout | null = null;
 
 const performSearch = () => {
   router.get(route('breeds.index'), { 
     search: search.value,
-    species_id: speciesFilter.value || undefined
+    species_id: speciesFilter.value === 'all' ? undefined : speciesFilter.value
   }, { 
     preserveState: true,
     replace: true 
@@ -68,7 +68,7 @@ watch(speciesFilter, performSearch);
 
 const clearFilters = () => {
   search.value = '';
-  speciesFilter.value = '';
+  speciesFilter.value = 'all';
   router.get(route('breeds.index'));
 };
 
@@ -133,7 +133,7 @@ const deleteBreed = (breed: Breed) => {
                     <SelectValue placeholder="Filter berdasarkan spesies" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Semua Spesies</SelectItem>
+                    <SelectItem value="all">Semua Spesies</SelectItem>
                     <SelectItem v-for="species in props.species" :key="species.id" :value="species.id">
                       {{ species.name }}
                     </SelectItem>

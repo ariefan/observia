@@ -112,6 +112,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resources([
         'farms' => FarmController::class,
         'livestocks' => LivestockController::class,
+        'livestock-endings' => \App\Http\Controllers\LivestockEndingController::class,
         'herds' => HerdController::class,
         'rations' => RationController::class,
         'feeds' => FeedController::class,

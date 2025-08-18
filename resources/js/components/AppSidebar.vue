@@ -24,6 +24,7 @@ const mainNavItems: NavItem[] = [
         }]
         : []
     ),
+    // Farm-dependent menu items (require current_farm_id)
     ...(page.props.auth.farms && page.props.auth.user.current_farm_id
         ? [{
             title: 'Dashboard',
@@ -39,29 +40,26 @@ const mainNavItems: NavItem[] = [
             title: 'Produktivitas',
             href: '/productivity',
             icon: TrendingUp,
-        },
-        {
+        }]
+        : []
+    ),
+    // Data menu - available for super users without farm context, or regular users with farm context
+    ...(page.props.auth.user?.is_super_user || (page.props.auth.farms && page.props.auth.user.current_farm_id)
+        ? [{
             title: 'Data',
             href: '/rations',
             icon: IconFileText,
-        },
-            // {
-            //     title: 'Transaksi',
-            //     href: '/dashboard',
-            //     icon: ArrowLeftRight,
-            // },
-            // {
-            //     title: 'Breeding',
-            //     href: '/dashboard',
-            //     icon: Heart,
-            // },
-        ]
-        :
-        [{
+        }]
+        : []
+    ),
+    // Home menu for users without farm context (non-super users)
+    ...(!page.props.auth.user?.is_super_user && (!page.props.auth.farms || !page.props.auth.user.current_farm_id)
+        ? [{
             title: 'Home',
             href: '/home',
             icon: Home,
         }]
+        : []
     ),
 ];
 

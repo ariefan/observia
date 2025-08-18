@@ -43,6 +43,7 @@ export interface User {
     current_farm_id: string | null;
     current_farm?: Farm;
     farms: Farm[] | null;
+    is_super_user?: boolean;
     created_at: string;
     updated_at: string;
 }
