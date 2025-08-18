@@ -14,6 +14,7 @@ use \App\Http\Controllers\HerdController;
 use App\Http\Controllers\SuperDashboardController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\LoginLogController;
+use App\Http\Controllers\ErrorLogController;
 use App\Http\Controllers\ProduktivitasController;
 
 Route::get('/', function () {
@@ -92,6 +93,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/audits/export', [AuditController::class, 'export'])->name('audits.export');
     Route::get('/audits/{audit}', [AuditController::class, 'show'])->name('audits.show');
     Route::get('/api/audits/{modelType}/{modelId}', [AuditController::class, 'model'])->name('audits.model');
+
+    // Error Log Routes (Super User Only)
+    Route::get('/error-logs', [ErrorLogController::class, 'index'])->name('error-logs.index');
+    Route::get('/error-logs/export', [ErrorLogController::class, 'export'])->name('error-logs.export');
+    Route::get('/error-logs/{errorLog}', [ErrorLogController::class, 'show'])->name('error-logs.show');
 
     // Login Log Routes
     Route::get('/login-logs', [LoginLogController::class, 'index'])->name('login-logs.index');

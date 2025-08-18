@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { History, LogIn, Database } from 'lucide-vue-next';
-import { IconFileText, IconHorse, IconLock, IconDna } from '@tabler/icons-vue';
+import { IconFileText, IconHorse, IconLock, IconDna, IconBug } from '@tabler/icons-vue';
 import type { SharedData } from '@/types';
 
 interface Props {
@@ -35,6 +35,11 @@ const navigationItems = [
           title: 'Ras',
           route: 'breeds.index',
           icon: IconDna,
+        },
+        {
+          title: 'Riwayat Error',
+          route: 'error-logs.index',
+          icon: IconBug,
         },
       ]
     : []
