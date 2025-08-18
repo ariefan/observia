@@ -279,10 +279,10 @@ const getTruncatedValue = (value: any): string => {
             <CardHeader>
               <CardTitle class="flex items-center space-x-2">
                 <FileText class="h-5 w-5" />
-                <span>Created Data</span>
+                <span>Data yang Dibuat</span>
               </CardTitle>
               <CardDescription>
-                All data that was set when this record was created
+                Semua data yang ditetapkan saat record ini dibuat
               </CardDescription>
             </CardHeader>
             <CardContent>
