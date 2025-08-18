@@ -21,7 +21,8 @@
     ],
     "deny": [],
     "additionalDirectories": [
-      "C:\\c\\Users\\arief\\Herd"
+      "C:\\c\\Users\\arief\\Herd",
+      "C:\\c"
     ]
   }
 }
