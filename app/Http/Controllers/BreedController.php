@@ -13,16 +13,21 @@ class BreedController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(function ($request, $next) {
-            if (!auth()->user()->is_super_user) {
-                abort(403, 'Access denied. Super user privileges required.');
-            }
-            return $next($request);
-        });
+        $this->middleware('auth');
+        $this->middleware('verified');
+    }
+
+    private function checkSuperUser()
+    {
+        if (!auth()->user()->is_super_user) {
+            abort(403, 'Akses ditolak. Diperlukan hak akses super user.');
+        }
     }
 
     public function index(Request $request)
     {
+        $this->checkSuperUser();
+        
         $search = $request->get('search');
         $speciesFilter = $request->get('species_id');
         
@@ -52,6 +57,8 @@ class BreedController extends Controller
 
     public function create()
     {
+        $this->checkSuperUser();
+        
         $species = Species::orderBy('name')->get();
 
         return Inertia::render('Breeds/Create', [
@@ -61,14 +68,18 @@ class BreedController extends Controller
 
     public function store(StoreBreedRequest $request)
     {
+        $this->checkSuperUser();
+        
         Breed::create($request->validated());
 
         return redirect()->route('breeds.index')
-            ->with('success', 'Breed created successfully.');
+            ->with('success', 'Ras berhasil dibuat.');
     }
 
     public function show(Breed $breed)
     {
+        $this->checkSuperUser();
+        
         $breed->load(['species', 'livestocks']);
         
         return Inertia::render('Breeds/Show', [
@@ -78,6 +89,8 @@ class BreedController extends Controller
 
     public function edit(Breed $breed)
     {
+        $this->checkSuperUser();
+        
         $breed->load('species');
         $species = Species::orderBy('name')->get();
 
@@ -89,24 +102,28 @@ class BreedController extends Controller
 
     public function update(UpdateBreedRequest $request, Breed $breed)
     {
+        $this->checkSuperUser();
+        
         $breed->update($request->validated());
 
         return redirect()->route('breeds.index')
-            ->with('success', 'Breed updated successfully.');
+            ->with('success', 'Ras berhasil diperbarui.');
     }
 
     public function destroy(Breed $breed)
     {
+        $this->checkSuperUser();
+        
         $livestockCount = $breed->livestocks()->count();
 
         if ($livestockCount > 0) {
             return redirect()->back()
-                ->with('error', "Cannot delete breed. {$livestockCount} livestock records are using this breed.");
+                ->with('error', "Tidak dapat menghapus ras. {$livestockCount} catatan ternak menggunakan ras ini.");
         }
 
         $breed->delete();
 
         return redirect()->route('breeds.index')
-            ->with('success', 'Breed deleted successfully.');
+            ->with('success', 'Ras berhasil dihapus.');
     }
 }

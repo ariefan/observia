@@ -23,12 +23,12 @@ const mainNavItems: NavItem[] = [
             icon: Shield,
         },
         {
-            title: 'Species',
+            title: 'Spesies',
             href: '/species',
             icon: IconDna,
         },
         {
-            title: 'Breeds',
+            title: 'Ras',
             href: '/breeds',
             icon: Database,
         }]

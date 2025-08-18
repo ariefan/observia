@@ -43,31 +43,31 @@ const performSearch = () => {
 
 const deleteSpecies = (species: Species) => {
   if (species.livestocks_count > 0) {
-    alert(`Cannot delete species. ${species.livestocks_count} livestock records are using this species.`);
+    alert(`Tidak dapat menghapus spesies. ${species.livestocks_count} catatan ternak menggunakan spesies ini.`);
     return;
   }
   
-  if (confirm(`Are you sure you want to delete ${species.name}?`)) {
+  if (confirm(`Apakah Anda yakin ingin menghapus ${species.name}?`)) {
     router.delete(route('species.destroy', species.id));
   }
 };
 </script>
 
 <template>
-  <Head title="Species Management" />
+  <Head title="Manajemen Spesies" />
 
   <AppHeaderLayout>
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Species Management</h1>
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Manajemen Spesies</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Manage species and view livestock usage statistics
+          Kelola spesies dan lihat statistik penggunaan ternak
         </p>
       </div>
       <Link :href="route('species.create')">
         <Button>
           <Plus class="h-4 w-4 mr-2" />
-          Add Species
+          Tambah Spesies
         </Button>
       </Link>
     </div>
@@ -78,7 +78,7 @@ const deleteSpecies = (species: Species) => {
           <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             v-model="search"
-            placeholder="Search species..."
+            placeholder="Cari spesies..."
             class="pl-10"
             @keyup.enter="performSearch"
           />
@@ -89,13 +89,13 @@ const deleteSpecies = (species: Species) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Binomial Nomenclature</TableHead>
-              <TableHead>Breeds</TableHead>
-              <TableHead>Livestock Count</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead class="text-right">Actions</TableHead>
+              <TableHead>Nama</TableHead>
+              <TableHead>Kode</TableHead>
+              <TableHead>Nama Ilmiah</TableHead>
+              <TableHead>Ras</TableHead>
+              <TableHead>Jumlah Ternak</TableHead>
+              <TableHead>Dibuat</TableHead>
+              <TableHead class="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -105,10 +105,10 @@ const deleteSpecies = (species: Species) => {
                 <Badge variant="outline">{{ species.code }}</Badge>
               </TableCell>
               <TableCell class="italic">{{ species.binomial_nomenclature }}</TableCell>
-              <TableCell>{{ species.breeds_count }} breeds</TableCell>
+              <TableCell>{{ species.breeds_count }} ras</TableCell>
               <TableCell>
                 <Badge :variant="species.livestocks_count > 0 ? 'default' : 'secondary'">
-                  {{ species.livestocks_count }} livestock
+                  {{ species.livestocks_count }} ternak
                 </Badge>
               </TableCell>
               <TableCell class="text-gray-500">
@@ -137,16 +137,16 @@ const deleteSpecies = (species: Species) => {
       </div>
 
       <div v-if="props.species.data.length === 0" class="text-center py-12">
-        <p class="text-gray-500 dark:text-gray-400">No species found.</p>
+        <p class="text-gray-500 dark:text-gray-400">Tidak ada spesies ditemukan.</p>
       </div>
 
       <!-- Pagination -->
       <div v-if="props.species.last_page > 1" class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between">
           <div class="text-sm text-gray-500 dark:text-gray-400">
-            Showing {{ ((props.species.current_page - 1) * props.species.per_page) + 1 }} to 
+            Menampilkan {{ ((props.species.current_page - 1) * props.species.per_page) + 1 }} sampai 
             {{ Math.min(props.species.current_page * props.species.per_page, props.species.total) }} 
-            of {{ props.species.total }} results
+            dari {{ props.species.total }} hasil
           </div>
           <div class="flex gap-1">
             <Link 

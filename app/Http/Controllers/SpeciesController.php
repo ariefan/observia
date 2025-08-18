@@ -13,16 +13,21 @@ class SpeciesController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(function ($request, $next) {
-            if (!auth()->user()->is_super_user) {
-                abort(403, 'Access denied. Super admin privileges required.');
-            }
-            return $next($request);
-        });
+        $this->middleware('auth');
+        $this->middleware('verified');
+    }
+
+    private function checkSuperUser()
+    {
+        if (!auth()->user()->is_super_user) {
+            abort(403, 'Akses ditolak. Diperlukan hak akses super user.');
+        }
     }
 
     public function index(Request $request)
     {
+        $this->checkSuperUser();
+        
         $search = $request->get('search');
         
         $species = Species::withCount(['breeds', 'livestocks' => function($query) {
@@ -45,19 +50,25 @@ class SpeciesController extends Controller
 
     public function create()
     {
+        $this->checkSuperUser();
+        
         return Inertia::render('Species/Create');
     }
 
     public function store(StoreSpeciesRequest $request)
     {
+        $this->checkSuperUser();
+        
         Species::create($request->validated());
 
         return redirect()->route('species.index')
-            ->with('success', 'Species created successfully.');
+            ->with('success', 'Spesies berhasil dibuat.');
     }
 
     public function show(Species $species)
     {
+        $this->checkSuperUser();
+        
         $species->load(['breeds' => function($query) {
             $query->withCount('livestocks');
         }]);
@@ -74,6 +85,8 @@ class SpeciesController extends Controller
 
     public function edit(Species $species)
     {
+        $this->checkSuperUser();
+        
         return Inertia::render('Species/Edit', [
             'species' => $species,
         ]);
@@ -81,26 +94,30 @@ class SpeciesController extends Controller
 
     public function update(UpdateSpeciesRequest $request, Species $species)
     {
+        $this->checkSuperUser();
+        
         $species->update($request->validated());
 
         return redirect()->route('species.index')
-            ->with('success', 'Species updated successfully.');
+            ->with('success', 'Spesies berhasil diperbarui.');
     }
 
     public function destroy(Species $species)
     {
+        $this->checkSuperUser();
+        
         $livestockCount = Livestock::whereHas('breed', function($query) use ($species) {
             $query->where('species_id', $species->id);
         })->count();
 
         if ($livestockCount > 0) {
             return redirect()->back()
-                ->with('error', "Cannot delete species. {$livestockCount} livestock records are using this species.");
+                ->with('error', "Tidak dapat menghapus spesies. {$livestockCount} catatan ternak menggunakan spesies ini.");
         }
 
         $species->delete();
 
         return redirect()->route('species.index')
-            ->with('success', 'Species deleted successfully.');
+            ->with('success', 'Spesies berhasil dihapus.');
     }
 }

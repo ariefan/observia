@@ -32,18 +32,18 @@ const submit = () => {
 </script>
 
 <template>
-  <Head title="Edit Species" />
+  <Head title="Edit Spesies" />
 
   <AppHeaderLayout>
     <div class="flex items-center gap-4">
       <Button variant="ghost" size="sm" @click="$inertia.visit(route('species.index'))">
         <ArrowLeft class="h-4 w-4 mr-2" />
-        Back to Species
+        Kembali ke Spesies
       </Button>
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Edit Species</h1>
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Edit Spesies</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Update {{ props.species.name }} information
+          Perbarui informasi {{ props.species.name }}
         </p>
       </div>
     </div>
@@ -51,12 +51,12 @@ const submit = () => {
     <div class="mt-6 max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>Species Information</CardTitle>
+          <CardTitle>Informasi Spesies</CardTitle>
         </CardHeader>
         <CardContent>
           <form @submit.prevent="submit" class="space-y-6">
             <div class="space-y-2">
-              <Label for="name">Species Name *</Label>
+              <Label for="name">Nama Spesies *</Label>
               <Input
                 id="name"
                 v-model="form.name"
@@ -70,7 +70,7 @@ const submit = () => {
             </div>
 
             <div class="space-y-2">
-              <Label for="code">Species Code *</Label>
+              <Label for="code">Kode Spesies *</Label>
               <Input
                 id="code"
                 v-model="form.code"
@@ -84,7 +84,7 @@ const submit = () => {
             </div>
 
             <div class="space-y-2">
-              <Label for="binomial_nomenclature">Binomial Nomenclature</Label>
+              <Label for="binomial_nomenclature">Nama Ilmiah</Label>
               <Input
                 id="binomial_nomenclature"
                 v-model="form.binomial_nomenclature"
@@ -98,14 +98,14 @@ const submit = () => {
 
             <div class="flex gap-4 pt-4">
               <Button type="submit" :disabled="form.processing">
-                {{ form.processing ? 'Updating...' : 'Update Species' }}
+                {{ form.processing ? 'Memperbarui...' : 'Perbarui Spesies' }}
               </Button>
               <Button 
                 type="button" 
                 variant="outline" 
                 @click="$inertia.visit(route('species.index'))"
               >
-                Cancel
+                Batal
               </Button>
             </div>
           </form>

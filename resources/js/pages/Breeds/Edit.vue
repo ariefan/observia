@@ -45,18 +45,18 @@ const submit = () => {
 </script>
 
 <template>
-  <Head title="Edit Breed" />
+  <Head title="Edit Ras" />
 
   <AppHeaderLayout>
     <div class="flex items-center gap-4">
       <Button variant="ghost" size="sm" @click="$inertia.visit(route('breeds.index'))">
         <ArrowLeft class="h-4 w-4 mr-2" />
-        Back to Breeds
+        Kembali ke Ras
       </Button>
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Edit Breed</h1>
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Edit Ras</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Update {{ props.breed.name }} information
+          Perbarui informasi {{ props.breed.name }}
         </p>
       </div>
     </div>
@@ -64,15 +64,15 @@ const submit = () => {
     <div class="mt-6 max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>Breed Information</CardTitle>
+          <CardTitle>Informasi Ras</CardTitle>
         </CardHeader>
         <CardContent>
           <form @submit.prevent="submit" class="space-y-6">
             <div class="space-y-2">
-              <Label for="species_id">Species *</Label>
+              <Label for="species_id">Spesies *</Label>
               <Select v-model="form.species_id" required>
                 <SelectTrigger :class="{ 'border-red-500': form.errors.species_id }">
-                  <SelectValue placeholder="Select species" />
+                  <SelectValue placeholder="Pilih spesies" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem v-for="species in props.species" :key="species.id" :value="species.id">
@@ -86,7 +86,7 @@ const submit = () => {
             </div>
 
             <div class="space-y-2">
-              <Label for="name">Breed Name *</Label>
+              <Label for="name">Nama Ras *</Label>
               <Input
                 id="name"
                 v-model="form.name"
@@ -100,7 +100,7 @@ const submit = () => {
             </div>
 
             <div class="space-y-2">
-              <Label for="code">Breed Code *</Label>
+              <Label for="code">Kode Ras *</Label>
               <Input
                 id="code"
                 v-model="form.code"
@@ -114,7 +114,7 @@ const submit = () => {
             </div>
 
             <div class="space-y-2">
-              <Label for="origin">Origin</Label>
+              <Label for="origin">Asal</Label>
               <Input
                 id="origin"
                 v-model="form.origin"
@@ -127,7 +127,7 @@ const submit = () => {
             </div>
 
             <div class="space-y-2">
-              <Label for="description">Description</Label>
+              <Label for="description">Deskripsi</Label>
               <Textarea
                 id="description"
                 v-model="form.description"
@@ -141,14 +141,14 @@ const submit = () => {
 
             <div class="flex gap-4 pt-4">
               <Button type="submit" :disabled="form.processing">
-                {{ form.processing ? 'Updating...' : 'Update Breed' }}
+                {{ form.processing ? 'Memperbarui...' : 'Perbarui Ras' }}
               </Button>
               <Button 
                 type="button" 
                 variant="outline" 
                 @click="$inertia.visit(route('breeds.index'))"
               >
-                Cancel
+                Batal
               </Button>
             </div>
           </form>

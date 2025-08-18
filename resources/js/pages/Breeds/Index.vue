@@ -62,31 +62,31 @@ const clearFilters = () => {
 
 const deleteBreed = (breed: Breed) => {
   if (breed.livestocks_count > 0) {
-    alert(`Cannot delete breed. ${breed.livestocks_count} livestock records are using this breed.`);
+    alert(`Tidak dapat menghapus ras. ${breed.livestocks_count} catatan ternak menggunakan ras ini.`);
     return;
   }
   
-  if (confirm(`Are you sure you want to delete ${breed.name}?`)) {
+  if (confirm(`Apakah Anda yakin ingin menghapus ${breed.name}?`)) {
     router.delete(route('breeds.destroy', breed.id));
   }
 };
 </script>
 
 <template>
-  <Head title="Breed Management" />
+  <Head title="Manajemen Ras" />
 
   <AppHeaderLayout>
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Breed Management</h1>
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Manajemen Ras</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Manage breeds and view livestock usage statistics
+          Kelola ras dan lihat statistik penggunaan ternak
         </p>
       </div>
       <Link :href="route('breeds.create')">
         <Button>
           <Plus class="h-4 w-4 mr-2" />
-          Add Breed
+          Tambah Ras
         </Button>
       </Link>
     </div>
@@ -98,7 +98,7 @@ const deleteBreed = (breed: Breed) => {
             <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               v-model="search"
-              placeholder="Search breeds..."
+              placeholder="Cari ras..."
               class="pl-10"
               @keyup.enter="performSearch"
             />
@@ -107,10 +107,10 @@ const deleteBreed = (breed: Breed) => {
           <div class="min-w-[200px]">
             <Select v-model="speciesFilter">
               <SelectTrigger>
-                <SelectValue placeholder="Filter by species" />
+                <SelectValue placeholder="Filter berdasarkan spesies" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Species</SelectItem>
+                <SelectItem value="">Semua Spesies</SelectItem>
                 <SelectItem v-for="species in props.species" :key="species.id" :value="species.id">
                   {{ species.name }}
                 </SelectItem>
@@ -124,7 +124,7 @@ const deleteBreed = (breed: Breed) => {
           </Button>
           
           <Button variant="outline" @click="clearFilters">
-            Clear
+            Bersihkan
           </Button>
         </div>
       </div>
@@ -133,13 +133,13 @@ const deleteBreed = (breed: Breed) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Species</TableHead>
-              <TableHead>Origin</TableHead>
-              <TableHead>Livestock Count</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead class="text-right">Actions</TableHead>
+              <TableHead>Nama</TableHead>
+              <TableHead>Kode</TableHead>
+              <TableHead>Spesies</TableHead>
+              <TableHead>Asal</TableHead>
+              <TableHead>Jumlah Ternak</TableHead>
+              <TableHead>Dibuat</TableHead>
+              <TableHead class="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -152,7 +152,7 @@ const deleteBreed = (breed: Breed) => {
               <TableCell>{{ breed.origin }}</TableCell>
               <TableCell>
                 <Badge :variant="breed.livestocks_count > 0 ? 'default' : 'secondary'">
-                  {{ breed.livestocks_count }} livestock
+                  {{ breed.livestocks_count }} ternak
                 </Badge>
               </TableCell>
               <TableCell class="text-gray-500">
@@ -181,16 +181,16 @@ const deleteBreed = (breed: Breed) => {
       </div>
 
       <div v-if="props.breeds.data.length === 0" class="text-center py-12">
-        <p class="text-gray-500 dark:text-gray-400">No breeds found.</p>
+        <p class="text-gray-500 dark:text-gray-400">Tidak ada ras ditemukan.</p>
       </div>
 
       <!-- Pagination -->
       <div v-if="props.breeds.last_page > 1" class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between">
           <div class="text-sm text-gray-500 dark:text-gray-400">
-            Showing {{ ((props.breeds.current_page - 1) * props.breeds.per_page) + 1 }} to 
+            Menampilkan {{ ((props.breeds.current_page - 1) * props.breeds.per_page) + 1 }} sampai 
             {{ Math.min(props.breeds.current_page * props.breeds.per_page, props.breeds.total) }} 
-            of {{ props.breeds.total }} results
+            dari {{ props.breeds.total }} hasil
           </div>
           <div class="flex gap-1">
             <Link 
