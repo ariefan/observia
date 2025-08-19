@@ -59,25 +59,25 @@ const auth = computed(() => page.props.auth);
     <Head title="Dashboard" />
 
     <AppLayout>
-        <div class="max-w-7xl mx-auto flex h-full flex-1 flex-col gap-4 p-4">
-            <div class="min-h-screen">
+        <div class="w-full max-w-7xl mx-auto flex h-full flex-1 flex-col gap-4 p-2 md:p-4 overflow-x-hidden">
+            <div class="min-h-screen pb-20 md:pb-0 w-full">
                 <Card class="bg-primary text-white">
-                    <CardHeader class="pt-4 pb-2">
+                    <CardHeader class="pt-3 pb-2 px-3 md:pt-4 md:px-6">
                         <CardTitle class="flex justify-between items-center">
-                            <div class="text-lg md:text-xl">
+                            <div class="text-base md:text-lg lg:text-xl">
                                 Hi, {{ auth.user.name }}
                             </div>
-                            <div class="text-sm md:text-base lg:text-lg">
+                            <div class="text-xs md:text-sm lg:text-base xl:text-lg">
                                 <RealtimeClock class="text-white" />
                             </div>
                         </CardTitle>
                     </CardHeader>
 
-                    <CardContent>
+                    <CardContent class="px-3 md:px-6">
                         <!-- Notification Banner -->
-                        <div class="flex items-center space-x-4 bg-teal-800 rounded-xl p-3 mb-4">
-                            <div>{{ props.notification?.emoji || '😊' }}</div>
-                            <p>
+                        <div class="flex items-center space-x-2 md:space-x-4 bg-teal-800 rounded-xl p-2 md:p-3 mb-3 md:mb-4">
+                            <div class="text-lg md:text-xl">{{ props.notification?.emoji || '😊' }}</div>
+                            <p class="text-sm md:text-base">
                                 {{ props.notification?.message || 'Selamat datang di dashboard peternakan Anda!' }}
                             </p>
                         </div>
@@ -109,50 +109,50 @@ const auth = computed(() => page.props.auth);
                         </div>
 
                         <!-- Goat and Milk Stats -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 w-full">
                             <!-- Milk Section -->
-                            <Card class="rounded-2xl">
+                            <Card class="rounded-xl md:rounded-2xl">
                                 <CardHeader
-                                    class="bg-cyan-500 dark:bg-cyan-200 text-white dark:text-black rounded-t-xl px-4 py-2 flex items-left gap-2">
-                                    <span>Susu</span>
+                                    class="bg-cyan-500 dark:bg-cyan-200 text-white dark:text-black rounded-t-xl px-3 py-2 md:px-4 flex items-left gap-2">
+                                    <span class="text-sm md:text-base">Susu</span>
                                 </CardHeader>
                                 <CardContent
-                                    class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-6 rounded-b-xl text-5xl font-semibold">
-                                    {{ props.todayMilkProduction || 0 }} <span class="text-sm font-normal">Liter</span>
+                                    class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 md:py-6 rounded-b-xl text-3xl md:text-5xl font-semibold">
+                                    {{ props.todayMilkProduction || 0 }} <span class="text-xs md:text-sm font-normal">Liter</span>
                                 </CardContent>
                             </Card>
 
                             <!-- Goat Section -->
-                            <Card class="rounded-2xl">
+                            <Card class="rounded-xl md:rounded-2xl">
                                 <CardHeader
-                                    class="bg-teal-500 dark:bg-teal-200 text-white dark:text-black rounded-t-xl px-4 py-2 flex items-left gap-2">
-                                    <span>Kambing</span>
+                                    class="bg-teal-500 dark:bg-teal-200 text-white dark:text-black rounded-t-xl px-3 py-2 md:px-4 flex items-left gap-2">
+                                    <span class="text-sm md:text-base">Kambing</span>
                                 </CardHeader>
                                 <CardContent
-                                    class="bg-white dark:bg-zinc-800 dark:text-white text-teal-800 text-center py-6 rounded-b-xl text-5xl font-semibold">
-                                    {{ props.totalLivestock || 0 }} <span class="text-sm font-normal">Ekor</span>
+                                    class="bg-white dark:bg-zinc-800 dark:text-white text-teal-800 text-center py-4 md:py-6 rounded-b-xl text-3xl md:text-5xl font-semibold">
+                                    {{ props.totalLivestock || 0 }} <span class="text-xs md:text-sm font-normal">Ekor</span>
                                 </CardContent>
                             </Card>
                         </div>
 
                         <!-- Footer Stats -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4 w-full">
                             <!-- Milk Production -->
-                            <div class="text-sm px-2 items-center text-left">
-                                <span class="text-left">
+                            <div class="text-xs md:text-sm px-1 md:px-2 items-center text-left w-full min-w-0">
+                                <span class="text-left break-words">
                                     Produksi susu seluruh ternakmu hari ini: <br />
                                     <span
                                         v-if="props.milkProductionTrend !== undefined && props.milkProductionTrend !== null && props.milkProductionTrend !== 0"
                                         :class="props.milkProductionTrend > 0 ? 'text-green-300 dark:text-green-700' : 'text-red-300 dark:text-red-700'"
-                                        class="text-xl font-semibold me-2">
+                                        class="text-lg md:text-xl font-semibold me-1 md:me-2">
                                         {{ props.milkProductionTrend > 0 ? '↑' : '↓' }} {{
                                         Math.abs(props.milkProductionTrend) }}%
                                     </span>
                                     <span v-else-if="props.milkProductionTrend === 0"
-                                        class="text-blue-300 dark:text-blue-500 text-xl font-semibold me-2">
+                                        class="text-blue-300 dark:text-blue-500 text-lg md:text-xl font-semibold me-1 md:me-2">
                                         = 0%
                                     </span>
-                                    <span v-else class="text-gray-300 dark:text-gray-500 text-xl font-semibold me-2">
+                                    <span v-else class="text-gray-300 dark:text-gray-500 text-lg md:text-xl font-semibold me-1 md:me-2">
                                         0%
                                     </span>
                                     dari {{ props.totalLivestock || 0 }} ekor
@@ -160,20 +160,20 @@ const auth = computed(() => page.props.auth);
                             </div>
 
                             <!-- Weight Development -->
-                            <div class="text-sm px-2 items-center text-left">
-                                <span class="text-left">
+                            <div class="text-xs md:text-sm px-1 md:px-2 items-center text-left w-full min-w-0">
+                                <span class="text-left break-words">
                                     Perkembangan bobot seluruh ternakmu minggu ini: <br />
                                     <span
                                         v-if="props.weightTrend !== undefined && props.weightTrend !== null && props.weightTrend !== 0"
                                         :class="props.weightTrend > 0 ? 'text-green-300 dark:text-green-700' : 'text-red-300 dark:text-red-700'"
-                                        class="text-xl font-semibold me-2">
+                                        class="text-lg md:text-xl font-semibold me-1 md:me-2">
                                         {{ props.weightTrend > 0 ? '↑' : '↓' }} {{ Math.abs(props.weightTrend) }}%
                                     </span>
                                     <span v-else-if="props.weightTrend === 0"
-                                        class="text-blue-300 dark:text-blue-500 text-xl font-semibold me-2">
+                                        class="text-blue-300 dark:text-blue-500 text-lg md:text-xl font-semibold me-1 md:me-2">
                                         = 0%
                                     </span>
-                                    <span v-else class="text-gray-300 dark:text-gray-500 text-xl font-semibold me-2">
+                                    <span v-else class="text-gray-300 dark:text-gray-500 text-lg md:text-xl font-semibold me-1 md:me-2">
                                         0%
                                     </span>
                                     rata-rata {{ props.averageWeight || 0 }}kg
@@ -183,15 +183,15 @@ const auth = computed(() => page.props.auth);
                     </CardContent>
                 </Card>
 
-                <div class="relative flex-1 mt-6">
+                <div class="relative flex-1 mt-4 md:mt-6 w-full">
                     <Guide />
                 </div>
 
-                <div class="relative flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <div class="relative flex-1 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-6 w-full">
                     <Rank />
                 </div>
 
-                <div class="relative flex-1 mt-6">
+                <div class="relative flex-1 mt-4 md:mt-6 w-full">
                     <Tips />
                 </div>
             </div>

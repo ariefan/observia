@@ -38,8 +38,8 @@ const filteredFarms = computed(() => {
         );
     }
 
-    // Limit to 10 items
-    return farms.slice(0, 10);
+    // Limit to 100 items
+    return farms.slice(0, 100);
 });
 
 const selectedFarmObject = computed(() => {
@@ -93,9 +93,8 @@ const handleFarmChange = (farmId: string) => {
         </div>
 
         <!-- Other Farms -->
-        <div class="bg-teal-950 px-4 py-4 text-white text-sm transition-all duration-300" 
-             :class="isComboboxOpen && shouldUseCombobox ? 'h-[350px]' : ''" 
-             id="other-farms">
+        <div class="bg-teal-950 px-4 py-4 text-white text-sm transition-all duration-300"
+            :class="isComboboxOpen && shouldUseCombobox ? 'h-[350px]' : ''" id="other-farms">
             <h3 class="mb-2 font-semibold">Peternakan anda</h3>
 
             <!-- Combobox for super users with > 5 farms -->

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
+import BottomNavigation from '@/components/BottomNavigation.vue';
+import MobileFAB from '@/components/MobileFAB.vue';
 import type { BreadcrumbItemType } from '@/types';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'vue-sonner';
@@ -36,4 +38,6 @@ onMounted(() => {
         <div class="h-48"></div>
         <Toaster position="top-right" />
     </AppLayout>
+    <BottomNavigation />
+    <MobileFAB />
 </template>
