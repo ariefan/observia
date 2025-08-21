@@ -170,7 +170,7 @@ onMounted(() => {
                 </p>
 
                 <!-- View All Link -->
-                <a href="/livestocks"
+                <a href="/productivity/milk"
                     class="flex items-center gap-1 text-sm text-teal-900 font-semibold hover:underline">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                         <path
@@ -276,7 +276,7 @@ onMounted(() => {
                 </p>
 
                 <!-- View All Link -->
-                <a href="/livestocks"
+                <a href="/productivity/weight"
                     class="flex items-center gap-1 text-sm text-teal-900 font-semibold hover:underline">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                         <path
