@@ -75,7 +75,8 @@ const auth = computed(() => page.props.auth);
 
                     <CardContent class="px-3 md:px-6">
                         <!-- Notification Banner -->
-                        <div class="flex items-center space-x-2 md:space-x-4 bg-teal-800 rounded-xl p-2 md:p-3 mb-3 md:mb-4">
+                        <div
+                            class="flex items-center space-x-2 md:space-x-4 bg-teal-800 rounded-xl p-2 md:p-3 mb-3 md:mb-4">
                             <div class="text-lg md:text-xl">{{ props.notification?.emoji || '😊' }}</div>
                             <p class="text-sm md:text-base">
                                 {{ props.notification?.message || 'Selamat datang di dashboard peternakan Anda!' }}
@@ -92,7 +93,7 @@ const auth = computed(() => page.props.auth);
                                 <AlertDescription class="text-teal-700 dark:text-teal-300">
                                     <p class="mb-3">
                                         Anda diundang untuk bergabung dengan peternakan <strong>{{ invite.farm.name
-                                            }}</strong>
+                                        }}</strong>
                                         sebagai <strong>{{ invite.role }}</strong>.
                                     </p>
                                     <div class="flex gap-2">
@@ -118,11 +119,12 @@ const auth = computed(() => page.props.auth);
                                 </CardHeader>
                                 <CardContent
                                     class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 md:py-6 rounded-b-xl text-3xl md:text-5xl font-semibold">
-                                    {{ props.todayMilkProduction || 0 }} <span class="text-xs md:text-sm font-normal">Liter</span>
+                                    {{ props.todayMilkProduction || 0 }} <span
+                                        class="text-xs md:text-sm font-normal">Liter</span>
                                 </CardContent>
                             </Card>
 
-                            <!-- Goat Section -->
+                            <!-- Livestock Section -->
                             <Card class="rounded-xl md:rounded-2xl">
                                 <CardHeader
                                     class="bg-teal-500 dark:bg-teal-200 text-white dark:text-black rounded-t-xl px-3 py-2 md:px-4 flex items-left gap-2">
@@ -130,7 +132,8 @@ const auth = computed(() => page.props.auth);
                                 </CardHeader>
                                 <CardContent
                                     class="bg-white dark:bg-zinc-800 dark:text-white text-teal-800 text-center py-4 md:py-6 rounded-b-xl text-3xl md:text-5xl font-semibold">
-                                    {{ props.totalLivestock || 0 }} <span class="text-xs md:text-sm font-normal">Ekor</span>
+                                    {{ props.totalLivestock || 0 }} <span
+                                        class="text-xs md:text-sm font-normal">Ekor</span>
                                 </CardContent>
                             </Card>
                         </div>
@@ -146,13 +149,14 @@ const auth = computed(() => page.props.auth);
                                         :class="props.milkProductionTrend > 0 ? 'text-green-300 dark:text-green-700' : 'text-red-300 dark:text-red-700'"
                                         class="text-lg md:text-xl font-semibold me-1 md:me-2">
                                         {{ props.milkProductionTrend > 0 ? '↑' : '↓' }} {{
-                                        Math.abs(props.milkProductionTrend) }}%
+                                            Math.abs(props.milkProductionTrend) }}%
                                     </span>
                                     <span v-else-if="props.milkProductionTrend === 0"
                                         class="text-blue-300 dark:text-blue-500 text-lg md:text-xl font-semibold me-1 md:me-2">
                                         = 0%
                                     </span>
-                                    <span v-else class="text-gray-300 dark:text-gray-500 text-lg md:text-xl font-semibold me-1 md:me-2">
+                                    <span v-else
+                                        class="text-gray-300 dark:text-gray-500 text-lg md:text-xl font-semibold me-1 md:me-2">
                                         0%
                                     </span>
                                     dari {{ props.totalLivestock || 0 }} ekor
@@ -173,7 +177,8 @@ const auth = computed(() => page.props.auth);
                                         class="text-blue-300 dark:text-blue-500 text-lg md:text-xl font-semibold me-1 md:me-2">
                                         = 0%
                                     </span>
-                                    <span v-else class="text-gray-300 dark:text-gray-500 text-lg md:text-xl font-semibold me-1 md:me-2">
+                                    <span v-else
+                                        class="text-gray-300 dark:text-gray-500 text-lg md:text-xl font-semibold me-1 md:me-2">
                                         0%
                                     </span>
                                     rata-rata {{ props.averageWeight || 0 }}kg

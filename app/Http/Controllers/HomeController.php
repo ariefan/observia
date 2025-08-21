@@ -66,8 +66,9 @@ class HomeController extends Controller
             return Inertia::render('home/Dashboard', $data);
         }
 
-        // Get all livestock in current farm
+        // Get all active livestock in current farm (excluding ended livestock)
         $livestocks = Livestock::where('farm_id', $currentFarmId)
+            ->whereDoesntHave('endings')
             ->with(['milkings', 'weights'])
             ->get();
 
