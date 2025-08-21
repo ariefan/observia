@@ -18,6 +18,7 @@ import {
     CardContent,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Pencil, Trash, Plus } from 'lucide-vue-next';
 
 import {
@@ -110,8 +111,29 @@ const cancelEditing = () => {
 };
 
 const saveLeftover = () => {
-    if (!leftoverForm.feeding_id || !leftoverForm.leftover_quantity) {
-        console.error('Missing required data for leftover');
+    // Debug log
+    console.log('Form data:', {
+        feeding_id: leftoverForm.feeding_id,
+        leftover_quantity: leftoverForm.leftover_quantity,
+        leftover_quantity_type: typeof leftoverForm.leftover_quantity
+    });
+    
+    // Validate required fields
+    if (!leftoverForm.feeding_id) {
+        alert('Data pemberian pakan tidak ditemukan. Silakan refresh halaman dan coba lagi.');
+        return;
+    }
+    
+    // Validate that leftover_quantity exists and is not empty
+    if (leftoverForm.leftover_quantity === '' || leftoverForm.leftover_quantity === null || leftoverForm.leftover_quantity === undefined) {
+        alert('Silakan masukkan jumlah sisa pakan.');
+        return;
+    }
+
+    // Validate that leftover_quantity is a valid number
+    const quantity = parseFloat(leftoverForm.leftover_quantity);
+    if (isNaN(quantity) || quantity < 0) {
+        alert('Jumlah sisa pakan harus berupa angka yang valid dan tidak boleh negatif.');
         return;
     }
 
@@ -565,10 +587,14 @@ const months = [
                                                                 type="number" step="0.01" min="0"
                                                                 :max="feeding.quantity" placeholder="0.00" class="w-20"
                                                                 @keyup.enter="saveLeftover"
-                                                                @keyup.escape="cancelEditing" />
+                                                                @keyup.escape="cancelEditing" required />
                                                             <div v-if="leftoverForm.errors.leftover_quantity"
                                                                 class="text-xs text-red-600">
                                                                 {{ leftoverForm.errors.leftover_quantity }}
+                                                            </div>
+                                                            <div v-if="!leftoverForm.leftover_quantity && leftoverForm.isDirty"
+                                                                class="text-xs text-red-600">
+                                                                Sisa pakan harus diisi
                                                             </div>
                                                         </div>
                                                         <div v-else-if="leftoverMap[feeding.id]"
