@@ -27,6 +27,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogClose,
 } from '@/components/ui/dialog';
 
 interface RationItem {
