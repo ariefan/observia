@@ -18,7 +18,10 @@
       "Bash(pkill:*)",
       "Bash(git add:*)",
       "Bash(git push:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(composer:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "additionalDirectories": [

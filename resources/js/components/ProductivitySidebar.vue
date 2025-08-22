@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { IconMilk, IconScaleOutline } from '@tabler/icons-vue';
 import { Droplets, Weight } from 'lucide-vue-next';
 
 interface Props {
@@ -12,12 +13,12 @@ const navigationItems = [
   {
     title: 'Susu',
     route: 'productivity.milk',
-    icon: Droplets,
+    icon: IconMilk,
   },
   {
     title: 'Bobot',
     route: 'productivity.weight',
-    icon: Weight,
+    icon: IconScaleOutline,
   },
 ];
 

@@ -16,6 +16,8 @@ use App\Http\Controllers\AuditController;
 use App\Http\Controllers\LoginLogController;
 use App\Http\Controllers\ErrorLogController;
 use App\Http\Controllers\ProduktivitasController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ContentController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -44,6 +46,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+    
+    // Notification Route
+    Route::get('/notification', function () {
+        return Inertia::render('NotificationTest');
+    })->name('notification.page');
+    
+    // Reports Route
+    Route::get('/laporan', function () {
+        return Inertia::render('Laporan');
+    })->name('reports.index');
     
     // Superuser routes
     Route::get('/super-dashboard', [SuperDashboardController::class, 'index'])->name('super.dashboard');
@@ -108,6 +120,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/productivity', [ProduktivitasController::class, 'susu'])->name('productivity.index');
     Route::get('/productivity/milk', [ProduktivitasController::class, 'susu'])->name('productivity.milk');
     Route::get('/productivity/weight', [ProduktivitasController::class, 'bobot'])->name('productivity.weight');
+
+    // Report Routes
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.api');
+    Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
+    Route::get('/reports/{report}/download', [ReportController::class, 'download'])->name('reports.download');
+    Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
+
+    // Content Management Routes (Super User Only)
+    Route::get('/content-management', [ContentController::class, 'index'])->name('content.management');
+    Route::get('/api/content', [ContentController::class, 'getContent'])->name('content.api');
+    Route::post('/api/videos', [ContentController::class, 'storeVideo'])->name('videos.store');
+    Route::put('/api/videos/{video}', [ContentController::class, 'updateVideo'])->name('videos.update');
+    Route::delete('/api/videos/{video}', [ContentController::class, 'destroyVideo'])->name('videos.destroy');
+    Route::post('/api/articles', [ContentController::class, 'storeArticle'])->name('articles.store');
+    Route::put('/api/articles/{article}', [ContentController::class, 'updateArticle'])->name('articles.update');
+    Route::delete('/api/articles/{article}', [ContentController::class, 'destroyArticle'])->name('articles.destroy');
 
     Route::resources([
         'farms' => FarmController::class,

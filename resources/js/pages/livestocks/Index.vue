@@ -247,15 +247,32 @@ const show = (id: string) => router.visit(route('livestocks.show', { id }));
             <!-- Pagination -->
             <div v-if="livestocks.links && livestocks.links.length > 3" class="mt-6 flex justify-center">
                 <div class="flex space-x-1">
-                    <Link v-for="link in livestocks.links" :key="link.label" :href="link.url" :class="[
-                        'px-3 py-2 text-sm rounded-md',
-                        link.active
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-                        !link.url ? 'pointer-events-none opacity-50' : ''
-                    ]">
-                    {{link.label.replace(/&laquo;|&raquo;/g, (match) => match === '&laquo;' ? '«' : '»')}}
-                    </Link>
+                    <template v-for="link in livestocks.links" :key="link.label">
+                        <Link v-if="link.url" :href="link.url" :class="[
+                            'px-3 py-2 rounded-md',
+                            link.active
+                                ? 'bg-primary text-primary-foreground'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                            (link.label.includes('Previous') || link.label.includes('Next')) ? 'text-lg font-bold' : 'text-sm'
+                        ]">
+                            {{
+                                link.label.includes('Previous') ? '‹' :
+                                link.label.includes('Next') ? '›' :
+                                link.label
+                            }}
+                        </Link>
+                        <span v-else :class="[
+                            'px-3 py-2 rounded-md',
+                            'text-muted-foreground pointer-events-none opacity-50',
+                            (link.label.includes('Previous') || link.label.includes('Next')) ? 'text-lg font-bold' : 'text-sm'
+                        ]">
+                            {{
+                                link.label.includes('Previous') ? '‹' :
+                                link.label.includes('Next') ? '›' :
+                                link.label
+                            }}
+                        </span>
+                    </template>
                 </div>
             </div>
         </div>

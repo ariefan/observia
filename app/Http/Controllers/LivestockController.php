@@ -59,12 +59,12 @@ class LivestockController extends Controller
                 // Show livestock that have endings
                 $query->whereHas('endings');
             } else if ($request->status === 'active') {
-                // Show only active livestock
-                $query->where('status', 1);
+                // Show only active livestock (not ended)
+                $query->whereDoesntHave('endings');
             }
         } else {
-            // Default: only show active livestock
-            $query->where('status', 1);
+            // Default: only show active livestock (not ended)
+            $query->whereDoesntHave('endings');
         }
 
         // Search functionality
@@ -88,9 +88,9 @@ class LivestockController extends Controller
         // Paginate results
         $livestocks = $query->paginate(12)->withQueryString();
 
-        // Get counts for active livestock only
+        // Get counts for active livestock only (same logic as dashboard)
         $activeLivestocks = Livestock::where('farm_id', $currentFarmId)
-            ->where('status', 1)
+            ->whereDoesntHave('endings')
             ->get();
         
         $male_count = $activeLivestocks->where('sex', 'M')->count();

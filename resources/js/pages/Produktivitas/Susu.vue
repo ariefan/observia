@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CalendarDays, Droplets, Weight, TrendingUp, Trophy, Award, Medal } from 'lucide-vue-next';
+import { IconMilk } from '@tabler/icons-vue';
 import { usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 import { ref, onMounted, computed } from 'vue';
@@ -286,7 +287,7 @@ onMounted(() => {
                                             <div class="space-y-1">
                                                 <div class="flex items-center space-x-2">
                                                     <h3 class="text-lg font-semibold">{{ livestock.name || 'Tanpa Nama'
-                                                        }}</h3>
+                                                    }}</h3>
                                                     <Badge variant="outline">{{ livestock.tag_id }}</Badge>
                                                     <span v-if="livestock.record_date"
                                                         class="text-xs text-muted-foreground">
@@ -301,7 +302,7 @@ onMounted(() => {
                                                     Kandang: {{ livestock.herd_name }}
                                                 </p>
                                                 <div class="flex items-center space-x-2">
-                                                    <Droplets class="h-4 w-4 text-blue-500" />
+                                                    <IconMilk class="h-4 w-4 text-blue-500" />
                                                     <span class="text-lg font-bold">{{
                                                         parseFloat(livestock.daily_milk_production).toFixed(2) }}
                                                         L</span>

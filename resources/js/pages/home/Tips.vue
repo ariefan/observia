@@ -1,26 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import YoutubePlayer from '@/components/YoutubePlayer.vue';
 import Example1 from '@/assets/example-1.jpg';
+import axios from 'axios';
 
-const products = ref([
-    { id: '2L4dQcAhHOw' },
-    { id: 'poD6VPc1JmQ' },
-    { id: 'o8uRaaZR1Ew' },
-]);
+const videos = ref({
+    manajemen: [],
+    kesehatan: [],
+    breeding: [],
+});
 
-const articles = ref([
-    { id: 'dQw4w9WgXcQ' },
-    { id: '9bZkp7q19f0' },
-    { id: '3JZ_D3ELwOQ' },
-    { id: 'hTWKbfoikeg' },
-    { id: 'e-ORhEE9VVg' },
-    { id: 'fLexgOxsZu0' },
-    { id: 'L_jWHffIx5E' },
-    { id: 'RgKAFK5djSk' },
-    { id: 'YykjpeuMNEk' },
-    { id: 'uelHwf8o7_U' }
-]);
+const articles = ref({
+    manajemen: [],
+    kesehatan: [],
+    breeding: [],
+});
 
 const responsiveOptions = ref([
     {
@@ -49,7 +43,53 @@ const responsiveOptions = ref([
 const value = ref('0');
 const articleValue = ref('0');
 
-// No props needed for this component
+// Fetch content from API
+const fetchContent = async () => {
+    try {
+        const response = await axios.get('/api/content');
+        videos.value = response.data.videos;
+        articles.value = response.data.articles;
+    } catch (error) {
+        console.error('Error fetching content:', error);
+        // Fallback to default data if API fails
+        videos.value = {
+            manajemen: [
+                { id: 1, title: 'Manajemen Peternakan', youtube_id: '2L4dQcAhHOw' },
+                { id: 2, title: 'Teknik Pemberian Pakan', youtube_id: 'poD6VPc1JmQ' },
+                { id: 3, title: 'Manajemen Kandang', youtube_id: 'o8uRaaZR1Ew' },
+            ],
+            kesehatan: [],
+            breeding: [],
+        };
+        articles.value = {
+            manajemen: Array(10).fill(null).map((_, index) => ({
+                id: index + 1,
+                title: 'Mengenal indukan unggul',
+                description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Inventore sed consequuntur...',
+                author: 'Budi Setiawan',
+                published_at: '2024-04-02',
+                image_url: null,
+            })),
+            kesehatan: [],
+            breeding: [],
+        };
+    }
+};
+
+// Helper function to format date
+const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+};
+
+onMounted(() => {
+    fetchContent();
+});
 </script>
 
 <template>
@@ -86,34 +126,43 @@ const articleValue = ref('0');
             <Tabs v-model:value="value">
                 <TabPanels>
                     <TabPanel value="0">
-                        <Carousel :value="products" :numVisible="3" :numScroll="1" :circular="true"
+                        <Carousel v-if="videos.manajemen.length > 0" :value="videos.manajemen" :numVisible="3" :numScroll="1" :circular="true"
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <YoutubePlayer :videoId="slotProps.data.id" />
+                                    <YoutubePlayer :videoId="slotProps.data.youtube_id" />
                                 </div>
                             </template>
                         </Carousel>
+                        <div v-else class="text-center py-8 text-muted-foreground">
+                            Belum ada video untuk kategori Manajemen
+                        </div>
                     </TabPanel>
                     <TabPanel value="1">
-                        <p class="m-0">
-                            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque
-                            laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi
-                            architecto beatae vitae dicta sunt explicabo. Nemo enim
-                            ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur
-                            magni dolores eos qui ratione voluptatem sequi nesciunt. Consectetur, adipisci velit, sed
-                            quia non numquam eius modi.
-                        </p>
+                        <Carousel v-if="videos.kesehatan.length > 0" :value="videos.kesehatan" :numVisible="3" :numScroll="1" :circular="true"
+                            :responsiveOptions="responsiveOptions">
+                            <template #item="slotProps">
+                                <div class="mx-1">
+                                    <YoutubePlayer :videoId="slotProps.data.youtube_id" />
+                                </div>
+                            </template>
+                        </Carousel>
+                        <div v-else class="text-center py-8 text-muted-foreground">
+                            Belum ada video untuk kategori Kesehatan
+                        </div>
                     </TabPanel>
                     <TabPanel value="2">
-                        <p class="m-0">
-                            At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium
-                            voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati
-                            cupiditate non provident, similique sunt in culpa
-                            qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum
-                            facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio
-                            cumque nihil impedit quo minus.
-                        </p>
+                        <Carousel v-if="videos.breeding.length > 0" :value="videos.breeding" :numVisible="3" :numScroll="1" :circular="true"
+                            :responsiveOptions="responsiveOptions">
+                            <template #item="slotProps">
+                                <div class="mx-1">
+                                    <YoutubePlayer :videoId="slotProps.data.youtube_id" />
+                                </div>
+                            </template>
+                        </Carousel>
+                        <div v-else class="text-center py-8 text-muted-foreground">
+                            Belum ada video untuk kategori Breeding
+                        </div>
                     </TabPanel>
                 </TabPanels>
             </Tabs>
@@ -147,51 +196,91 @@ const articleValue = ref('0');
             <Tabs v-model:value="articleValue">
                 <TabPanels>
                     <TabPanel value="0">
-                        <Carousel :value="articles" :numVisible="4" :numScroll="1" :circular="true"
+                        <Carousel v-if="articles.manajemen.length > 0" :value="articles.manajemen" :numVisible="4" :numScroll="1" :circular="true"
                             :responsiveOptions="responsiveOptions">
-                            <template #item>
+                            <template #item="slotProps">
                                 <div class="mx-1">
                                     <Card style="overflow: hidden" class="mb-1">
                                         <template #header>
-                                            <img alt="user header" :src="Example1" />
+                                            <img alt="article header" :src="slotProps.data.image_url || Example1" />
                                         </template>
                                         <template #title>
-                                            <p class="text-sm">Mengenal indukan unggul</p>
+                                            <p class="text-sm">{{ slotProps.data.title }}</p>
                                         </template>
                                         <template #subtitle>
-                                            <p class="text-xs">Budi Setiawan</p>
-                                            <p class="text-xs">2 April 2025</p>
+                                            <p class="text-xs">{{ slotProps.data.author || 'Anonim' }}</p>
+                                            <p class="text-xs">{{ formatDate(slotProps.data.published_at) }}</p>
                                         </template>
                                         <template #content>
                                             <p class="m-0 text-sm">
-                                                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Inventore sed
-                                                consequuntur...
+                                                {{ slotProps.data.description || slotProps.data.content.substring(0, 100) + '...' }}
                                             </p>
                                         </template>
                                     </Card>
                                 </div>
                             </template>
                         </Carousel>
+                        <div v-else class="text-center py-8 text-muted-foreground">
+                            Belum ada artikel untuk kategori Manajemen
+                        </div>
                     </TabPanel>
                     <TabPanel value="1">
-                        <p class="m-0">
-                            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque
-                            laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi
-                            architecto beatae vitae dicta sunt explicabo. Nemo enim
-                            ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur
-                            magni dolores eos qui ratione voluptatem sequi nesciunt. Consectetur, adipisci velit, sed
-                            quia non numquam eius modi.
-                        </p>
+                        <Carousel v-if="articles.kesehatan.length > 0" :value="articles.kesehatan" :numVisible="4" :numScroll="1" :circular="true"
+                            :responsiveOptions="responsiveOptions">
+                            <template #item="slotProps">
+                                <div class="mx-1">
+                                    <Card style="overflow: hidden" class="mb-1">
+                                        <template #header>
+                                            <img alt="article header" :src="slotProps.data.image_url || Example1" />
+                                        </template>
+                                        <template #title>
+                                            <p class="text-sm">{{ slotProps.data.title }}</p>
+                                        </template>
+                                        <template #subtitle>
+                                            <p class="text-xs">{{ slotProps.data.author || 'Anonim' }}</p>
+                                            <p class="text-xs">{{ formatDate(slotProps.data.published_at) }}</p>
+                                        </template>
+                                        <template #content>
+                                            <p class="m-0 text-sm">
+                                                {{ slotProps.data.description || slotProps.data.content.substring(0, 100) + '...' }}
+                                            </p>
+                                        </template>
+                                    </Card>
+                                </div>
+                            </template>
+                        </Carousel>
+                        <div v-else class="text-center py-8 text-muted-foreground">
+                            Belum ada artikel untuk kategori Kesehatan
+                        </div>
                     </TabPanel>
                     <TabPanel value="2">
-                        <p class="m-0">
-                            At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium
-                            voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati
-                            cupiditate non provident, similique sunt in culpa
-                            qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum
-                            facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio
-                            cumque nihil impedit quo minus.
-                        </p>
+                        <Carousel v-if="articles.breeding.length > 0" :value="articles.breeding" :numVisible="4" :numScroll="1" :circular="true"
+                            :responsiveOptions="responsiveOptions">
+                            <template #item="slotProps">
+                                <div class="mx-1">
+                                    <Card style="overflow: hidden" class="mb-1">
+                                        <template #header>
+                                            <img alt="article header" :src="slotProps.data.image_url || Example1" />
+                                        </template>
+                                        <template #title>
+                                            <p class="text-sm">{{ slotProps.data.title }}</p>
+                                        </template>
+                                        <template #subtitle>
+                                            <p class="text-xs">{{ slotProps.data.author || 'Anonim' }}</p>
+                                            <p class="text-xs">{{ formatDate(slotProps.data.published_at) }}</p>
+                                        </template>
+                                        <template #content>
+                                            <p class="m-0 text-sm">
+                                                {{ slotProps.data.description || slotProps.data.content.substring(0, 100) + '...' }}
+                                            </p>
+                                        </template>
+                                    </Card>
+                                </div>
+                            </template>
+                        </Carousel>
+                        <div v-else class="text-center py-8 text-muted-foreground">
+                            Belum ada artikel untuk kategori Breeding
+                        </div>
                     </TabPanel>
                 </TabPanels>
             </Tabs>

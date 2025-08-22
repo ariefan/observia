@@ -268,14 +268,19 @@ const deleteEnding = (id: number) => {
                 :key="link.label" 
                 :href="link.url" 
                 :class="[
-                  'px-3 py-2 text-sm',
+                  'px-3 py-2 rounded-md',
                   link.active
-                    ? 'bg-primary text-primary-foreground rounded-md'
+                    ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground',
-                  !link.url ? 'pointer-events-none opacity-50' : ''
+                  !link.url ? 'pointer-events-none opacity-50' : '',
+                  (link.label.includes('Previous') || link.label.includes('Next')) ? 'text-lg font-bold' : 'text-sm'
                 ]" 
                 >
-                {{ link.label.replace(/&laquo;|&raquo;/g, (match) => match === '&laquo;' ? '«' : '»') }}
+                {{
+                  link.label.includes('Previous') ? '‹' :
+                  link.label.includes('Next') ? '›' :
+                  link.label
+                }}
               </Link>
             </div>
           </div>

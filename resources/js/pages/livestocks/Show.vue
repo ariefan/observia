@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Core Vue imports
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { Head, Link, router } from "@inertiajs/vue3";
 import { usePhotoUrl } from '@/composables/usePhotoUrl';
 
@@ -12,6 +12,9 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 // Icons
 import {
@@ -204,6 +207,93 @@ const processMilkingData = () => {
 };
 
 const milkingChartData = processMilkingData();
+
+// Dialog states for monthly details
+const showMilkingDialog = ref(false);
+const showWeightDialog = ref(false);
+const selectedMonth = ref(new Date().getMonth());
+const selectedYear = ref(new Date().getFullYear());
+
+// Month names
+const months = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
+// Get month and year display name
+const getMonthYearName = (month, year) => {
+  return `${months[month]} ${year}`;
+};
+
+// Get available years from milking and weight history
+const availableYears = computed(() => {
+  const years = new Set();
+  
+  if (props.milkingHistory && props.milkingHistory.length > 0) {
+    props.milkingHistory.forEach(milking => {
+      const date = new Date(milking.date);
+      years.add(date.getFullYear());
+    });
+  }
+  
+  if (props.weightHistory && props.weightHistory.length > 0) {
+    props.weightHistory.forEach(weight => {
+      const [year] = weight.month.split('-');
+      years.add(parseInt(year));
+    });
+  }
+  
+  const yearArray = Array.from(years).sort((a, b) => b - a); // Latest year first
+  return yearArray.length > 0 ? yearArray : [new Date().getFullYear()];
+});
+
+// Open dialog functions
+const openMilkingDialog = () => {
+  selectedMonth.value = new Date().getMonth();
+  selectedYear.value = new Date().getFullYear();
+  showMilkingDialog.value = true;
+};
+
+const openWeightDialog = () => {
+  selectedMonth.value = new Date().getMonth();
+  selectedYear.value = new Date().getFullYear();
+  showWeightDialog.value = true;
+};
+
+// Get filtered milking data based on selected month/year
+const filteredMilkingData = computed(() => {
+  if (!props.milkingHistory || props.milkingHistory.length === 0) {
+    return [];
+  }
+
+  return props.milkingHistory.filter(milking => {
+    const milkingDate = new Date(milking.date);
+    return milkingDate.getMonth() === selectedMonth.value && milkingDate.getFullYear() === selectedYear.value;
+  }).sort((a, b) => new Date(b.date) - new Date(a.date));
+});
+
+// Get filtered weight data based on selected month/year
+const filteredWeightData = computed(() => {
+  if (!props.weightHistory || props.weightHistory.length === 0) {
+    return [];
+  }
+
+  const monthKey = `${selectedYear.value}-${String(selectedMonth.value + 1).padStart(2, '0')}`;
+  return props.weightHistory.filter(weight => weight.month === monthKey);
+});
+
+// Format date for display
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const options = {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Asia/Jakarta'
+  };
+  return date.toLocaleDateString('id-ID', options);
+};
 
 // Calculate weight trend
 const weightTrend = computed(() => {
@@ -508,8 +598,8 @@ const milkingTrend = computed(() => {
 
       <!-- Graphs -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card class="border border-primary/20 dark:border-primary/80">
-          <CardContent class="p-4">
+        <Card class="border border-primary/20 dark:border-primary/80 flex flex-col h-full">
+          <CardContent class="p-4 flex-1">
             <Alert
               :variant="milkingTrend?.hasData && !milkingTrend.singleDataPoint ? (milkingTrend.isIncreasing ? 'success' : 'destructive') : 'default'"
               class="mb-2">
@@ -543,10 +633,16 @@ const milkingTrend = computed(() => {
               label="Rata-rata Produksi Susu (liter/hari)" :isDark="isDarkMode" xAxisLabel="Bulan"
               yAxisLabel="Rata-rata Produksi Susu (liter/hari)" />
           </CardContent>
+          <div class="p-0 mt-auto">
+            <Button @click="openMilkingDialog" variant="ghost"
+              class="w-full justify-center rounded-none text-primary hover:bg-primary/10 py-3" style="box-shadow: none;">
+              <span class="font-semibold underline">Lihat bulan ini</span>
+            </Button>
+          </div>
         </Card>
 
-        <Card class="border border-primary/20 dark:border-primary/80">
-          <CardContent class="p-4">
+        <Card class="border border-primary/20 dark:border-primary/80 flex flex-col h-full">
+          <CardContent class="p-4 flex-1">
             <Alert
               :variant="weightTrend?.hasData && !weightTrend.singleDataPoint ? (weightTrend.isIncreasing ? 'success' : 'destructive') : 'default'"
               class="mb-2">
@@ -576,6 +672,12 @@ const milkingTrend = computed(() => {
             <LineChart :labels="weightChartData.labels" :dataPoints="weightChartData.dataPoints"
               label="Bobot Ternak (kg)" :isDark="isDarkMode" xAxisLabel="Bulan" yAxisLabel="Bobot Ternak (kg)" />
           </CardContent>
+          <div class="p-0 mt-auto">
+            <Button @click="openWeightDialog" variant="ghost"
+              class="w-full justify-center rounded-none text-primary hover:bg-primary/10 py-3" style="box-shadow: none;">
+              <span class="font-semibold underline">Lihat bulan ini</span>
+            </Button>
+          </div>
         </Card>
       </div>
 
@@ -591,4 +693,139 @@ const milkingTrend = computed(() => {
       <PedigreeCard :pedigreeData="pedigreeData" />
     </div>
   </AppLayout>
+
+  <!-- Monthly Milking Dialog -->
+  <Dialog v-model:open="showMilkingDialog">
+    <DialogContent class="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>Data Produksi Susu - {{ getMonthYearName(selectedMonth, selectedYear) }}</DialogTitle>
+        <DialogDescription>
+          Seluruh data produksi susu pada bulan {{ getMonthYearName(selectedMonth, selectedYear) }}
+        </DialogDescription>
+      </DialogHeader>
+
+      <!-- Month/Year Filter -->
+      <div class="flex gap-4 mb-4">
+        <div class="flex-1">
+          <Label for="milking-month-select" class="text-sm font-medium">Bulan</Label>
+          <Select v-model="selectedMonth">
+            <SelectTrigger id="milking-month-select">
+              <SelectValue placeholder="Pilih bulan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="(month, index) in months" :key="index" :value="index">
+                {{ month }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div class="flex-1">
+          <Label for="milking-year-select" class="text-sm font-medium">Tahun</Label>
+          <Select v-model="selectedYear">
+            <SelectTrigger id="milking-year-select">
+              <SelectValue placeholder="Pilih tahun" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="year in availableYears" :key="year" :value="year">
+                {{ year }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div v-if="filteredMilkingData && filteredMilkingData.length > 0" class="space-y-4">
+        <div v-for="milking in filteredMilkingData" :key="milking.id" class="border-b pb-3 last:border-b-0">
+          <div class="flex justify-between items-center mb-2">
+            <p class="font-semibold text-sm">{{ formatDate(milking.date) }}</p>
+            <Badge class="text-xs">
+              {{ parseFloat(milking.total_volume || 0).toFixed(1) }} liter
+            </Badge>
+          </div>
+          <div class="ml-4 space-y-1">
+            <div class="text-sm text-muted-foreground">
+              <span class="font-medium">Volume rata-rata:</span> {{ parseFloat(milking.average_volume || 0).toFixed(1) }} liter/hari
+            </div>
+            <div v-if="milking.notes" class="text-xs text-muted-foreground italic">
+              "{{ milking.notes }}"
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="text-center py-8 text-muted-foreground">
+        <p class="text-sm">Belum ada data produksi susu pada {{ getMonthYearName(selectedMonth, selectedYear) }}</p>
+      </div>
+
+      <DialogFooter>
+        <Button @click="showMilkingDialog = false" variant="secondary">Tutup</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+
+  <!-- Monthly Weight Dialog -->
+  <Dialog v-model:open="showWeightDialog">
+    <DialogContent class="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>Data Bobot Ternak - {{ getMonthYearName(selectedMonth, selectedYear) }}</DialogTitle>
+        <DialogDescription>
+          Seluruh data bobot ternak pada bulan {{ getMonthYearName(selectedMonth, selectedYear) }}
+        </DialogDescription>
+      </DialogHeader>
+
+      <!-- Month/Year Filter -->
+      <div class="flex gap-4 mb-4">
+        <div class="flex-1">
+          <Label for="weight-month-select" class="text-sm font-medium">Bulan</Label>
+          <Select v-model="selectedMonth">
+            <SelectTrigger id="weight-month-select">
+              <SelectValue placeholder="Pilih bulan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="(month, index) in months" :key="index" :value="index">
+                {{ month }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div class="flex-1">
+          <Label for="weight-year-select" class="text-sm font-medium">Tahun</Label>
+          <Select v-model="selectedYear">
+            <SelectTrigger id="weight-year-select">
+              <SelectValue placeholder="Pilih tahun" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="year in availableYears" :key="year" :value="year">
+                {{ year }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div v-if="filteredWeightData && filteredWeightData.length > 0" class="space-y-4">
+        <div v-for="weight in filteredWeightData" :key="weight.month" class="border-b pb-3 last:border-b-0">
+          <div class="flex justify-between items-center mb-2">
+            <p class="font-semibold text-sm">{{ getMonthYearName(selectedMonth, selectedYear) }}</p>
+            <Badge class="text-xs">
+              {{ parseFloat(weight.average_weight || 0).toFixed(1) }} kg
+            </Badge>
+          </div>
+          <div class="ml-4 space-y-1">
+            <div class="text-sm text-muted-foreground">
+              <span class="font-medium">Bobot rata-rata bulan:</span> {{ parseFloat(weight.average_weight || 0).toFixed(1) }} kg
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="text-center py-8 text-muted-foreground">
+        <p class="text-sm">Belum ada data bobot ternak pada {{ getMonthYearName(selectedMonth, selectedYear) }}</p>
+      </div>
+
+      <DialogFooter>
+        <Button @click="showWeightDialog = false" variant="secondary">Tutup</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
