@@ -62,9 +62,9 @@
                     {{ notification.priority }}
                   </Badge>
                 </div>
-                <p class="text-sm text-muted-foreground">{{ notification.description }}</p>
+                <p class="text-sm text-muted-foreground">{{ notification.message }}</p>
                 <p class="text-xs text-muted-foreground mt-2">
-                  {{ formatNotificationTime(notification.createdAt) }}
+                  {{ formatNotificationTime(new Date(notification.created_at)) }}
                 </p>
               </div>
               <div class="flex gap-1">
@@ -282,9 +282,8 @@ const createTestNotification = (type: 'info' | 'success' | 'warning' | 'error' |
   const message = messages[type];
   addNotification({
     title: message.title,
-    description: message.description,
-    type,
-    priority: message.priority,
+    message: message.description,
+    type: `test-${type}`,
   });
 };
 

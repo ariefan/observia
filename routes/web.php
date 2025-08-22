@@ -86,7 +86,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications', [NotificationController::class, 'store']);
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy']);
     Route::post('/notifications/{notification}/accept', [NotificationController::class, 'accept']);
     Route::post('/notifications/{notification}/reject', [NotificationController::class, 'reject']);
     

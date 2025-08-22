@@ -47,6 +47,36 @@ class NotificationController extends Controller
         return response()->json(['status' => 'rejected']);
     }
 
+    public function store(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|string',
+            'title' => 'required|string',
+            'message' => 'required|string',
+            'action_required' => 'boolean',
+        ]);
+
+        $notification = Notification::create([
+            'user_id' => auth()->id(),
+            'type' => $request->type,
+            'title' => $request->title,
+            'message' => $request->message,
+            'action_required' => $request->boolean('action_required', false),
+            'action_status' => $request->boolean('action_required', false) ? 'pending' : null,
+        ]);
+
+        return response()->json($notification, 201);
+    }
+
+    public function destroy(Notification $notification)
+    {
+        $this->authorizeAccess($notification);
+        
+        $notification->delete();
+
+        return response()->json(['status' => 'deleted']);
+    }
+
     private function authorizeAccess(Notification $notification)
     {
         abort_if(auth()->id() !== $notification->user_id, 403, 'This isn’t your notification, my guy.');

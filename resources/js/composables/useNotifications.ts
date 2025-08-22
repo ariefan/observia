@@ -1,6 +1,26 @@
 import { ref, computed, reactive } from 'vue';
+import axios from 'axios';
 
+// Backend-compatible notification interface
 export interface Notification {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  message: string;
+  action_required: boolean;
+  action_status?: 'pending' | 'accepted' | 'rejected';
+  acted_at?: string;
+  read_at?: string;
+  created_at: string;
+  updated_at: string;
+  // Frontend computed properties
+  isRead?: boolean;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+}
+
+// Legacy interface for frontend compatibility
+export interface LegacyNotification {
   id: string;
   title: string;
   description: string;
@@ -41,12 +61,38 @@ export interface NotificationTemplate {
 class NotificationStore {
   private notifications = ref<Notification[]>([]);
   private templates = ref<NotificationTemplate[]>([]);
+  private isLoading = ref(false);
+  private lastFetch = ref<Date | null>(null);
 
   constructor() {
-    this.loadFromStorage();
+    this.loadNotifications();
+    this.loadTemplatesFromStorage(); // Keep templates in localStorage for now
     this.initializeDefaultTemplates();
   }
 
+  // Load notifications from backend API
+  private async loadNotifications() {
+    if (this.isLoading.value) return;
+    
+    this.isLoading.value = true;
+    try {
+      const response = await axios.get('/notifications');
+      this.notifications.value = response.data.map((notification: any) => ({
+        ...notification,
+        isRead: !!notification.read_at,
+        priority: this.inferPriorityFromType(notification.type)
+      }));
+      this.lastFetch.value = new Date();
+    } catch (error) {
+      console.error('Failed to load notifications from backend:', error);
+      // Fallback to localStorage if backend fails
+      this.loadFromStorage();
+    } finally {
+      this.isLoading.value = false;
+    }
+  }
+
+  // Fallback method for localStorage (legacy support)
   private loadFromStorage() {
     try {
       const stored = localStorage.getItem('notifications');
@@ -54,17 +100,47 @@ class NotificationStore {
         const parsed = JSON.parse(stored);
         this.notifications.value = parsed.map((n: any) => ({
           ...n,
-          createdAt: new Date(n.createdAt),
-          scheduledFor: n.scheduledFor ? new Date(n.scheduledFor) : undefined,
+          created_at: n.createdAt || new Date().toISOString(),
+          isRead: n.isRead,
+          message: n.description || n.message,
+          type: n.type,
+          title: n.title,
+          action_required: false,
+          user_id: 'local',
+          updated_at: new Date().toISOString()
         }));
       }
+    } catch (error) {
+      console.error('Failed to load notifications from storage:', error);
+    }
+  }
 
+  // Load templates from localStorage (keeping current functionality)
+  private loadTemplatesFromStorage() {
+    try {
       const storedTemplates = localStorage.getItem('notification-templates');
       if (storedTemplates) {
         this.templates.value = JSON.parse(storedTemplates);
       }
     } catch (error) {
-      console.error('Failed to load notifications from storage:', error);
+      console.error('Failed to load templates from storage:', error);
+    }
+  }
+
+  // Infer priority from notification type
+  private inferPriorityFromType(type: string): 'low' | 'medium' | 'high' | 'urgent' {
+    switch (type) {
+      case 'error':
+      case 'emergency':
+        return 'urgent';
+      case 'warning':
+      case 'alert':
+        return 'high';
+      case 'reminder':
+      case 'info':
+        return 'medium';
+      default:
+        return 'low';
     }
   }
 
@@ -146,8 +222,8 @@ class NotificationStore {
     return computed(() => {
       const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
       return this.notifications.value
-        .sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority])
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        .sort((a, b) => priorityOrder[b.priority || 'low'] - priorityOrder[a.priority || 'low'])
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     });
   }
 
@@ -159,44 +235,143 @@ class NotificationStore {
     return computed(() => this.templates.value.filter(t => t.isActive));
   }
 
-  // Actions
-  addNotification(notification: Omit<Notification, 'id' | 'createdAt' | 'isRead'>) {
-    const newNotification: Notification = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      createdAt: new Date(),
-      isRead: false,
-      ...notification,
-    };
+  // Actions - Backend integrated
+  async addNotification(notification: { title: string; message: string; type: string; action_required?: boolean }) {
+    try {
+      // For super admin testing, create local notification if no backend
+      if (notification.type.startsWith('test-') || notification.type === 'feeding-reminder') {
+        const newNotification: Notification = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          user_id: 'local',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          isRead: false,
+          priority: this.inferPriorityFromType(notification.type),
+          action_required: notification.action_required || false,
+          ...notification,
+        };
 
-    this.notifications.value.unshift(newNotification);
-    this.saveToStorage();
-    return newNotification;
+        this.notifications.value.unshift(newNotification);
+        this.saveToStorage();
+        return newNotification;
+      }
+
+      // For real notifications, create via backend API
+      const response = await axios.post('/notifications', notification);
+      const newNotification = {
+        ...response.data,
+        isRead: !!response.data.read_at,
+        priority: this.inferPriorityFromType(response.data.type)
+      };
+      
+      this.notifications.value.unshift(newNotification);
+      return newNotification;
+    } catch (error) {
+      console.error('Failed to create notification:', error);
+      throw error;
+    }
   }
 
-  markAsRead(id: string) {
+  async markAsRead(id: string) {
     const notification = this.notifications.value.find(n => n.id === id);
-    if (notification) {
+    if (!notification) return;
+
+    try {
+      // If it's a local/test notification, just update locally
+      if (notification.user_id === 'local') {
+        notification.isRead = true;
+        this.saveToStorage();
+        return;
+      }
+
+      // For backend notifications, call API
+      await axios.post(`/notifications/${id}/read`);
+      notification.isRead = true;
+      notification.read_at = new Date().toISOString();
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+      // Still mark as read locally as fallback
       notification.isRead = true;
       this.saveToStorage();
     }
   }
 
-  markAllAsRead() {
-    this.notifications.value.forEach(n => n.isRead = true);
-    this.saveToStorage();
+  async markAllAsRead() {
+    try {
+      // Mark all backend notifications as read
+      const backendNotifications = this.notifications.value.filter(n => n.user_id !== 'local');
+      await Promise.all(
+        backendNotifications.map(notification => 
+          axios.post(`/notifications/${notification.id}/read`)
+        )
+      );
+      
+      // Update all notifications locally
+      this.notifications.value.forEach(n => {
+        n.isRead = true;
+        if (!n.read_at) {
+          n.read_at = new Date().toISOString();
+        }
+      });
+      
+      this.saveToStorage();
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+      // Fallback to local update
+      this.notifications.value.forEach(n => {
+        n.isRead = true;
+      });
+      this.saveToStorage();
+    }
   }
 
-  removeNotification(id: string) {
+  async removeNotification(id: string) {
     const index = this.notifications.value.findIndex(n => n.id === id);
-    if (index !== -1) {
+    if (index === -1) return;
+
+    const notification = this.notifications.value[index];
+
+    try {
+      // If it's a backend notification, delete from backend
+      if (notification.user_id !== 'local') {
+        await axios.delete(`/notifications/${id}`);
+      }
+      
+      // Remove from local state
+      this.notifications.value.splice(index, 1);
+      this.saveToStorage();
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+      // Still remove locally as fallback
       this.notifications.value.splice(index, 1);
       this.saveToStorage();
     }
   }
 
-  clearAllNotifications() {
-    this.notifications.value = [];
-    this.saveToStorage();
+  async clearAllNotifications() {
+    try {
+      // Delete all backend notifications
+      const backendNotifications = this.notifications.value.filter(n => n.user_id !== 'local');
+      await Promise.all(
+        backendNotifications.map(notification => 
+          axios.delete(`/notifications/${notification.id}`)
+        )
+      );
+      
+      // Clear local state
+      this.notifications.value = [];
+      this.saveToStorage();
+    } catch (error) {
+      console.error('Failed to clear all notifications:', error);
+      // Fallback to local clear
+      this.notifications.value = [];
+      this.saveToStorage();
+    }
+  }
+
+  // Refresh notifications from backend
+  async refreshNotifications() {
+    await this.loadNotifications();
   }
 
   // Template management
@@ -234,9 +409,8 @@ class NotificationStore {
 
     return this.addNotification({
       title: template.title,
-      description: template.description,
+      message: template.description,
       type: template.type,
-      priority: template.priority,
       ...customData,
     });
   }
@@ -247,10 +421,8 @@ class NotificationStore {
 
     return this.addNotification({
       title: template.title,
-      description: template.description,
+      message: template.description,
       type: template.type,
-      priority: template.priority,
-      scheduledFor,
       ...customData,
     });
   }
@@ -261,17 +433,12 @@ class NotificationStore {
     const livestockMessage = livestockNames.length > 0 
       ? ` Ternak yang perlu diberi pakan: ${livestockNames.join(', ')}.`
       : '';
-    const description = customMessage || (baseMessage + livestockMessage + ' Jangan lupa untuk mencatat jumlah dan jenis pakan yang diberikan.');
+    const message = customMessage || (baseMessage + livestockMessage + ' Jangan lupa untuk mencatat jumlah dan jenis pakan yang diberikan.');
 
     return this.addNotification({
       title: 'Pengingat Pemberian Pakan',
-      description,
-      type: 'reminder',
-      priority: 'medium',
-      metadata: {
-        relatedEntity: 'feeding',
-        actionUrl: '/feedings',
-      },
+      message,
+      type: 'feeding-reminder',
     });
   }
 }
