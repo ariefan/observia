@@ -14,12 +14,12 @@
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #0ea5e9;
+            border-bottom: 2px solid #14b8a6;
         }
         .title {
             font-size: 24px;
             font-weight: bold;
-            color: #0ea5e9;
+            color: #14b8a6;
             margin-bottom: 10px;
         }
         .subtitle {
@@ -30,7 +30,7 @@
             margin-bottom: 20px;
             padding: 15px;
             background-color: #f8fafc;
-            border-left: 4px solid #0ea5e9;
+            border-left: 4px solid #14b8a6;
         }
         .info-row {
             margin-bottom: 5px;
@@ -46,7 +46,7 @@
         .section-title {
             font-size: 16px;
             font-weight: bold;
-            color: #1e40af;
+            color: #0f766e;
             margin-bottom: 15px;
             padding-bottom: 5px;
             border-bottom: 1px solid #e2e8f0;
@@ -99,7 +99,7 @@
         .stat-number {
             font-size: 18px;
             font-weight: bold;
-            color: #0ea5e9;
+            color: #14b8a6;
         }
         .stat-label {
             font-size: 11px;
