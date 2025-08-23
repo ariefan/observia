@@ -20,14 +20,14 @@
               </Badge>
             </div>
             <div class="text-right">
-              <div class="text-sm font-semibold">{{ formatDate(date) }}</div>
+              <div class="text-sm font-semibold">{{ formatDate(date.toString()) }}</div>
               <div class="text-sm font-semibold text-muted-foreground">
                 <Badge class="text-xs">
                   <template v-if="dateGroup.livestockCount && dateGroup.livestockCount > 1">
                     {{ dateGroup.totalQuantityPerLivestock.toFixed(2) }} kg/ekor
                   </template>
                   <template v-else>
-                    {{ parseFloat(dateGroup.totalQuantity).toFixed(2) }} kg
+                    {{ dateGroup.totalQuantity.toFixed(2) }} kg
                   </template>
                 </Badge>
               </div>
@@ -48,7 +48,7 @@
             <div v-if="feeding.ration?.rationItems && feeding.ration.rationItems.length > 0"
               class="text-xs text-muted-foreground mt-1">
               Komposisi: {{feeding.ration.rationItems.map(item => `${item.feed}
-              (${parseFloat(item.quantity).toFixed(2)}kg)`).join(', ')}}
+              (${parseFloat(item.quantity.toString()).toFixed(2)}kg)`).join(', ')}}
             </div>
             <p v-if="feeding.notes" class="text-xs text-muted-foreground mt-1 italic">
               "{{ feeding.notes }}"
@@ -59,9 +59,9 @@
             <Badge :variant="feeding.leftover ? 'secondary' : 'secondary'" class="text-xs">
               {{
                 feeding.leftover
-                  ? ((parseFloat(feeding.quantity) - parseFloat(feeding.leftover.leftover_quantity || 0)) /
+                  ? ((parseFloat(feeding.quantity.toString()) - parseFloat((feeding.leftover.leftover_quantity || 0).toString())) /
                     (feeding.livestock_count || 1)).toFixed(2)
-                  : (parseFloat(feeding.quantity) / (feeding.livestock_count || 1)).toFixed(2)
+                  : (parseFloat(feeding.quantity.toString()) / (feeding.livestock_count || 1)).toFixed(2)
               }}kg/ekor
             </Badge>
           </div>
@@ -74,7 +74,7 @@
             <Badge variant="default" class="rounded-full mb-1">{{ item.name }}</Badge>
             <p class="text-sm mt-1">
               <template v-if="item.livestock_count">
-                {{ (parseFloat(item.qty) / (item.livestock_count || 1)).toFixed(2) }} kg/ekor
+                {{ (parseFloat(item.qty.toString()) / (item.livestock_count || 1)).toFixed(2) }} kg/ekor
               </template>
               <template v-else>
                 {{ item.qty }}
@@ -143,13 +143,13 @@
       <div v-if="filteredFeedings && filteredFeedings.length > 0" class="space-y-4">
         <div v-for="dayData in filteredFeedings" :key="dayData.date" class="last:border-b-0">
           <div class="flex justify-between items-center">
-            <p class="font-semibold text-sm">{{ formatDateLong(dayData.date) }}</p>
+            <p class="font-semibold text-sm">{{ formatDateLong(dayData.date || '') }}</p>
             <Badge class="text-xs">
               <template v-if="dayData.livestockCount && dayData.livestockCount > 1">
                 {{ dayData.totalQuantityPerLivestock.toFixed(2) }} kg/ekor
               </template>
               <template v-else>
-                {{ parseFloat(dayData.totalQuantity).toFixed(2) }} kg
+                {{ dayData.totalQuantity.toFixed(2) }} kg
               </template>
             </Badge>
           </div>
@@ -165,9 +165,9 @@
                   </div>
                   <span class="font-semibold">{{
                     feeding.leftover
-                      ? ((parseFloat(feeding.quantity) - parseFloat(feeding.leftover.leftover_quantity || 0)) /
+                      ? ((parseFloat(feeding.quantity.toString()) - parseFloat((feeding.leftover.leftover_quantity || 0).toString())) /
                         (feeding.livestock_count || 1)).toFixed(2)
-                      : (parseFloat(feeding.quantity) / (feeding.livestock_count || 1)).toFixed(2)
+                      : (parseFloat(feeding.quantity.toString()) / (feeding.livestock_count || 1)).toFixed(2)
                     }} kg/ekor</span>
                 </div>
               </div>
@@ -203,26 +203,84 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
-const props = defineProps({
-  feed: {
-    type: Array,
-    default: () => []
-  },
-  feedingHistory: {
-    type: Array,
-    default: () => []
-  }
-});
+// Type definitions
+interface Ration {
+  id: number;
+  name: string;
+  rationItems?: RationItem[];
+}
+
+interface RationItem {
+  feed: string;
+  quantity: string | number;
+}
+
+interface Leftover {
+  leftover_quantity: string | number;
+}
+
+interface Feeding {
+  id: number;
+  date: string;
+  time?: string;
+  session: string;
+  quantity: string | number;
+  livestock_count?: number;
+  ration?: Ration;
+  leftover?: Leftover;
+  notes?: string;
+}
+
+interface FeedItem {
+  date: string;
+  name: string;
+  qty: string | number;
+  livestock_count?: number;
+}
+
+interface SessionData {
+  quantity: number;
+  quantityPerLivestock: number;
+  feedings: Feeding[];
+}
+
+interface GroupedSession {
+  [sessionName: string]: SessionData;
+}
+
+interface RationData {
+  name: string;
+  totalQuantity: number;
+  totalQuantityPerLivestock: number;
+}
+
+interface GroupedFeeding {
+  date?: string;
+  totalQuantity: number;
+  totalQuantityPerLivestock: number;
+  sessions: GroupedSession;
+  rations?: RationData[] | { [key: string]: RationData };
+  livestockCount: number;
+}
+
+interface GroupedFeedings {
+  [date: string]: GroupedFeeding;
+}
+
+const props = defineProps<{
+  feed?: FeedItem[];
+  feedingHistory?: Feeding[];
+}>();
 
 // Group feeding history by date
-const groupedFeedings = computed(() => {
+const groupedFeedings = computed((): GroupedFeedings => {
   if (!props.feedingHistory || props.feedingHistory.length === 0) {
     return {};
   }
 
-  const grouped = {};
+  const grouped: GroupedFeedings = {};
 
-  props.feedingHistory.forEach(feeding => {
+  props.feedingHistory.forEach((feeding: Feeding) => {
     const date = feeding.date;
 
     if (!grouped[date]) {
@@ -230,14 +288,14 @@ const groupedFeedings = computed(() => {
         totalQuantity: 0,
         totalQuantityPerLivestock: 0,
         sessions: {},
-        rations: {},
+        rations: {} as { [key: string]: RationData },
         livestockCount: feeding.livestock_count || 1
       };
     }
 
     // Add to total quantity
-    const feedQuantity = parseFloat(feeding.quantity);
-    const leftoverQuantity = feeding.leftover ? parseFloat(feeding.leftover.leftover_quantity || 0) : 0;
+    const feedQuantity = parseFloat(feeding.quantity.toString());
+    const leftoverQuantity = feeding.leftover ? parseFloat((feeding.leftover.leftover_quantity || 0).toString()) : 0;
     const consumedQuantity = feedQuantity - leftoverQuantity;
 
     grouped[date].totalQuantity += feedQuantity;
@@ -257,29 +315,36 @@ const groupedFeedings = computed(() => {
 
     // Group by ration
     const rationName = feeding.ration?.name || 'Ransum tidak diketahui';
-    if (!grouped[date].rations[rationName]) {
-      grouped[date].rations[rationName] = {
+    const dateRations = grouped[date].rations as { [key: string]: RationData };
+    if (!dateRations) {
+      grouped[date].rations = {} as { [key: string]: RationData };
+    }
+    if (!dateRations[rationName]) {
+      dateRations[rationName] = {
         name: rationName,
         totalQuantity: 0,
         totalQuantityPerLivestock: 0
       };
     }
-    grouped[date].rations[rationName].totalQuantity += feedQuantity;
-    grouped[date].rations[rationName].totalQuantityPerLivestock += consumedQuantity / (feeding.livestock_count || 1);
+    dateRations[rationName].totalQuantity += feedQuantity;
+    dateRations[rationName].totalQuantityPerLivestock += consumedQuantity / (feeding.livestock_count || 1);
   });
 
   // Convert rations object to array for easier templating
-  Object.keys(grouped).forEach(date => {
-    grouped[date].rations = Object.values(grouped[date].rations);
+  Object.keys(grouped).forEach((date: string) => {
+    const dateRations = grouped[date].rations as { [key: string]: RationData };
+    if (dateRations) {
+      grouped[date].rations = Object.values(dateRations);
+    }
   });
 
   return grouped;
 });
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
-  const options = {
+  const options: Intl.DateTimeFormatOptions = {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -306,31 +371,31 @@ const months = [
 ];
 
 // Get month and year display name
-const getMonthYearName = (month, year) => {
+const getMonthYearName = (month: number, year: number): string => {
   return `${months[month]} ${year}`;
 };
 
 // Get available years from feeding history
-const availableYears = computed(() => {
+const availableYears = computed((): number[] => {
   if (!props.feedingHistory || props.feedingHistory.length === 0) {
     return [new Date().getFullYear()];
   }
 
-  const years = new Set();
-  props.feedingHistory.forEach(feeding => {
+  const years = new Set<number>();
+  props.feedingHistory.forEach((feeding: Feeding) => {
     const feedingDate = new Date(feeding.date);
     years.add(feedingDate.getFullYear());
   });
 
-  const yearArray = Array.from(years).sort((a, b) => b - a); // Latest year first
+  const yearArray = Array.from(years).sort((a: number, b: number) => b - a); // Latest year first
   return yearArray.length > 0 ? yearArray : [new Date().getFullYear()];
 });
 
 // Format date for monthly view
-const formatDateLong = (dateStr) => {
+const formatDateLong = (dateStr: string): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
-  const options = {
+  const options: Intl.DateTimeFormatOptions = {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -340,20 +405,20 @@ const formatDateLong = (dateStr) => {
 };
 
 // Get filtered feeding data based on selected month/year
-const filteredFeedings = computed(() => {
+const filteredFeedings = computed((): GroupedFeeding[] => {
   if (!props.feedingHistory || props.feedingHistory.length === 0) {
     return [];
   }
 
   // Filter feedings for selected month/year and group by date
-  const monthlyFeedings = props.feedingHistory.filter(feeding => {
+  const monthlyFeedings = props.feedingHistory.filter((feeding: Feeding) => {
     const feedingDate = new Date(feeding.date);
     return feedingDate.getMonth() === selectedMonth.value && feedingDate.getFullYear() === selectedYear.value;
   });
 
-  const grouped = {};
+  const grouped: GroupedFeedings = {};
 
-  monthlyFeedings.forEach(feeding => {
+  monthlyFeedings.forEach((feeding: Feeding) => {
     const date = feeding.date;
 
     if (!grouped[date]) {
@@ -367,8 +432,8 @@ const filteredFeedings = computed(() => {
     }
 
     // Add to total quantity
-    const feedQuantity = parseFloat(feeding.quantity);
-    const leftoverQuantity = feeding.leftover ? parseFloat(feeding.leftover.leftover_quantity || 0) : 0;
+    const feedQuantity = parseFloat(feeding.quantity.toString());
+    const leftoverQuantity = feeding.leftover ? parseFloat((feeding.leftover.leftover_quantity || 0).toString()) : 0;
     const consumedQuantity = feedQuantity - leftoverQuantity;
 
     grouped[date].totalQuantity += feedQuantity;
@@ -388,10 +453,14 @@ const filteredFeedings = computed(() => {
   });
 
   // Convert to array and sort by date (newest first)
-  return Object.values(grouped).sort((a, b) => new Date(b.date) - new Date(a.date));
+  return Object.values(grouped).sort((a: GroupedFeeding, b: GroupedFeeding) => {
+    const dateA = a.date ? new Date(a.date).getTime() : 0;
+    const dateB = b.date ? new Date(b.date).getTime() : 0;
+    return dateB - dateA;
+  });
 });
 
-const translateSession = (session) => {
+const translateSession = (session: string): string => {
   if (!session) return '';
 
   switch (session.toLowerCase()) {
