@@ -134,25 +134,13 @@
             ID {{ $report->filters['livestock_id'] }}
         </div>
         @endif
+        @if(!empty($data['data']) && count($data['data']) > 0)
+        <div class="info-row">
+            <span class="label">Total data:</span>
+            {{ count($data['data']) }}
+        </div>
+        @endif
     </div>
-
-    <!-- Summary Statistics -->
-    @if(!empty($data['data']) && count($data['data']) > 0)
-    <div class="summary-stats">
-        <div class="stat-box">
-            <div class="stat-number">{{ count($data['data']) }}</div>
-            <div class="stat-label">Total Record</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-number">{{ $data['period'] }}</div>
-            <div class="stat-label">Periode</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-number">{{ $report->format }}</div>
-            <div class="stat-label">Format</div>
-        </div>
-    </div>
-    @endif
 
     <!-- Main Content -->
     <div class="content-section">

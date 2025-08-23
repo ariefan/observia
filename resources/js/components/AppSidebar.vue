@@ -23,11 +23,6 @@ const mainNavItems: NavItem[] = [
             icon: Shield,
         },
         {
-            title: 'Notifikasi',
-            href: '/notification',
-            icon: Bell,
-        },
-        {
             title: 'Manajemen Konten',
             href: '/content-management',
             icon: Settings,

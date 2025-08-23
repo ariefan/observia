@@ -220,16 +220,17 @@ class ReportController extends Controller
                 return [
                     'title' => 'Ringkasan Ternak',
                     'period' => $startDate . ' - ' . $endDate,
-                    'data' => $livestocks->map(function ($livestock) {
+                    'data' => $livestocks->map(function ($livestock, $index) {
                         return [
-                            'tag_id' => $livestock->tag_id,
-                            'name' => $livestock->name,
-                            'species' => $livestock->breed->species->name ?? 'N/A',
-                            'breed' => $livestock->breed->name ?? 'N/A',
-                            'birth_date' => $livestock->birthdate,
-                            'gender' => $livestock->sex,
-                            'status' => $livestock->status->value ?? $livestock->status,
-                            'current_weight' => $livestock->weight ?? 'N/A',
+                            'No' => $index + 1,
+                            'ID Tag' => $livestock->tag_id,
+                            'Nama' => $livestock->name,
+                            'Spesies' => $livestock->breed->species->name ?? 'T/A',
+                            'Ras' => $livestock->breed->name ?? 'T/A',
+                            'Tanggal Lahir' => $livestock->birthdate,
+                            'Jenis Kelamin' => $livestock->sex,
+                            'Status' => $livestock->status->value ?? $livestock->status,
+                            'Berat Saat Ini (kg)' => $livestock->weight ?? 'T/A',
                         ];
                     }),
                 ];
@@ -243,14 +244,15 @@ class ReportController extends Controller
                 return [
                     'title' => 'Laporan Pemberian Pakan',
                     'period' => $startDate . ' - ' . $endDate,
-                    'data' => $feedings->map(function ($feeding) {
+                    'data' => $feedings->map(function ($feeding, $index) {
                         return [
-                            'date' => $feeding->date,
-                            'herd' => $feeding->herd->name ?? 'N/A',
-                            'ration' => $feeding->ration->name ?? 'N/A',
-                            'quantity' => $feeding->quantity,
-                            'session' => $feeding->session,
-                            'notes' => $feeding->notes,
+                            'No' => $index + 1,
+                            'Tanggal' => $feeding->date,
+                            'Kandang' => $feeding->herd->name ?? 'T/A',
+                            'Ransum' => $feeding->ration->name ?? 'T/A',
+                            'Jumlah' => $feeding->quantity,
+                            'Sesi' => $feeding->session,
+                            'Catatan' => $feeding->notes,
                         ];
                     }),
                 ];
@@ -269,13 +271,14 @@ class ReportController extends Controller
                 return [
                     'title' => 'Laporan Produksi Susu',
                     'period' => $startDate . ' - ' . $endDate,
-                    'data' => $milkings->map(function ($milking) {
+                    'data' => $milkings->map(function ($milking, $index) {
                         return [
-                            'date' => $milking->date,
-                            'livestock' => $milking->livestock->tag_id . ' - ' . $milking->livestock->name,
-                            'milk_volume' => $milking->milk_volume,
-                            'session' => $milking->session,
-                            'notes' => $milking->notes,
+                            'No' => $index + 1,
+                            'Tanggal' => $milking->date,
+                            'Ternak' => $milking->livestock->tag_id . ' - ' . $milking->livestock->name,
+                            'Volume Susu' => $milking->milk_volume,
+                            'Sesi' => $milking->session,
+                            'Catatan' => $milking->notes,
                         ];
                     }),
                 ];
@@ -294,11 +297,12 @@ class ReportController extends Controller
                 return [
                     'title' => 'Laporan Perkembangan Bobot',
                     'period' => $startDate . ' - ' . $endDate,
-                    'data' => $weights->map(function ($weight) {
+                    'data' => $weights->map(function ($weight, $index) {
                         return [
-                            'date' => $weight->date,
-                            'livestock' => $weight->livestock->tag_id . ' - ' . $weight->livestock->name,
-                            'weight' => $weight->weight,
+                            'No' => $index + 1,
+                            'Tanggal' => $weight->date,
+                            'Ternak' => $weight->livestock->tag_id . ' - ' . $weight->livestock->name,
+                            'Berat (kg)' => $weight->weight,
                         ];
                     }),
                 ];
@@ -344,7 +348,7 @@ class ReportController extends Controller
             // Headers
             foreach ($headers as $col => $header) {
                 $columnLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 1);
-                $sheet->setCellValue($columnLetter . $row, ucfirst(str_replace('_', ' ', $header)));
+                $sheet->setCellValue($columnLetter . $row, $header);
             }
 
             // Data
@@ -390,7 +394,7 @@ class ReportController extends Controller
             // Headers
             foreach ($headers as $col => $header) {
                 $columnLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 1);
-                $sheet->setCellValue($columnLetter . $row, ucfirst(str_replace('_', ' ', $header)));
+                $sheet->setCellValue($columnLetter . $row, $header);
             }
 
             // Data

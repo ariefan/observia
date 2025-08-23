@@ -123,9 +123,14 @@
 
         <CardContent>
           <div class="space-y-3">
-            <div v-for="report in recentReports" :key="report.id"
+            <div v-for="(report, index) in recentReports" :key="report.id"
               class="flex items-center justify-between p-3 border rounded-lg">
               <div class="flex items-center gap-3">
+                <div class="flex-shrink-0">
+                  <div class="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                    {{ index + 1 }}
+                  </div>
+                </div>
                 <div class="flex-shrink-0">
                   <FileText class="h-5 w-5 text-muted-foreground" />
                 </div>
@@ -188,7 +193,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -199,7 +204,24 @@ import { Separator } from '@/components/ui/separator';
 import { FileDown, FileText, Download, Trash2, Calendar, Loader2 } from 'lucide-vue-next';
 import axios from 'axios';
 
-// Form state
+// Definisi tipe
+interface Livestock {
+  id: number;
+  name: string;
+  tag_id: string;
+}
+
+interface Report {
+  id: number;
+  name: string;
+  created_at: string;
+  format: string;
+  download_url?: string;
+}
+
+type ReportType = 'livestock-summary' | 'feeding-report' | 'milking-report' | 'weight-report' | 'health-report' | 'productivity-report' | 'financial-report' | 'breeding-report';
+
+// State form
 const reportForm = ref({
   type: '',
   startDate: '',
@@ -208,21 +230,21 @@ const reportForm = ref({
   format: 'pdf',
 });
 
-// UI state
+// State UI
 const isGenerating = ref(false);
 
-// Current date for max date validation
+// Tanggal saat ini untuk validasi tanggal maksimum
 const today = new Date().toISOString().split('T')[0];
 
-// Data from API
-const sampleLivestock = ref([]);
-const recentReports = ref([]);
+// Data dari API
+const sampleLivestock = ref<Livestock[]>([]);
+const recentReports = ref<Report[]>([]);
 const totalReports = ref(0);
 const monthlyReports = ref(0);
 const totalDownloads = ref(0);
 
-// Report descriptions
-const reportDescriptions = {
+// Deskripsi laporan
+const reportDescriptions: Record<ReportType, string> = {
   'livestock-summary': 'Ringkasan lengkap semua ternak termasuk informasi dasar, status kesehatan, dan produktivitas.',
   'feeding-report': 'Detail pemberian pakan harian termasuk jenis pakan, jumlah, dan jadwal pemberian.',
   'milking-report': 'Laporan produksi susu harian, mingguan, dan bulanan dengan analisis tren.',
@@ -233,20 +255,20 @@ const reportDescriptions = {
   'breeding-report': 'Laporan perkawinan, kebuntingan, dan kelahiran ternak.',
 };
 
-// Computed properties
+// Properti computed
 const needsLivestockFilter = computed(() => {
   return ['feeding-report', 'milking-report', 'weight-report', 'health-report'].includes(reportForm.value.type);
 });
 
 const reportDescription = computed(() => {
-  return reportForm.value.type ? reportDescriptions[reportForm.value.type] || '' : '';
+  return reportForm.value.type ? reportDescriptions[reportForm.value.type as ReportType] || '' : '';
 });
 
 const canGenerate = computed(() => {
   return reportForm.value.type && reportForm.value.startDate && reportForm.value.endDate && reportForm.value.format;
 });
 
-// API Functions
+// Fungsi API
 const fetchReports = async () => {
   try {
     const response = await axios.get('/reports');
@@ -255,7 +277,7 @@ const fetchReports = async () => {
     monthlyReports.value = response.data.stats?.monthly_reports || 0;
     totalDownloads.value = response.data.stats?.total_downloads || 0;
   } catch (error) {
-    console.error('Error fetching reports:', error);
+    console.error('Kesalahan mengambil laporan:', error);
   }
 };
 
@@ -264,11 +286,11 @@ const fetchLivestock = async () => {
     const response = await axios.get('/api/livestocks');
     sampleLivestock.value = response.data || [];
   } catch (error) {
-    console.error('Error fetching livestock:', error);
+    console.error('Kesalahan mengambil data ternak:', error);
   }
 };
 
-// Functions
+// Fungsi-fungsi
 const generateReport = async () => {
   if (!canGenerate.value) return;
 
@@ -306,7 +328,7 @@ const generateReport = async () => {
       await fetchReports();
     }
   } catch (error) {
-    console.error('Error generating report:', error);
+    console.error('Kesalahan membuat laporan:', error);
     alert('Gagal membuat laporan. Silakan coba lagi.');
   } finally {
     isGenerating.value = false;
@@ -323,7 +345,7 @@ const resetForm = () => {
   };
 };
 
-const downloadReport = async (report: any) => {
+const downloadReport = async (report: Report) => {
   try {
     if (report.download_url) {
       const downloadLink = document.createElement('a');
@@ -334,7 +356,7 @@ const downloadReport = async (report: any) => {
       await fetchReports();
     }
   } catch (error) {
-    console.error('Error downloading report:', error);
+    console.error('Kesalahan mengunduh laporan:', error);
     alert('Gagal mengunduh laporan. Silakan coba lagi.');
   }
 };
@@ -345,14 +367,14 @@ const deleteReport = async (reportId: number) => {
       await axios.delete(`/reports/${reportId}`);
       await fetchReports(); // Refresh the list
     } catch (error) {
-      console.error('Error deleting report:', error);
+      console.error('Kesalahan menghapus laporan:', error);
       alert('Gagal menghapus laporan. Silakan coba lagi.');
     }
   }
 };
 
 const getReportTypeName = (type: string) => {
-  const names = {
+  const names: Record<ReportType, string> = {
     'livestock-summary': 'Ringkasan_Ternak',
     'feeding-report': 'Laporan_Pakan',
     'milking-report': 'Laporan_Susu',
@@ -362,18 +384,18 @@ const getReportTypeName = (type: string) => {
     'financial-report': 'Laporan_Keuangan',
     'breeding-report': 'Laporan_Perkawinan',
   };
-  return names[type] || type;
+  return names[type as ReportType] || type;
 };
 
 const formatDate = (date: Date | string) => {
-  if (!date) return 'N/A';
+  if (!date) return 'T/A';
   
   try {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
     
     // Check if the date is valid
     if (isNaN(dateObj.getTime())) {
-      return 'Invalid Date';
+      return 'Tanggal Tidak Valid';
     }
     
     return new Intl.DateTimeFormat('id-ID', {
@@ -382,8 +404,8 @@ const formatDate = (date: Date | string) => {
       day: 'numeric',
     }).format(dateObj);
   } catch (error) {
-    console.error('Error formatting date:', date, error);
-    return 'Invalid Date';
+    console.error('Kesalahan memformat tanggal:', date, error);
+    return 'Tanggal Tidak Valid';
   }
 };
 
@@ -399,7 +421,7 @@ const formatDateRange = () => {
   return `${startMonth} - ${endMonth}`;
 };
 
-// Set default date range (last 30 days)
+// Atur rentang tanggal default (30 hari terakhir)
 const setDefaultDates = () => {
   const end = new Date();
   const start = new Date();
@@ -409,7 +431,7 @@ const setDefaultDates = () => {
   reportForm.value.startDate = start.toISOString().split('T')[0];
 };
 
-// Initialize component
+// Inisialisasi komponen
 onMounted(async () => {
   setDefaultDates();
   await Promise.all([
