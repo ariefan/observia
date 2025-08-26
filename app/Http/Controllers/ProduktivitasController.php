@@ -69,8 +69,8 @@ class ProduktivitasController extends Controller
                 ];
             })
             ->sortByDesc(function ($item) {
-                // Sort by date first, then by volume
-                return $item['latest_date'] . '_' . str_pad($item['daily_milk_production'], 10, '0', STR_PAD_LEFT);
+                // Sort by volume first, then by date
+                return str_pad($item['daily_milk_production'], 10, '0', STR_PAD_LEFT) . '_' . $item['latest_date'];
             })
             ->values()
             ->map(function ($item, $index) {
@@ -128,8 +128,8 @@ class ProduktivitasController extends Controller
                 ];
             })
             ->sortByDesc(function ($item) {
-                // Sort by date first, then by weight
-                return $item['latest_date'] . '_' . str_pad($item['current_weight'], 10, '0', STR_PAD_LEFT);
+                // Sort by weight first, then by date
+                return str_pad($item['current_weight'], 10, '0', STR_PAD_LEFT) . '_' . $item['latest_date'];
             })
             ->values()
             ->map(function ($item, $index) {
