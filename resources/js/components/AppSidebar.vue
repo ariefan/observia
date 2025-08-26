@@ -46,11 +46,7 @@ const mainNavItems: NavItem[] = [
             href: '/productivity',
             icon: TrendingUp,
         },
-        {
-            title: 'Laporan',
-            href: '/laporan',
-            icon: FileText,
-        }]
+]
         : []
     ),
     // Data menu - available for super users without farm context, or regular users with farm context

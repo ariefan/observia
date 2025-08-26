@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CalendarDays, Droplets, Weight, TrendingUp, Trophy, Award, Medal } from 'lucide-vue-next';
-import { IconMilk } from '@tabler/icons-vue';
+import { IconMilk, IconScaleOutline } from '@tabler/icons-vue';
 import { usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 import { ref, onMounted, computed } from 'vue';
@@ -257,7 +257,7 @@ onMounted(() => {
                     <div class="lg:col-span-2">
                         <div class="space-y-4">
                             <div v-if="rankings.length === 0" class="text-center py-12">
-                                <Droplets class="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                                <IconMilk class="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                                 <h3 class="text-lg font-semibold mb-2">Belum ada data</h3>
                                 <p class="text-muted-foreground">
                                     Belum ada data produksi susu yang tersedia.
