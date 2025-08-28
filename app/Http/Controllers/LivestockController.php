@@ -278,6 +278,13 @@ class LivestockController extends Controller
         // Get pedigree data
         $pedigreeData = \App\Models\Livestock::pedigree($livestock->id);
 
+        // Get health records for the last 6 months
+        $healthRecords = $livestock->healthRecords()
+            ->where('record_date', '>=', now()->subMonths(6))
+            ->orderBy('record_date', 'desc')
+            ->limit(20)
+            ->get();
+
         // Get latest livestock ending (if any)
         $latestEnding = $livestock->endings()
             ->orderBy('ending_date', 'desc')
@@ -293,6 +300,7 @@ class LivestockController extends Controller
             'feedingHistory' => $feedingHistory,
             'pedigreeData' => $pedigreeData,
             'latestEnding' => $latestEnding,
+            'healthRecords' => $healthRecords,
         ]);
     }
 

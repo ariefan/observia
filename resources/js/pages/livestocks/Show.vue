@@ -53,6 +53,7 @@ const props = defineProps<{
   feedingHistory?: any[];
   pedigreeData?: any[];
   latestEnding?: any;
+  healthRecords?: any[];
 }>();
 
 // Breadcrumb navigation
@@ -84,24 +85,7 @@ const getEndingStatusInfo = () => {
   return statusMap[props.latestEnding.ending_status] || { label: props.latestEnding.ending_status, variant: 'secondary' };
 };
 
-// Data for health and feed history
-const healthData = [
-  {
-    status: "Sehat",
-    desc: "Kambing dalam keadaan baik dan bebas dari penyakit.",
-    date: "17 Juni 2024",
-  },
-  {
-    status: "Sakit",
-    desc: "Peradangan pada kelenjar susu (Mastitis)",
-    date: "16 Juni 2024",
-  },
-  {
-    status: "Sakit",
-    desc: "Infeksi bakteri pada kelenjar susu (Mastitis)",
-    date: "15 Juni 2024",
-  },
-];
+// Data for feed history
 
 const feedData = [
   {
@@ -683,7 +667,7 @@ const milkingTrend = computed(() => {
 
       <!-- Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <HealthHistoryCard :history="healthData" />
+        <HealthHistoryCard :history="healthRecords" />
         <FeedHistoryCard :feed="feedData" :feedingHistory="feedingHistory" />
       </div>
 
