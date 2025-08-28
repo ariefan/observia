@@ -22,7 +22,10 @@
       "Bash(composer:*)",
       "WebFetch(domain:localhost)",
       "Bash(grep:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(npm install:*)",
+      "Bash(node:*)",
+      "Bash(herd status:*)"
     ],
     "deny": [],
     "additionalDirectories": [

@@ -1,5 +1,5 @@
 <template>
-  <div class="p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
+  <div class="p-8 bg-gray-50 dark:bg-gray-900 ">
     <div class="max-w-6xl mx-auto">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8 text-center">Pedigree</h1>
 
@@ -7,14 +7,12 @@
         <!-- Level 1 - Root -->
         <div class="relative flex items-center">
           <!-- Root Node Card -->
-          <div 
-            :class="[
-              'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1',
-              orgData.isClickable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-300 dark:hover:border-blue-500' : ''
-            ]"
-            @click="navigateToLivestock(orgData)"
-          >
-            <div class="size-10 bg-blue-100 dark:bg-blue-900 rounded-full flex-shrink-0 flex items-center justify-center">
+          <div :class="[
+            'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1',
+            orgData.isClickable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-300 dark:hover:border-blue-500' : ''
+          ]" @click="navigateToLivestock(orgData)">
+            <div
+              class="size-10 bg-blue-100 dark:bg-blue-900 rounded-full flex-shrink-0 flex items-center justify-center">
               <img v-if="orgData.avatar" :src="getPhotoUrl(orgData.avatar)" :alt="orgData.name"
                 class="size-10 rounded-full object-cover" @error="handleImageError" />
               <ImageOff v-else class="w-6 h-6 text-gray-400 dark:text-gray-500" />
@@ -45,20 +43,17 @@
             <!-- Level 2 nodes -->
             <div class="ml-0">
               <div class="flex flex-col space-y-8">
-                <div v-for="level2Node in orgData.children" :key="level2Node.id"
-                  class="relative flex items-center">
+                <div v-for="level2Node in orgData.children" :key="level2Node.id" class="relative flex items-center">
                   <!-- Horizontal connector from vertical line to level 2 node -->
                   <div class="w-8 h-px bg-gray-300 dark:bg-gray-600"></div>
 
                   <!-- Level 2 Node Card -->
-                  <div
-                    :class="[
-                      'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1',
-                      level2Node.isClickable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-300 dark:hover:border-blue-500' : ''
-                    ]"
-                    @click="navigateToLivestock(level2Node)"
-                  >
-                    <div class="size-10 bg-blue-100 dark:bg-blue-900 rounded-full flex-shrink-0 flex items-center justify-center">
+                  <div :class="[
+                    'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1',
+                    level2Node.isClickable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-300 dark:hover:border-blue-500' : ''
+                  ]" @click="navigateToLivestock(level2Node)">
+                    <div
+                      class="size-10 bg-blue-100 dark:bg-blue-900 rounded-full flex-shrink-0 flex items-center justify-center">
                       <img v-if="level2Node.avatar" :src="getPhotoUrl(level2Node.avatar)" :alt="level2Node.name"
                         class="size-10 rounded-full object-cover" @error="handleImageError" />
                       <ImageOff v-else class="w-6 h-6 text-gray-400 dark:text-gray-500" />
@@ -80,11 +75,12 @@
                     <div class="w-8 h-px bg-gray-300 dark:bg-gray-600"></div>
 
                     <!-- Vertical connector for multiple level 3 nodes -->
-                    <div v-if="level2Node.children.length > 1" class="absolute bg-gray-300 dark:bg-gray-600 w-px" :style="{
-                      left: '256px',
-                      height: `${(level2Node.children.length - 1) * 120}px`,
-                      top: `${48}px`
-                    }"></div>
+                    <div v-if="level2Node.children.length > 1" class="absolute bg-gray-300 dark:bg-gray-600 w-px"
+                      :style="{
+                        left: '256px',
+                        height: `${(level2Node.children.length - 1) * 120}px`,
+                        top: `${48}px`
+                      }"></div>
 
                     <!-- Level 3 nodes -->
                     <div class="flex flex-col space-y-6">
@@ -94,14 +90,12 @@
                         <div class="w-8 h-px bg-gray-300 dark:bg-gray-600"></div>
 
                         <!-- Level 3 Node Card -->
-                        <div
-                          :class="[
-                            'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1',
-                            level3Node.isClickable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-300 dark:hover:border-blue-500' : ''
-                          ]"
-                          @click="navigateToLivestock(level3Node)"
-                        >
-                          <div class="size-10 bg-blue-100 dark:bg-blue-900 rounded-full flex-shrink-0 flex items-center justify-center">
+                        <div :class="[
+                          'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1',
+                          level3Node.isClickable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-300 dark:hover:border-blue-500' : ''
+                        ]" @click="navigateToLivestock(level3Node)">
+                          <div
+                            class="size-10 bg-blue-100 dark:bg-blue-900 rounded-full flex-shrink-0 flex items-center justify-center">
                             <img v-if="level3Node.avatar" :src="getPhotoUrl(level3Node.avatar)" :alt="level3Node.name"
                               class="size-10 rounded-full object-cover" @error="handleImageError" />
                             <ImageOff v-else class="w-6 h-6 text-gray-400 dark:text-gray-500" />
@@ -202,7 +196,7 @@ const orgData = computed<OrgNode>(() => {
 
 const getPhotoFromField = (photoField: any): string => {
   if (!photoField) return ''
-  
+
   // If it's a JSON string, parse it first
   let photoArray = photoField
   if (typeof photoField === 'string') {
@@ -213,17 +207,17 @@ const getPhotoFromField = (photoField: any): string => {
       return photoField
     }
   }
-  
+
   // If it's an array, get the first element
   if (Array.isArray(photoArray) && photoArray.length > 0) {
     return photoArray[0]
   }
-  
+
   // If it's already a string, return it
   if (typeof photoArray === 'string') {
     return photoArray
   }
-  
+
   return ''
 }
 

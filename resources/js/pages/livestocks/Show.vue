@@ -70,6 +70,11 @@ const deleteLivestock = () => {
   }
 }
 
+const downloadStudbook = () => {
+  // Open studbook PDF in new tab
+  window.open(route('livestocks.studbook', props.livestock.id), '_blank');
+}
+
 // Helper function to get status badge variant and label
 const getEndingStatusInfo = () => {
   if (!props.latestEnding) return null;
@@ -400,11 +405,9 @@ const milkingTrend = computed(() => {
                 <span>Edit data ternak</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem as-child>
-                <div class="flex items-center gap-2">
-                  <TreeDeciduous class="h-4 w-4" />
-                  <span>Studbook</span>
-                </div>
+              <DropdownMenuItem @click="downloadStudbook" class="flex items-center gap-2 cursor-pointer">
+                <TreeDeciduous class="h-4 w-4" />
+                <span>Studbook</span>
               </DropdownMenuItem>
               <DropdownMenuItem as-child>
                 <div class="flex items-center gap-2">

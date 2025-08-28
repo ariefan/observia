@@ -39,11 +39,15 @@ Route::get('/clear-all', function ($request) {
 Route::get('/google/redirect', [GoogleLoginController::class, 'redirectToGoogle'])->name('google.redirect');
 Route::get('/google/callback', [GoogleLoginController::class, 'handleGoogleCallback'])->name('google.callback');
 
+// Pedigree image route for internal use (no auth required)
+Route::get('/livestocks/{livestock}/pedigree-image', [LivestockController::class, 'pedigreeImage'])->name('livestocks.pedigree-image');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/livestocks/weight', [LivestockController::class, 'weighting'])->name('livestocks.weighting');
     Route::post('/livestocks/weight', [LivestockController::class, 'storeWeight'])->name('livestocks.weight.store');    
     Route::get('/livestocks/milking', [LivestockController::class, 'milking'])->name('livestocks.milking');
     Route::post('/livestocks/milking', [LivestockController::class, 'storeMilking'])->name('livestocks.milking.store');
+    Route::get('/livestocks/{livestock}/studbook', [LivestockController::class, 'studbook'])->name('livestocks.studbook');
     
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');

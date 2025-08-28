@@ -304,6 +304,38 @@ class LivestockController extends Controller
         ]);
     }
 
+    public function studbook(Livestock $livestock)
+    {
+        $this->authorize('view', $livestock);
+        
+        // Load livestock with relationships
+        $livestock->load('breed.species', 'farm', 'maleParent', 'femaleParent');
+        
+        // Get pedigree data (same as in show method)
+        $pedigreeData = \App\Models\Livestock::pedigree($livestock->id);
+        
+        // Return HTML view for printing
+        return view('studbook.print', [
+            'livestock' => $livestock,
+            'pedigreeData' => $pedigreeData,
+            'farm' => $livestock->farm
+        ]);
+    }
+
+
+    public function pedigreeImage(Livestock $livestock)
+    {
+        // No authorization check - this is for internal image capture only
+        
+        // Get pedigree data (same as in show method)
+        $pedigreeData = \App\Models\Livestock::pedigree($livestock->id);
+        
+        // Return standalone pedigree view for image capture
+        return view('studbook.pedigree-standalone', [
+            'pedigreeData' => $pedigreeData
+        ]);
+    }
+
     public function weighting()
     {
         return Inertia::render('livestocks/Weighting', [
