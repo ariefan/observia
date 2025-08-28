@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import type { NavItem, SharedData } from '@/types';
-import { LayoutGrid, Home, Shield, TrendingUp } from 'lucide-vue-next';
+import { LayoutGrid, Home, Shield, TrendingUp, Heart } from 'lucide-vue-next';
 import { IconFileText, IconHorse } from '@tabler/icons-vue';
 
 const page = usePage<SharedData>();
@@ -33,6 +33,11 @@ const mainNavItems: NavItem[] = [
             title: 'Produktivitas',
             href: '/productivity',
             icon: TrendingUp,
+        },
+        {
+            title: 'Kesehatan',
+            href: '/health-records',
+            icon: Heart,
         }]
         : []
     ),

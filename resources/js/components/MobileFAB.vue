@@ -10,6 +10,7 @@ import {
 import {
     Plus,
     Wheat,
+    Heart,
 } from 'lucide-vue-next';
 import { IconScaleOutline, IconHorse, IconMilk } from '@tabler/icons-vue';
 import { router, usePage } from '@inertiajs/vue3';
@@ -56,6 +57,10 @@ function goToFeed(route: string) {
                     <DropdownMenuItem @click="router.get(route('livestocks.weighting'))">
                         <IconScaleOutline class="mr-2 h-4 w-4" />
                         <span>Bobot ternak</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="router.get(route('health-records.create'))">
+                        <Heart class="mr-2 h-4 w-4" />
+                        <span>Kesehatan</span>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
             </DropdownMenuContent>

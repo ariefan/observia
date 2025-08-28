@@ -21,7 +21,8 @@
       "Bash(mkdir:*)",
       "Bash(composer:*)",
       "WebFetch(domain:localhost)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": [],
     "additionalDirectories": [

@@ -18,6 +18,7 @@ use App\Http\Controllers\ErrorLogController;
 use App\Http\Controllers\ProduktivitasController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ContentController;
+use App\Http\Controllers\LivestockHealthRecordController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -146,6 +147,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'herds' => HerdController::class,
         'rations' => RationController::class,
         'feeds' => FeedController::class,
+        'health-records' => LivestockHealthRecordController::class,
     ]);
     
     // Route::get('/livestocks/photo/{path}', [LivestockController::class, 'showPhoto'])->where('path', '.*')->name('livestocks.photo');

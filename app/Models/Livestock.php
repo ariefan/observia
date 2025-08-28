@@ -186,6 +186,11 @@ class Livestock extends Model
         return $this->hasMany(LivestockEnding::class);
     }
 
+    public function healthRecords(): HasMany
+    {
+        return $this->hasMany(LivestockHealthRecord::class);
+    }
+
     protected static function boot()
     {
         parent::boot();
