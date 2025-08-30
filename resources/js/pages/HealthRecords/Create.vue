@@ -63,20 +63,18 @@ const submit = () => {
   router.post(route('health-records.store'), submitData, {
     onSuccess: () => {
       // Reset local form data
-      Object.assign(localFormData, {
-        livestock_id: '',
-        health_status: '',
-        diagnosis: [''],
-        treatment: '',
-        notes: '',
-        medicines: [{
-          name: '',
-          type: '',
-          quantity: null,
-          dosage: ''
-        }],
-        record_date: new Date().toISOString().split('T')[0],
-      });
+      localFormData.livestock_id = '';
+      localFormData.health_status = '';
+      localFormData.diagnosis = [''];
+      localFormData.treatment = '';
+      localFormData.notes = '';
+      localFormData.medicines = [{
+        name: '',
+        type: '',
+        quantity: null,
+        dosage: ''
+      }];
+      localFormData.record_date = new Date().toISOString().split('T')[0];
       processing.value = false;
     },
     onError: (formErrors) => {

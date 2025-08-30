@@ -25,7 +25,7 @@ interface Livestock {
 interface Medicine {
   name: string;
   type: string;
-  quantity: number | null;
+  quantity: number | undefined;
   dosage: string;
 }
 
@@ -97,7 +97,7 @@ const filteredLivestocks = computed(() => {
 const venomCodes = [
   { code: 'V001', label: 'Mastitis', description: 'Inflammation of mammary glands' },
   { code: 'V002', label: 'Busuk Kuku', description: 'Hoof rot or foot rot' },
-  { code: 'V003', label: 'Pneumonia', description: 'Lung inflammation' },
+  { code: 'V003', label: 'Radang Paru (Pneumonia)', description: 'Lung inflammation' },
   { code: 'V004', label: 'Diare', description: 'Diarrhea or loose stools' },
   { code: 'V005', label: 'Kembung', description: 'Bloat or gastric tympany' },
   { code: 'V006', label: 'Demam Susu', description: 'Milk fever or hypocalcemia' },
@@ -183,7 +183,7 @@ const addMedicine = () => {
   formData.value.medicines.push({
     name: '',
     type: '',
-    quantity: null,
+    quantity: undefined,
     dosage: ''
   });
 };
@@ -287,7 +287,7 @@ const handleSubmit = () => {
 
     <!-- Keterangan -->
     <div>
-      <Label for="notes" class="block text-sm font-medium mb-2">Keterangan</Label>
+      <Label for="notes" class="block text-sm font-medium mb-2">Keterangan / Gejala</Label>
       <Textarea id="notes" v-model="formData.notes" rows="4"
         placeholder="Ceritakan kondisi ternak. Jika sakit, tulis ciri-cirinya." class="w-full" />
       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Ceritakan kondisi ternak Anda. Jika sakit,
@@ -307,7 +307,7 @@ const handleSubmit = () => {
         </div>
 
         <div class="space-y-3">
-          <div v-for="(diagnosis, index) in (formData.diagnosis || [])" :key="index" class="flex gap-2">
+          <div v-for="(_, index) in (formData.diagnosis || [])" :key="index" class="flex gap-2">
             <div class="flex-1">
               <Combobox v-model="formData.diagnosis[index]">
                 <div class="relative">
@@ -315,7 +315,7 @@ const handleSubmit = () => {
                     class="relative w-full cursor-default rounded-lg bg-background border border-input py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:text-sm">
                     <span class="block truncate text-foreground">{{
                       formData.diagnosis[index] || 'Pilih diagnosa...'
-                      }}</span>
+                    }}</span>
                     <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                       <ChevronsUpDown class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                     </span>
@@ -390,7 +390,7 @@ const handleSubmit = () => {
 
       <div class="space-y-4">
         <div class="border border-border rounded-lg p-4">
-          <template v-for="(medicine, index) in (formData.medicines || [])" :key="index">
+          <template v-for="(_, index) in (formData.medicines || [])" :key="index">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
               <div class="lg:col-span-3">
                 <Label v-if="index === 0" class="block text-sm font-medium mb-2">Nama Obat</Label>
@@ -400,7 +400,7 @@ const handleSubmit = () => {
                       class="relative w-full cursor-default rounded-lg bg-background border border-input py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:text-sm">
                       <span class="block truncate text-foreground">{{
                         formData.medicines[index].name || 'Pilih obat...'
-                      }}</span>
+                        }}</span>
                       <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                         <ChevronsUpDown class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                       </span>
