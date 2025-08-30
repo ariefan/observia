@@ -46,12 +46,7 @@ const mainNavItems: NavItem[] = [
             href: '/productivity',
             icon: TrendingUp,
         },
-        {
-            title: 'Kesehatan',
-            href: '/health-records',
-            icon: Heart,
-        },
-]
+        ]
         : []
     ),
     // Data menu - available for super users without farm context, or regular users with farm context

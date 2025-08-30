@@ -16,6 +16,7 @@ import {
     Heart,
 } from 'lucide-vue-next';
 import { IconScaleOutline, IconHorse, IconMilk } from '@tabler/icons-vue';
+import { ClipboardPlus } from 'lucide-vue-next';
 
 import { ref } from 'vue';
 
@@ -67,7 +68,7 @@ function goToFeed(route: string) {
                             <span>Bobot ternak</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem @click="router.get(route('health-records.create'))">
-                            <Heart class="mr-2 h-4 w-4" />
+                            <ClipboardPlus class="mr-2 h-4 w-4" />
                             <span>Kesehatan</span>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { History, LogIn, Database, FileText } from 'lucide-vue-next';
+import { History, LogIn, Database, FileText, ClipboardPlus } from 'lucide-vue-next';
 import { IconFileText, IconHorse, IconLock, IconDna, IconBug, IconFileAnalytics, IconStethoscope } from '@tabler/icons-vue';
 import type { SharedData } from '@/types';
 
@@ -19,14 +19,14 @@ const navigationItems = [
     icon: IconFileText,
   },
   {
+    title: 'Catatan Kesehatan',
+    route: 'health-records.index',
+    icon: ClipboardPlus,
+  },
+  {
     title: 'Kandang',
     route: 'herds.index',
     icon: IconHorse,
-  },
-  {
-    title: 'Catatan Kesehatan',
-    route: 'health-records.index',
-    icon: IconStethoscope,
   },
   // Super user only items
   ...(page.props.auth.user?.is_super_user
