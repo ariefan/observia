@@ -18,9 +18,7 @@ class LivestockHealthRecord extends Model
         'diagnosis',
         'treatment',
         'notes',
-        'medicine_name',
-        'medicine_type',
-        'medicine_quantity',
+        'medicines',
         'record_date',
     ];
 
@@ -28,7 +26,8 @@ class LivestockHealthRecord extends Model
     {
         return [
             'record_date' => 'date',
-            'medicine_quantity' => 'integer',
+            'diagnosis' => 'array', // Cast JSON to array
+            'medicines' => 'array', // Cast JSON to array
         ];
     }
 

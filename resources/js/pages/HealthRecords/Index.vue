@@ -7,16 +7,25 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Plus, MoreVertical, Pencil, Trash2, Calendar, Stethoscope } from 'lucide-vue-next';
+import SecondSidebar from '@/components/SecondSidebar.vue';
+
+interface Medicine {
+  name: string;
+  type?: string;
+  quantity?: number;
+  dosage?: string;
+}
 
 interface HealthRecord {
   id: string;
-  health_status: 'sehat' | 'sakit';
-  diagnosis: string | null;
+  health_status: 'healthy' | 'sick';
+  diagnosis: string[] | string | null;
   treatment: string | null;
   notes: string | null;
-  medicine_name: string | null;
-  medicine_type: string | null;
-  medicine_quantity: number | null;
+  medicines: Medicine[] | null;
+  medicine_name: string | null; // Backward compatibility
+  medicine_type: string | null; // Backward compatibility
+  medicine_quantity: number | null; // Backward compatibility
   record_date: string;
   livestock: {
     id: string;
@@ -56,16 +65,16 @@ const formatDate = (dateString: string) => {
 
 const deleteRecord = (id: string) => {
   if (confirm('Yakin ingin menghapus catatan kesehatan ini?')) {
-    router.delete(route('health-records.destroy', id));
+    router.delete(route('health-records.destroy', { id }));
   }
 };
 
 const getStatusVariant = (status: string) => {
-  return status === 'sehat' ? 'default' : 'destructive';
+  return status === 'healthy' ? 'default' : 'destructive';
 };
 
 const getStatusText = (status: string) => {
-  return status === 'sehat' ? 'Sehat' : 'Sakit';
+  return status === 'healthy' ? 'Sehat' : 'Sakit';
 };
 </script>
 
@@ -73,7 +82,11 @@ const getStatusText = (status: string) => {
   <Head title="Catatan Kesehatan Ternak" />
 
   <AppLayout>
-    <div class="max-w-7xl mx-auto p-6">
+    <div class="flex min-h-screen">
+      <!-- Sidebar -->
+      <SecondSidebar current-route="health-records.index" />
+
+      <div class="flex-1 max-w-7xl mx-auto p-6">
       <!-- Header -->
       <div class="flex justify-between items-center mb-6">
         <div>
@@ -113,7 +126,7 @@ const getStatusText = (status: string) => {
               <div class="ml-4">
                 <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Ternak Sehat</p>
                 <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {{ healthRecords.data.filter(r => r.health_status === 'sehat').length }}
+                  {{ healthRecords.data.filter(r => r.health_status === 'healthy').length }}
                 </p>
               </div>
             </div>
@@ -129,7 +142,7 @@ const getStatusText = (status: string) => {
               <div class="ml-4">
                 <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Ternak Sakit</p>
                 <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {{ healthRecords.data.filter(r => r.health_status === 'sakit').length }}
+                  {{ healthRecords.data.filter(r => r.health_status === 'sick').length }}
                 </p>
               </div>
             </div>
@@ -184,7 +197,14 @@ const getStatusText = (status: string) => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <span v-if="record.diagnosis">{{ record.diagnosis }}</span>
+                    <div v-if="record.diagnosis">
+                      <span v-if="Array.isArray(record.diagnosis)" class="space-y-1">
+                        <div v-for="(diag, index) in record.diagnosis" :key="index" class="text-sm">
+                          • {{ diag }}
+                        </div>
+                      </span>
+                      <span v-else>{{ record.diagnosis }}</span>
+                    </div>
                     <span v-else class="text-gray-400 dark:text-gray-500 italic">-</span>
                   </TableCell>
                   <TableCell>
@@ -192,7 +212,17 @@ const getStatusText = (status: string) => {
                     <span v-else class="text-gray-400 dark:text-gray-500 italic">-</span>
                   </TableCell>
                   <TableCell>
-                    <div v-if="record.medicine_name">
+                    <div v-if="record.medicines && record.medicines.length > 0">
+                      <div v-for="(medicine, index) in record.medicines" :key="index" class="mb-2 last:mb-0">
+                        <div class="font-medium">{{ medicine.name }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                          <span v-if="medicine.type">{{ medicine.type }}</span>
+                          <span v-if="medicine.quantity">{{ medicine.type ? ' - ' : '' }}{{ medicine.quantity }}</span>
+                          <span v-if="medicine.dosage">{{ (medicine.type || medicine.quantity) ? ' - ' : '' }}{{ medicine.dosage }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else-if="record.medicine_name">
                       <div class="font-medium">{{ record.medicine_name }}</div>
                       <div class="text-sm text-gray-500 dark:text-gray-400" v-if="record.medicine_type || record.medicine_quantity">
                         {{ record.medicine_type }}{{ record.medicine_quantity ? ` - ${record.medicine_quantity}` : '' }}
@@ -212,12 +242,12 @@ const getStatusText = (status: string) => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link :href="route('health-records.show', record.id)" class="cursor-pointer">
+                          <Link :href="route('health-records.show', { id: record.id })" class="cursor-pointer">
                             Lihat Detail
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link :href="route('health-records.edit', record.id)" class="cursor-pointer">
+                          <Link :href="route('health-records.edit', { id: record.id })" class="cursor-pointer">
                             <Pencil class="h-4 w-4 mr-2" />
                             Edit
                           </Link>
@@ -260,6 +290,7 @@ const getStatusText = (status: string) => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   </AppLayout>
 </template>

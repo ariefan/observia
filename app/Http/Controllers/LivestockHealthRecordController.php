@@ -65,13 +65,16 @@ class LivestockHealthRecordController extends Controller
     {
         $validated = $request->validate([
             'livestock_id' => 'required|exists:livestocks,id',
-            'health_status' => 'required|in:sehat,sakit',
-            'diagnosis' => 'nullable|string|max:255',
+            'health_status' => 'required|in:healthy,sick',
+            'diagnosis' => 'nullable|array',
+            'diagnosis.*' => 'string|max:255',
             'treatment' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
-            'medicine_name' => 'nullable|string|max:255',
-            'medicine_type' => 'nullable|string|max:255',
-            'medicine_quantity' => 'nullable|integer|min:1',
+            'medicines' => 'nullable|array',
+            'medicines.*.name' => 'string|max:255',
+            'medicines.*.type' => 'nullable|string|max:255',
+            'medicines.*.quantity' => 'nullable|integer|min:1',
+            'medicines.*.dosage' => 'nullable|string|max:255',
             'record_date' => 'required|date',
         ]);
 
@@ -139,13 +142,16 @@ class LivestockHealthRecordController extends Controller
 
         $validated = $request->validate([
             'livestock_id' => 'required|exists:livestocks,id',
-            'health_status' => 'required|in:sehat,sakit',
-            'diagnosis' => 'nullable|string|max:255',
+            'health_status' => 'required|in:healthy,sick',
+            'diagnosis' => 'nullable|array',
+            'diagnosis.*' => 'string|max:255',
             'treatment' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
-            'medicine_name' => 'nullable|string|max:255',
-            'medicine_type' => 'nullable|string|max:255',
-            'medicine_quantity' => 'nullable|integer|min:1',
+            'medicines' => 'nullable|array',
+            'medicines.*.name' => 'string|max:255',
+            'medicines.*.type' => 'nullable|string|max:255',
+            'medicines.*.quantity' => 'nullable|integer|min:1',
+            'medicines.*.dosage' => 'nullable|string|max:255',
             'record_date' => 'required|date',
         ]);
 

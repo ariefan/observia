@@ -14,10 +14,12 @@ return new class extends Migration
         Schema::create('livestock_health_records', function (Blueprint $table) {
             $table->id();
             $table->foreignUuid('livestock_id')->constrained()->onDelete('cascade');
-            $table->enum('health_status', ['sehat', 'sakit']);
-            $table->string('diagnosis')->nullable();
+            $table->enum('health_status', ['healthy', 'sick']);
+            $table->json('diagnosis')->nullable(); // Support multiple diagnoses
             $table->string('treatment')->nullable();
             $table->text('notes')->nullable();
+            $table->json('medicines')->nullable(); // Support multiple medicines with dosage
+            // Keep old columns for backward compatibility
             $table->string('medicine_name')->nullable();
             $table->string('medicine_type')->nullable();
             $table->integer('medicine_quantity')->nullable();

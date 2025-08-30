@@ -3,7 +3,11 @@
   <Head title="Laporan" />
 
   <AppLayout>
-    <div class="flex h-full w-full flex-1 flex-col gap-4 p-4 max-w-7xl mx-auto">
+    <div class="flex min-h-screen">
+      <!-- Sidebar -->
+      <SecondSidebar current-route="laporan" />
+
+      <div class="flex-1 flex flex-col gap-4 p-4 max-w-7xl mx-auto">
       <!-- Header -->
       <div class="flex items-start justify-between space-x-4">
         <div class="space-y-1">
@@ -188,6 +192,7 @@
         </Card>
       </div>
     </div>
+    </div>
   </AppLayout>
 </template>
 
@@ -203,6 +208,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { FileDown, FileText, Download, Trash2, Calendar, Loader2 } from 'lucide-vue-next';
 import axios from 'axios';
+import SecondSidebar from '@/components/SecondSidebar.vue';
 
 // Definisi tipe
 interface Livestock {

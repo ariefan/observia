@@ -2,24 +2,42 @@
   <Card class="border border-primary/20 dark:border-primary/80 flex flex-col h-full">
     <CardContent class="p-4 flex-1">
       <h3 class="font-semibold text-lg mb-4">Riwayat Kesehatan</h3>
-      
+
       <ul v-if="history && history.length > 0" class="space-y-3">
-        <li v-for="item in history" :key="`${item.id || item.date}-${item.status}`" class="pb-3">
+        <li v-for="item in history" :key="`${item.id || item.date}-${item.health_status}`" class="pb-3">
           <div class="flex justify-between items-start">
             <div>
-              <Badge v-if="item.status === 'sehat' || item.status === 'Sehat'" variant="default" class="rounded-full mb-1">Sehat</Badge>
+              <Badge v-if="item.health_status === 'healthy'" variant="default" class="rounded-full mb-1">Sehat</Badge>
               <Badge v-else variant="destructive" class="rounded-full mb-1">Sakit</Badge>
-              
-              <p v-if="item.diagnosis" class="text-sm font-medium mt-1">{{ item.diagnosis }}</p>
-              <p v-if="item.treatment" class="text-sm text-muted-foreground mt-1">Treatment: {{ item.treatment }}</p>
-              <p v-if="item.medicine_name" class="text-sm text-muted-foreground mt-1">Obat: {{ item.medicine_name }}
-                <span v-if="item.medicine_type"> ({{ getMedicineTypeText(item.medicine_type) }})</span>
-                <span v-if="item.medicine_quantity"> - {{ item.medicine_quantity }}</span>
-              </p>
+
               <p v-if="item.notes" class="text-xs text-muted-foreground mt-1 italic">
                 "{{ item.notes }}"
               </p>
               <p v-else-if="item.desc" class="text-sm mt-1">{{ item.desc }}</p>
+              <div v-if="item.diagnosis" class="mt-1">
+                <div v-if="Array.isArray(item.diagnosis)" class="space-y-1">
+                  <p v-for="(diag, index) in item.diagnosis" :key="index" class="text-sm font-medium">
+                    • {{ diag }}
+                  </p>
+                </div>
+                <p v-else class="text-sm font-medium">{{ item.diagnosis }}</p>
+              </div>
+              <p v-if="item.treatment" class="text-sm text-muted-foreground mt-1">Treatment: {{ item.treatment }}</p>
+              <div v-if="item.medicines && item.medicines.length > 0" class="mt-1 space-y-1">
+                <!-- Intentionally hidden for future resolve  -->
+                <div v-for="(medicine, index) in item.medicines" :key="index"
+                  class="text-sm text-muted-foreground hidden">
+                  Obat: {{ medicine.name }}
+                  <span v-if="medicine.type"> ({{ getMedicineTypeText(medicine.type) }})</span>
+                  <span v-if="medicine.quantity"> - {{ medicine.quantity }}</span>
+                  <span v-if="medicine.dosage"> - {{ medicine.dosage }}</span>
+                </div>
+              </div>
+              <p v-else-if="item.medicine_name" class="text-sm text-muted-foreground mt-1">Obat: {{ item.medicine_name
+                }}
+                <span v-if="item.medicine_type"> ({{ getMedicineTypeText(item.medicine_type) }})</span>
+                <span v-if="item.medicine_quantity"> - {{ item.medicine_quantity }}</span>
+              </p>
             </div>
             <div class="text-right">
               <div class="text-sm">{{ formatDate(item.record_date || item.date) }}</div>
@@ -83,44 +101,62 @@
       </div>
 
       <div v-if="filteredHealthRecords && filteredHealthRecords.length > 0" class="space-y-4">
-        <div v-for="record in filteredHealthRecords" :key="record.id || `${record.date}-${record.status}`" 
-             class="border-b border-border pb-4 last:border-b-0">
+        <div v-for="record in filteredHealthRecords" :key="record.id || `${record.date}-${record.status}`"
+          class="border-b border-border pb-4 last:border-b-0">
           <div class="flex justify-between items-start mb-2">
             <div class="flex items-center gap-2">
-              <Badge v-if="record.health_status === 'sehat' || record.status === 'Sehat'" variant="default" class="rounded-full">Sehat</Badge>
+              <Badge v-if="record.health_status === 'healthy' || record.status === 'Sehat'" variant="default"
+                class="rounded-full">Sehat</Badge>
               <Badge v-else variant="destructive" class="rounded-full">Sakit</Badge>
               <span class="font-medium text-sm">{{ formatDateLong(record.record_date || record.date) }}</span>
             </div>
           </div>
-          
+
           <div class="ml-4 space-y-2">
+            <div v-if="record.notes" class="grid grid-cols-3 gap-4 text-sm">
+              <span class="font-medium text-muted-foreground">Keterangan:</span>
+              <span class="col-span-2 italic">{{ record.notes }}</span>
+            </div>
+
+            <div v-else-if="record.desc" class="grid grid-cols-3 gap-4 text-sm">
+              <span class="font-medium text-muted-foreground">Keterangan:</span>
+              <span class="col-span-2">{{ record.desc }}</span>
+            </div>
+
             <div v-if="record.diagnosis" class="grid grid-cols-3 gap-4 text-sm">
               <span class="font-medium text-muted-foreground">Diagnosa:</span>
-              <span class="col-span-2">{{ record.diagnosis }}</span>
+              <div class="col-span-2">
+                <div v-if="Array.isArray(record.diagnosis)" class="space-y-1">
+                  <div v-for="(diag, index) in record.diagnosis" :key="index">• {{ diag }}</div>
+                </div>
+                <span v-else>{{ record.diagnosis }}</span>
+              </div>
             </div>
-            
+
             <div v-if="record.treatment" class="grid grid-cols-3 gap-4 text-sm">
               <span class="font-medium text-muted-foreground">Treatment:</span>
               <span class="col-span-2">{{ record.treatment }}</span>
             </div>
-            
-            <div v-if="record.medicine_name" class="grid grid-cols-3 gap-4 text-sm">
+
+            <div v-if="record.medicines && record.medicines.length > 0" class="grid grid-cols-3 gap-4 text-sm">
+              <span class="font-medium text-muted-foreground">Obat:</span>
+              <div class="col-span-2 space-y-2">
+                <div v-for="(medicine, index) in record.medicines" :key="index">
+                  {{ medicine.name }}
+                  <span v-if="medicine.type"> ({{ getMedicineTypeText(medicine.type) }})</span>
+                  <span v-if="medicine.quantity"> - {{ medicine.quantity }}</span>
+                  <span v-if="medicine.dosage"> - {{ medicine.dosage }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div v-else-if="record.medicine_name" class="grid grid-cols-3 gap-4 text-sm">
               <span class="font-medium text-muted-foreground">Obat:</span>
               <span class="col-span-2">
                 {{ record.medicine_name }}
                 <span v-if="record.medicine_type"> ({{ getMedicineTypeText(record.medicine_type) }})</span>
                 <span v-if="record.medicine_quantity"> - {{ record.medicine_quantity }}</span>
               </span>
-            </div>
-            
-            <div v-if="record.notes" class="grid grid-cols-3 gap-4 text-sm">
-              <span class="font-medium text-muted-foreground">Keterangan:</span>
-              <span class="col-span-2 italic">{{ record.notes }}</span>
-            </div>
-            
-            <div v-else-if="record.desc" class="grid grid-cols-3 gap-4 text-sm">
-              <span class="font-medium text-muted-foreground">Keterangan:</span>
-              <span class="col-span-2">{{ record.desc }}</span>
             </div>
           </div>
         </div>
@@ -136,7 +172,7 @@
     </DialogContent>
   </Dialog>
 </template>
-  
+
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -147,17 +183,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 
 // Type definitions
+interface Medicine {
+  name: string;
+  type?: string;
+  quantity?: number;
+  dosage?: string;
+}
+
 interface HealthRecord {
   id?: string;
-  health_status?: 'sehat' | 'sakit';
+  health_status?: 'healthy' | 'sick';
   status?: string;
-  diagnosis?: string;
+  diagnosis?: string[] | string;
   treatment?: string;
   notes?: string;
   desc?: string;
-  medicine_name?: string;
-  medicine_type?: string;
-  medicine_quantity?: number;
+  medicines?: Medicine[];
+  medicine_name?: string; // Backward compatibility
+  medicine_type?: string; // Backward compatibility
+  medicine_quantity?: number; // Backward compatibility
   record_date?: string;
   date?: string;
   created_at?: string;
@@ -234,7 +278,7 @@ const formatDateLong = (dateStr: string): string => {
 // Get medicine type text
 const getMedicineTypeText = (type: string | null) => {
   if (!type) return null;
-  
+
   const types: Record<string, string> = {
     'tablet': 'Tablet',
     'kapsul': 'Kapsul',
@@ -242,7 +286,7 @@ const getMedicineTypeText = (type: string | null) => {
     'salep': 'Salep',
     'serbuk': 'Serbuk',
   };
-  
+
   return types[type] || type;
 };
 
@@ -266,4 +310,3 @@ const filteredHealthRecords = computed((): HealthRecord[] => {
   });
 });
 </script>
-  
