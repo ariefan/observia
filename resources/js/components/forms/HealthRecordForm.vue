@@ -13,7 +13,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import InputError from '@/components/InputError.vue';
 import { Check, ChevronsUpDown, Plus, Trash2 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 interface Livestock {
   id: string;
@@ -73,11 +73,18 @@ const emit = defineEmits<{
   submit: [];
 }>();
 
-// Create reactive form that syncs with parent
-const formData = computed({
-  get: () => props.form,
-  set: (value) => emit('update:form', value)
-});
+// Create reactive form data
+const formData = ref({ ...props.form });
+
+// Watch for changes and sync with parent
+watch(formData, (newData) => {
+  emit('update:form', newData);
+}, { deep: true });
+
+// Watch for prop changes and update local form
+watch(() => props.form, (newForm) => {
+  Object.assign(formData.value, newForm);
+}, { deep: true });
 
 // Search states
 const livestockSearch = ref('');
@@ -164,68 +171,54 @@ const filteredMedicines = computed(() => {
 
 // Functions for managing multiple diagnoses
 const addDiagnosis = () => {
-  const currentData = { ...formData.value };
-  if (!currentData.diagnosis) {
-    currentData.diagnosis = [];
+  if (!formData.value.diagnosis) {
+    formData.value.diagnosis = [];
   }
-  currentData.diagnosis.push('');
-  formData.value = currentData;
+  formData.value.diagnosis.push('');
 };
 
 const removeDiagnosis = (index: number) => {
-  const currentData = { ...formData.value };
-  if (currentData.diagnosis && currentData.diagnosis.length > 1) {
-    currentData.diagnosis.splice(index, 1);
-    formData.value = currentData;
+  if (formData.value.diagnosis && formData.value.diagnosis.length > 1) {
+    formData.value.diagnosis.splice(index, 1);
   }
 };
 
 // Functions for managing multiple medicines
 const addMedicine = () => {
-  const currentData = { ...formData.value };
-  if (!currentData.medicines) {
-    currentData.medicines = [];
+  if (!formData.value.medicines) {
+    formData.value.medicines = [];
   }
-  currentData.medicines.push({
+  formData.value.medicines.push({
     name: '',
     type: '',
     quantity: undefined,
     dosage: ''
   });
-  formData.value = currentData;
 };
 
 const removeMedicine = (index: number) => {
-  const currentData = { ...formData.value };
-  if (currentData.medicines && currentData.medicines.length > 1) {
-    currentData.medicines.splice(index, 1);
-    formData.value = currentData;
+  if (formData.value.medicines && formData.value.medicines.length > 1) {
+    formData.value.medicines.splice(index, 1);
   }
 };
 
 // Functions for managing multiple treatments
 const addTreatment = () => {
-  const currentData = { ...formData.value };
-  if (!currentData.treatment) {
-    currentData.treatment = [];
+  if (!formData.value.treatment) {
+    formData.value.treatment = [];
   }
-  currentData.treatment.push('');
-  formData.value = currentData;
+  formData.value.treatment.push('');
 };
 
 const removeTreatment = (index: number) => {
-  const currentData = { ...formData.value };
-  if (currentData.treatment && currentData.treatment.length > 1) {
-    currentData.treatment.splice(index, 1);
-    formData.value = currentData;
+  if (formData.value.treatment && formData.value.treatment.length > 1) {
+    formData.value.treatment.splice(index, 1);
   }
 };
 
 const updateNotes = (event: Event) => {
   const target = event.target as HTMLTextAreaElement;
-  const currentData = { ...formData.value };
-  currentData.notes = target.value;
-  formData.value = currentData;
+  formData.value.notes = target.value;
 };
 
 const handleSubmit = () => {
@@ -297,12 +290,12 @@ const handleSubmit = () => {
           <legend class="block text-sm font-medium mb-2">Status Kesehatan</legend>
           <div class="flex items-center gap-6">
             <label class="inline-flex items-center gap-2 cursor-pointer">
-              <input type="radio" v-model="formData.health_status" value="healthy"
+              <input type="radio" name="health_status" v-model="formData.health_status" value="healthy"
                 class="h-4 w-4 text-emerald-600 border-gray-300 dark:border-gray-600 focus:ring-emerald-500 dark:focus:ring-emerald-400 dark:bg-gray-700" />
               <span class="text-gray-700 dark:text-gray-300">Sehat</span>
             </label>
             <label class="inline-flex items-center gap-2 cursor-pointer">
-              <input type="radio" v-model="formData.health_status" value="sick"
+              <input type="radio" name="health_status" v-model="formData.health_status" value="sick"
                 class="h-4 w-4 text-emerald-600 border-gray-300 dark:border-gray-600 focus:ring-emerald-500 dark:focus:ring-emerald-400 dark:bg-gray-700" />
               <span class="text-gray-700 dark:text-gray-300">Sakit</span>
             </label>

@@ -218,10 +218,10 @@ const show = (id: string) => router.visit(route('livestocks.show', { id }));
                             <ImagePreview v-if="livestock.photo && livestock.photo.length > 0" :photos="livestock.photo"
                                 trigger-class="w-8 h-8 rounded-full bg-white/25 backdrop-blur-md text-white hover:bg-white/40" />
                             <!-- Health Status Icon -->
-                            <div v-if="livestock.health_records && livestock.health_records.length > 0"
-                                class="w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center shadow-sm"
-                                :class="livestock.health_records[0].health_status === 'healthy' ? 'bg-green-500/80' : 'bg-red-500/80'">
-                                <Heart v-if="livestock.health_records[0].health_status === 'healthy'"
+                            <div class="w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center shadow-sm"
+                                :class="(livestock.health_records && livestock.health_records.length > 0 && livestock.health_records[0].health_status === 'sick') 
+                                    ? 'bg-red-500/80' : 'bg-green-500/80'">
+                                <Heart v-if="!(livestock.health_records && livestock.health_records.length > 0 && livestock.health_records[0].health_status === 'sick')" 
                                     class="w-4 h-4 text-white" />
                                 <Stethoscope v-else class="w-4 h-4 text-white" />
                             </div>

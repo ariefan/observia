@@ -67,13 +67,7 @@ const goBack = () => {
           <HealthRecordForm
             :form="form.data()"
             @update:form="(data) => {
-              form.livestock_id = data.livestock_id;
-              form.health_status = data.health_status;
-              form.diagnosis = data.diagnosis;
-              form.treatment = data.treatment;
-              form.notes = data.notes;
-              form.medicines = data.medicines;
-              form.record_date = data.record_date;
+              Object.assign(form, data);
             }"
             :errors="form.errors"
             :livestocks="livestocks"
