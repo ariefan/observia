@@ -50,7 +50,9 @@ class LivestockController extends Controller
         
         $query = Livestock::query()
             ->where('farm_id', $currentFarmId)
-            ->with(['breed.species'])
+            ->with(['breed.species', 'healthRecords' => function ($query) {
+                $query->latest('record_date')->limit(1);
+            }])
             ->orderBy('created_at', 'desc');
 
         // Filter by status - only show active livestock unless specifically filtering for ended ones

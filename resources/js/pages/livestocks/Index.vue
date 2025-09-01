@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { Head, router, Link } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Mars, Venus, ImageOff, Search, Filter } from 'lucide-vue-next';
+import { Mars, Venus, ImageOff, Search, Filter, Heart, Stethoscope } from 'lucide-vue-next';
 import {
     Card,
     CardContent,
@@ -35,6 +35,10 @@ interface Livestock {
             name: string;
         };
     };
+    health_records?: Array<{
+        health_status: 'healthy' | 'sick';
+        record_date: string;
+    }>;
 }
 
 interface Props {
@@ -209,10 +213,19 @@ const show = (id: string) => router.visit(route('livestocks.show', { id }));
                             <ImageOff class="w-12 h-12 text-gray-400" />
                         </div>
 
-                        <!-- Image preview and gender icons -->
+                        <!-- Image preview, health status and gender icons -->
                         <div class="absolute top-2 right-2 flex gap-1">
                             <ImagePreview v-if="livestock.photo && livestock.photo.length > 0" :photos="livestock.photo"
                                 trigger-class="w-8 h-8 rounded-full bg-white/25 backdrop-blur-md text-white hover:bg-white/40" />
+                            <!-- Health Status Icon -->
+                            <div v-if="livestock.health_records && livestock.health_records.length > 0"
+                                class="w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center shadow-sm"
+                                :class="livestock.health_records[0].health_status === 'healthy' ? 'bg-green-500/80' : 'bg-red-500/80'">
+                                <Heart v-if="livestock.health_records[0].health_status === 'healthy'"
+                                    class="w-4 h-4 text-white" />
+                                <Stethoscope v-else class="w-4 h-4 text-white" />
+                            </div>
+                            <!-- Gender Icon -->
                             <div
                                 class="w-8 h-8 rounded-full bg-white/25 backdrop-blur-md flex items-center justify-center shadow-sm">
                                 <span v-if="livestock.sex === 'M'" class="text-blue-300">
@@ -255,11 +268,11 @@ const show = (id: string) => router.visit(route('livestocks.show', { id }));
                                 : 'text-muted-foreground hover:text-foreground hover:bg-accent',
                             (link.label.includes('Previous') || link.label.includes('Next')) ? 'text-lg font-bold' : 'text-sm'
                         ]">
-                            {{
-                                link.label.includes('Previous') ? '‹' :
+                        {{
+                            link.label.includes('Previous') ? '‹' :
                                 link.label.includes('Next') ? '›' :
-                                link.label
-                            }}
+                                    link.label
+                        }}
                         </Link>
                         <span v-else :class="[
                             'px-3 py-2 rounded-md',
@@ -268,8 +281,8 @@ const show = (id: string) => router.visit(route('livestocks.show', { id }));
                         ]">
                             {{
                                 link.label.includes('Previous') ? '‹' :
-                                link.label.includes('Next') ? '›' :
-                                link.label
+                                    link.label.includes('Next') ? '›' :
+                                        link.label
                             }}
                         </span>
                     </template>
