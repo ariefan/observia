@@ -17,7 +17,7 @@ interface Medicine {
 interface HealthRecord {
   id: string;
   livestock_id: string;
-  health_status: 'sehat' | 'sakit';
+  health_status: 'healthy' | 'sick';
   diagnosis: string[] | string | null;
   treatment: string[] | string | null;
   notes: string | null;
@@ -71,7 +71,7 @@ const form = useForm({
           dosage: '' 
         }]
       : [{ name: '', type: '', quantity: undefined, dosage: '' }],
-  record_date: props.healthRecord.record_date,
+  record_date: props.healthRecord.record_date ? new Date(props.healthRecord.record_date).toISOString().split('T')[0] : '',
 });
 
 // Watch for changes and sync with Inertia form

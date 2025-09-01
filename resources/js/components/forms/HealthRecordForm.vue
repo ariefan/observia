@@ -221,6 +221,12 @@ const removeTreatment = (index: number) => {
   }
 };
 
+const updateNotes = (event: Event) => {
+  const target = event.target as HTMLTextAreaElement;
+  const currentData = { ...formData.value };
+  currentData.notes = target.value;
+  formData.value = currentData;
+};
 
 const handleSubmit = () => {
   emit('submit');
@@ -316,7 +322,7 @@ const handleSubmit = () => {
     <!-- Keterangan -->
     <div>
       <Label for="notes" class="block text-sm font-medium mb-2">Keterangan / Gejala</Label>
-      <Textarea id="notes" v-model="formData.notes" rows="4"
+      <Textarea id="notes" :value="formData.notes" @input="updateNotes" rows="4"
         placeholder="Ceritakan kondisi ternak. Jika sakit, tulis ciri-cirinya." class="w-full" />
       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Ceritakan kondisi ternak Anda. Jika sakit,
         deskripsikan ciri-ciri penyakit yang dialami.</p>
