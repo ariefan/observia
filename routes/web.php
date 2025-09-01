@@ -19,6 +19,9 @@ use App\Http\Controllers\ProduktivitasController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\LivestockHealthRecordController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\InventoryItemController;
+use App\Http\Controllers\InventoryTransactionController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -143,6 +146,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/api/articles', [ContentController::class, 'storeArticle'])->name('articles.store');
     Route::put('/api/articles/{article}', [ContentController::class, 'updateArticle'])->name('articles.update');
     Route::delete('/api/articles/{article}', [ContentController::class, 'destroyArticle'])->name('articles.destroy');
+
+    // Inventory Routes
+    Route::get('/inventory', [InventoryController::class, 'dashboard'])->name('inventory.dashboard');
+    Route::get('/inventory/overview', [InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('/inventory/items', [InventoryItemController::class, 'index'])->name('inventory.items.index');
+    Route::get('/inventory/items/create', [InventoryItemController::class, 'create'])->name('inventory.items.create');
+    Route::post('/inventory/items', [InventoryItemController::class, 'store'])->name('inventory.items.store');
+    Route::get('/inventory/items/{item}', [InventoryItemController::class, 'show'])->name('inventory.items.show');
+    Route::get('/inventory/items/{item}/edit', [InventoryItemController::class, 'edit'])->name('inventory.items.edit');
+    Route::put('/inventory/items/{item}', [InventoryItemController::class, 'update'])->name('inventory.items.update');
+    Route::delete('/inventory/items/{item}', [InventoryItemController::class, 'destroy'])->name('inventory.items.destroy');
+    Route::get('/inventory/transactions', [InventoryTransactionController::class, 'index'])->name('inventory.transactions.index');
+    Route::get('/inventory/transactions/create', [InventoryTransactionController::class, 'create'])->name('inventory.transactions.create');
+    Route::post('/inventory/transactions', [InventoryTransactionController::class, 'store'])->name('inventory.transactions.store');
+    Route::get('/inventory/transactions/{transaction}', [InventoryTransactionController::class, 'show'])->name('inventory.transactions.show');
 
     Route::resources([
         'farms' => FarmController::class,
