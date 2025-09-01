@@ -150,7 +150,7 @@ const getStatusText = (status: string) => {
             <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Catatan Kesehatan Ternak</h1>
             <p class="text-gray-600 dark:text-gray-400">Kelola catatan kesehatan ternak Anda</p>
           </div>
-          <Button asChild class="bg-emerald-600 hover:bg-emerald-700">
+          <Button asChild>
             <Link :href="route('health-records.create')">
             <Plus class="h-4 w-4 mr-2" />
             Tambah Catatan
@@ -286,7 +286,7 @@ const getStatusText = (status: string) => {
                           <div class="text-sm text-gray-500 dark:text-gray-400">
                             <span v-if="medicine.type">{{ medicine.type }}</span>
                             <span v-if="medicine.quantity">{{ medicine.type ? ' - ' : '' }}{{ medicine.quantity
-                              }}</span>
+                            }}</span>
                             <span v-if="medicine.dosage">{{ (medicine.type || medicine.quantity) ? ' - ' : '' }}{{
                               medicine.dosage }}</span>
                           </div>

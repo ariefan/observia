@@ -60,8 +60,8 @@ const form = useForm({
   sku: props.item.sku || '',
   unit_cost: props.item.unit_cost?.toString() || '',
   selling_price: props.item.selling_price?.toString() || '',
-  minimum_stock: props.item.minimum_stock.toString(),
-  current_stock: props.item.current_stock.toString(),
+  minimum_stock: (Number(props.item.minimum_stock) || 0).toFixed(2),
+  current_stock: (Number(props.item.current_stock) || 0).toFixed(2),
   track_expiry: props.item.track_expiry,
   track_batch: props.item.track_batch,
   specifications: props.item.specifications || {},
@@ -227,9 +227,10 @@ const goBack = () => {
                   id="current_stock"
                   v-model="form.current_stock"
                   type="number" 
-                  step="0.001"
+                  step="0.01"
+                  min="0"
                   :class="{ 'border-red-500': form.errors.current_stock }"
-                  placeholder="0"
+                  placeholder="0.00"
                 />
                 <p v-if="form.errors.current_stock" class="text-red-500 text-sm mt-1">{{ form.errors.current_stock }}</p>
               </div>
@@ -240,9 +241,10 @@ const goBack = () => {
                   id="minimum_stock"
                   v-model="form.minimum_stock"
                   type="number" 
-                  step="0.001"
+                  step="0.01"
+                  min="0"
                   :class="{ 'border-red-500': form.errors.minimum_stock }"
-                  placeholder="0"
+                  placeholder="0.00"
                 />
                 <p v-if="form.errors.minimum_stock" class="text-red-500 text-sm mt-1">{{ form.errors.minimum_stock }}</p>
               </div>
@@ -250,24 +252,49 @@ const goBack = () => {
 
             <!-- Tracking Options -->
             <div class="space-y-4">
-              <div class="flex items-center space-x-2">
-                <Checkbox 
-                  id="track_expiry" 
-                  v-model:checked="form.track_expiry" 
-                />
-                <Label for="track_expiry" class="text-sm font-normal">
-                  Lacak tanggal kadaluarsa
-                </Label>
-              </div>
+              <h3 class="text-lg font-semibold">Opsi Pelacakan</h3>
+              
+              <div class="space-y-3">
+                <div class="flex items-start space-x-3">
+                  <Checkbox 
+                    id="track_expiry" 
+                    v-model:checked="form.track_expiry" 
+                    class="mt-1"
+                  />
+                  <div class="flex-1">
+                    <Label for="track_expiry" class="text-sm font-medium">
+                      Lacak tanggal kadaluarsa
+                    </Label>
+                    <p class="text-xs text-muted-foreground mt-1">
+                      Aktifkan untuk obat-obatan, vaksin, atau item yang memiliki tanggal kadaluarsa. 
+                      Sistem akan memberikan peringatan mendekati tanggal kadaluarsa.
+                    </p>
+                  </div>
+                </div>
 
-              <div class="flex items-center space-x-2">
-                <Checkbox 
-                  id="track_batch" 
-                  v-model:checked="form.track_batch" 
-                />
-                <Label for="track_batch" class="text-sm font-normal">
-                  Lacak batch/lot
-                </Label>
+                <div class="flex items-start space-x-3">
+                  <Checkbox 
+                    id="track_batch" 
+                    v-model:checked="form.track_batch" 
+                    class="mt-1"
+                  />
+                  <div class="flex-1">
+                    <Label for="track_batch" class="text-sm font-medium">
+                      Lacak batch/lot
+                    </Label>
+                    <p class="text-xs text-muted-foreground mt-1">
+                      Aktifkan untuk melacak nomor batch/lot produksi. Berguna untuk quality control, 
+                      recall produk, dan traceability.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
+                <p class="text-xs text-blue-700">
+                  💡 <strong>Tips:</strong> Untuk obat-obatan dan vaksin, disarankan mengaktifkan kedua opsi ini 
+                  untuk keamanan dan compliance yang optimal.
+                </p>
               </div>
             </div>
 

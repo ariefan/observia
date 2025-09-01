@@ -70,6 +70,9 @@ class FarmController extends Controller
         $user->update(['current_farm_id' => $farm->id]);
         $user->farms()->attach($farm->id, ['role' => 'owner']);
         // $user->assignFarmRole('owner');
+        
+        // Create default medicine inventory items for the new farm
+        $farm->createDefaultMedicines();
 
         return redirect()->route('farms.show', ['farm' => $farm->id])
             ->with('success', 'Farm created successfully.');

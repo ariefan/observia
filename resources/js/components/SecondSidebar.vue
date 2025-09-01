@@ -49,12 +49,12 @@ const navigationItems = [
     icon: TrendingUp,
   },
   {
-    title: 'Item Inventaris',
+    title: 'Stok Barang',
     route: 'inventory.items.index',
     icon: PackageOpen,
   },
   {
-    title: 'Transaksi Inventaris',
+    title: 'Transaksi Barang',
     route: 'inventory.transactions.index',
     icon: ArrowLeftRight,
   },

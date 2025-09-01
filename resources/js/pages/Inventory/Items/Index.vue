@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SecondSidebar from '@/components/SecondSidebar.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Package, AlertTriangle, Search, Filter, Edit, Trash2, Eye } from 'lucide-vue-next';
 import { formatRupiah, formatQuantity } from '@/utils/currency';
+import { usePage } from '@inertiajs/vue3';
+// Custom debounce function
+const debounce = (func: Function, delay: number) => {
+  let timeoutId: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(null, args), delay);
+  };
+};
 
 interface InventoryItem {
   id: number;
@@ -41,9 +51,68 @@ interface Props {
     total: number;
   };
   categories: Category[];
+  filters?: {
+    search?: string;
+    category?: string;
+    status?: string;
+  };
 }
 
 const props = defineProps<Props>();
+const page = usePage();
+
+// Search and filter states
+const searchQuery = ref(props.filters?.search || '');
+const selectedCategory = ref(props.filters?.category || '');
+const selectedStatus = ref(props.filters?.status || '');
+
+// Debounced search function
+const debouncedSearch = debounce(() => {
+  performSearch();
+}, 300);
+
+const performSearch = () => {
+  const params: any = {
+    search: searchQuery.value || undefined,
+    category: selectedCategory.value || undefined,
+    status: selectedStatus.value || undefined,
+  };
+  
+  // Remove undefined values
+  Object.keys(params).forEach(key => {
+    if (params[key] === undefined) {
+      delete params[key];
+    }
+  });
+  
+  router.get(route('inventory.items.index'), params, {
+    preserveState: true,
+    replace: true,
+  });
+};
+
+// Watch for search input changes
+watch(searchQuery, () => {
+  debouncedSearch();
+});
+
+const handleCategoryChange = () => {
+  performSearch();
+};
+
+const handleStatusChange = () => {
+  performSearch();
+};
+
+const resetFilters = () => {
+  searchQuery.value = '';
+  selectedCategory.value = '';
+  selectedStatus.value = '';
+  router.get(route('inventory.items.index'), {}, {
+    preserveState: true,
+    replace: true,
+  });
+};
 
 const getStockStatusColor = (current: number, minimum: number) => {
   if (current <= minimum) return 'destructive';
@@ -91,6 +160,7 @@ const deleteItem = (item: InventoryItem) => {
           <div class="relative">
             <Search class="absolute left-2 top-2 h-3.5 w-3.5 text-muted-foreground" />
             <input 
+              v-model="searchQuery"
               type="text" 
               placeholder="Nama, merek..." 
               class="h-8 pl-8 text-xs w-full border rounded-md px-3 py-1"
@@ -100,7 +170,10 @@ const deleteItem = (item: InventoryItem) => {
         
         <div>
           <label class="text-xs font-medium">Kategori</label>
-          <select class="h-8 text-xs w-full border rounded-md px-3 py-1">
+          <select 
+            v-model="selectedCategory"
+            @change="handleCategoryChange"
+            class="h-8 text-xs w-full border rounded-md px-3 py-1">
             <option value="">Semua Kategori</option>
             <option v-for="category in categories" :key="category.id" :value="category.id">
               {{ category.name }}
@@ -110,7 +183,10 @@ const deleteItem = (item: InventoryItem) => {
 
         <div>
           <label class="text-xs font-medium">Status Stok</label>
-          <select class="h-8 text-xs w-full border rounded-md px-3 py-1">
+          <select 
+            v-model="selectedStatus"
+            @change="handleStatusChange"
+            class="h-8 text-xs w-full border rounded-md px-3 py-1">
             <option value="">Semua Status</option>
             <option value="normal">Normal</option>
             <option value="low">Menipis</option>
@@ -118,12 +194,9 @@ const deleteItem = (item: InventoryItem) => {
           </select>
         </div>
 
-        <div class="flex items-end gap-2">
-          <Button class="h-8 flex-1 text-xs">
-            Cari
-          </Button>
-          <Button variant="outline" class="h-8 text-xs">
-            Reset
+        <div class="flex items-end">
+          <Button @click="resetFilters" variant="outline" class="h-8 text-xs w-full">
+            Reset Filter
           </Button>
         </div>
       </div>

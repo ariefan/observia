@@ -36,4 +36,5 @@ class LivestockHealthRecord extends Model
     {
         return $this->belongsTo(Livestock::class);
     }
+
 }

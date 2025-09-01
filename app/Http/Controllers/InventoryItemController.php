@@ -13,7 +13,7 @@ class InventoryItemController extends Controller
 {
     use HasCurrentFarm;
 
-    public function index()
+    public function index(Request $request)
     {
         $currentFarmId = $this->getCurrentFarmId();
         
@@ -21,19 +21,54 @@ class InventoryItemController extends Controller
             return Inertia::render('Inventory/Items/Index', [
                 'items' => ['data' => [], 'total' => 0],
                 'categories' => [],
+                'filters' => [],
             ]);
         }
 
-        $items = InventoryItem::with(['category', 'unit'])
+        $query = InventoryItem::with(['category', 'unit'])
             ->where('farm_id', $currentFarmId)
-            ->where('is_active', true)
-            ->paginate(15);
+            ->where('is_active', true);
+
+        // Search by name or brand
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'ILIKE', "%{$search}%")
+                  ->orWhere('brand', 'ILIKE', "%{$search}%")
+                  ->orWhere('description', 'ILIKE', "%{$search}%")
+                  ->orWhere('sku', 'ILIKE', "%{$search}%");
+            });
+        }
+
+        // Filter by category
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->get('category'));
+        }
+
+        // Filter by stock status
+        if ($request->filled('status')) {
+            $status = $request->get('status');
+            if ($status === 'empty') {
+                $query->whereRaw('current_stock <= minimum_stock');
+            } elseif ($status === 'low') {
+                $query->whereRaw('current_stock > minimum_stock AND current_stock <= minimum_stock * 1.5');
+            } elseif ($status === 'normal') {
+                $query->whereRaw('current_stock > minimum_stock * 1.5');
+            }
+        }
+
+        $items = $query->orderBy('name')->paginate(15)->withQueryString();
 
         $categories = InventoryCategory::where('is_active', true)->get();
 
         return Inertia::render('Inventory/Items/Index', [
             'items' => $items,
             'categories' => $categories,
+            'filters' => [
+                'search' => $request->get('search'),
+                'category' => $request->get('category'),
+                'status' => $request->get('status'),
+            ],
         ]);
     }
 

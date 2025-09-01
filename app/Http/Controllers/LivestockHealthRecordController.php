@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\LivestockHealthRecord;
 use App\Models\Livestock;
+use App\Models\InventoryItem;
+use App\Models\InventoryTransaction;
 use App\Enum\StatusLivestock;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -96,8 +98,37 @@ class LivestockHealthRecordController extends Controller
                 ];
             });
 
+        // Get available inventory medicines for this farm
+        $inventoryMedicines = InventoryItem::with(['unit', 'category'])
+            ->where('farm_id', $currentFarmId)
+            ->whereHas('category', function($query) {
+                $query->where('name', 'Obat-obatan');
+            })
+            ->where('current_stock', '>', 0)
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'sku' => $item->sku,
+                    'stock' => $item->current_stock,
+                    'unit' => [
+                        'id' => $item->unit->id,
+                        'name' => $item->unit->name,
+                        'symbol' => $item->unit->symbol,
+                    ],
+                    'category' => [
+                        'id' => $item->category->id,
+                        'name' => $item->category->name,
+                    ]
+                ];
+            });
+
+
         return Inertia::render('HealthRecords/Create', [
             'livestocks' => $livestocks,
+            'inventoryMedicines' => $inventoryMedicines,
         ]);
     }
 
@@ -112,6 +143,7 @@ class LivestockHealthRecordController extends Controller
             'treatment.*' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'medicines' => 'nullable|array',
+            'medicines.*.inventory_item_id' => 'nullable|integer|exists:inventory_items,id',
             'medicines.*.name' => 'nullable|string|max:255',
             'medicines.*.type' => 'nullable|string|max:255',
             'medicines.*.quantity' => 'nullable|integer|min:1',
@@ -126,7 +158,44 @@ class LivestockHealthRecordController extends Controller
             return redirect()->back()->withErrors(['livestock_id' => 'Invalid livestock selection.']);
         }
 
-        LivestockHealthRecord::create($validated);
+        DB::transaction(function () use ($validated, $request) {
+            // Create the health record
+            $healthRecord = LivestockHealthRecord::create($validated);
+            
+            // Process medicine inventory transactions
+            if (isset($validated['medicines'])) {
+                foreach ($validated['medicines'] as $medicine) {
+                    if (!empty($medicine['inventory_item_id']) && !empty($medicine['quantity'])) {
+                        $inventoryItem = InventoryItem::findOrFail($medicine['inventory_item_id']);
+                        
+                        // Check if we have enough stock
+                        if ($inventoryItem->current_stock < $medicine['quantity']) {
+                            throw new \Exception("Insufficient stock for {$medicine['name']}. Available: {$inventoryItem->current_stock}, Required: {$medicine['quantity']}");
+                        }
+                        
+                        // Create inventory transaction
+                        InventoryTransaction::create([
+                            'inventory_item_id' => $medicine['inventory_item_id'],
+                            'user_id' => $request->user()->id,
+                            'type' => 'out',
+                            'reference_type' => 'health_record',
+                            'reference_id' => $healthRecord->id,
+                            'quantity' => -$medicine['quantity'], // Negative for outgoing
+                            'notes' => "Used for {$healthRecord->livestock->name} ({$healthRecord->livestock->tag_id}) - " . ($medicine['dosage'] ?? 'No dosage specified'),
+                            'metadata' => json_encode([
+                                'dosage' => $medicine['dosage'] ?? null,
+                                'livestock_id' => $healthRecord->livestock_id,
+                                'health_record_id' => $healthRecord->id
+                            ]),
+                            'transaction_date' => now(),
+                        ]);
+                        
+                        // Update inventory stock
+                        $inventoryItem->decrement('current_stock', $medicine['quantity']);
+                    }
+                }
+            }
+        });
 
         return redirect()->route('health-records.index')->with('success', 'Catatan kesehatan berhasil disimpan.');
     }
@@ -167,9 +236,37 @@ class LivestockHealthRecordController extends Controller
                 ];
             });
 
+        // Get available inventory medicines for this farm
+        $inventoryMedicines = InventoryItem::with(['unit', 'category'])
+            ->where('farm_id', $currentFarmId)
+            ->whereHas('category', function($query) {
+                $query->where('name', 'Obat-obatan');
+            })
+            ->where('current_stock', '>', 0)
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'sku' => $item->sku,
+                    'stock' => $item->current_stock,
+                    'unit' => [
+                        'id' => $item->unit->id,
+                        'name' => $item->unit->name,
+                        'symbol' => $item->unit->symbol,
+                    ],
+                    'category' => [
+                        'id' => $item->category->id,
+                        'name' => $item->category->name,
+                    ]
+                ];
+            });
+
         return Inertia::render('HealthRecords/Edit', [
             'healthRecord' => $healthRecord,
             'livestocks' => $livestocks,
+            'inventoryMedicines' => $inventoryMedicines,
         ]);
     }
 
@@ -191,6 +288,7 @@ class LivestockHealthRecordController extends Controller
             'treatment.*' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'medicines' => 'nullable|array',
+            'medicines.*.inventory_item_id' => 'nullable|integer|exists:inventory_items,id',
             'medicines.*.name' => 'nullable|string|max:255',
             'medicines.*.type' => 'nullable|string|max:255',
             'medicines.*.quantity' => 'nullable|integer|min:1',
@@ -203,7 +301,56 @@ class LivestockHealthRecordController extends Controller
             return redirect()->back()->withErrors(['livestock_id' => 'Invalid livestock selection.']);
         }
 
-        $healthRecord->update($validated);
+        DB::transaction(function () use ($healthRecord, $validated, $request) {
+            // Reverse previous inventory transactions for this health record
+            $previousTransactions = InventoryTransaction::where('reference_type', 'health_record')
+                ->where('reference_id', $healthRecord->id)
+                ->get();
+                
+            foreach ($previousTransactions as $transaction) {
+                // Restore inventory stock (reverse the negative quantity)
+                $transaction->inventoryItem->increment('current_stock', abs($transaction->quantity));
+                // Delete the transaction
+                $transaction->delete();
+            }
+            
+            // Update the health record
+            $healthRecord->update($validated);
+            
+            // Process new medicine inventory transactions
+            if (isset($validated['medicines'])) {
+                foreach ($validated['medicines'] as $medicine) {
+                    if (!empty($medicine['inventory_item_id']) && !empty($medicine['quantity'])) {
+                        $inventoryItem = InventoryItem::findOrFail($medicine['inventory_item_id']);
+                        
+                        // Check if we have enough stock
+                        if ($inventoryItem->current_stock < $medicine['quantity']) {
+                            throw new \Exception("Insufficient stock for {$medicine['name']}. Available: {$inventoryItem->current_stock}, Required: {$medicine['quantity']}");
+                        }
+                        
+                        // Create inventory transaction
+                        InventoryTransaction::create([
+                            'inventory_item_id' => $medicine['inventory_item_id'],
+                            'user_id' => $request->user()->id,
+                            'type' => 'out',
+                            'reference_type' => 'health_record',
+                            'reference_id' => $healthRecord->id,
+                            'quantity' => -$medicine['quantity'], // Negative for outgoing
+                            'notes' => "Used for {$healthRecord->livestock->name} ({$healthRecord->livestock->tag_id}) - " . ($medicine['dosage'] ?? 'No dosage specified'),
+                            'metadata' => json_encode([
+                                'dosage' => $medicine['dosage'] ?? null,
+                                'livestock_id' => $healthRecord->livestock_id,
+                                'health_record_id' => $healthRecord->id
+                            ]),
+                            'transaction_date' => now(),
+                        ]);
+                        
+                        // Update inventory stock
+                        $inventoryItem->decrement('current_stock', $medicine['quantity']);
+                    }
+                }
+            }
+        });
 
         return redirect()->route('health-records.index')->with('success', 'Catatan kesehatan berhasil diperbarui.');
     }
@@ -217,6 +364,18 @@ class LivestockHealthRecordController extends Controller
             abort(403);
         }
 
+        // Reverse inventory transactions for this health record before deleting
+        $transactions = InventoryTransaction::where('reference_type', 'health_record')
+            ->where('reference_id', $healthRecord->id)
+            ->get();
+            
+        foreach ($transactions as $transaction) {
+            // Restore inventory stock (reverse the negative quantity)
+            $transaction->inventoryItem->increment('current_stock', abs($transaction->quantity));
+            // Delete the transaction
+            $transaction->delete();
+        }
+        
         $healthRecord->delete();
 
         return redirect()->route('health-records.index')->with('success', 'Catatan kesehatan berhasil dihapus.');

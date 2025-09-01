@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, router, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
+import SecondSidebar from '@/components/SecondSidebar.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-vue-next';
@@ -8,10 +9,13 @@ import HealthRecordForm from '@/components/forms/HealthRecordForm.vue';
 import { watch } from 'vue';
 
 interface Medicine {
+  inventory_item_id?: number;
   name: string;
   type: string;
   quantity: number | undefined;
   dosage: string;
+  current_stock?: number;
+  template?: any;
 }
 
 interface HealthRecord {
@@ -44,6 +48,21 @@ const props = defineProps<{
     tag_id: string;
     breed_name: string;
   }>;
+  inventoryMedicines: Array<{
+    id: number;
+    name: string;
+    sku?: string;
+    stock: number;
+    unit: {
+      id: number;
+      name: string;
+      symbol: string;
+    };
+    category: {
+      id: number;
+      name: string;
+    };
+  }>;
 }>();
 
 const form = useForm({
@@ -58,19 +77,33 @@ const form = useForm({
   notes: props.healthRecord.notes || '',
   medicines: props.healthRecord.medicines && Array.isArray(props.healthRecord.medicines) && props.healthRecord.medicines.length > 0
     ? props.healthRecord.medicines.map(m => ({
+        inventory_item_id: m.inventory_item_id || undefined,
         name: m.name || '',
         type: m.type || '',
         quantity: m.quantity || undefined,
-        dosage: m.dosage || ''
+        dosage: m.dosage || '',
+        current_stock: m.current_stock || undefined,
+        template: m.template || undefined
       }))
     : props.healthRecord.medicine_name 
       ? [{ 
+          inventory_item_id: undefined,
           name: props.healthRecord.medicine_name || '', 
           type: props.healthRecord.medicine_type || '', 
           quantity: props.healthRecord.medicine_quantity || undefined, 
-          dosage: '' 
+          dosage: '',
+          current_stock: undefined,
+          template: undefined
         }]
-      : [{ name: '', type: '', quantity: undefined, dosage: '' }],
+      : [{ 
+          inventory_item_id: undefined,
+          name: '', 
+          type: '', 
+          quantity: undefined, 
+          dosage: '',
+          current_stock: undefined,
+          template: undefined
+        }],
   record_date: props.healthRecord.record_date ? new Date(props.healthRecord.record_date).toISOString().split('T')[0] : '',
 });
 
@@ -94,7 +127,10 @@ const goBack = () => {
   <Head title="Edit Catatan Kesehatan" />
 
   <AppLayout>
-    <div class="max-w-6xl mx-auto p-6">
+    <div class="flex min-h-screen">
+      <SecondSidebar current-route="health-records.edit" />
+      <div class="flex-1 p-6">
+        <div class="max-w-6xl mx-auto">
       <Card>
         <CardHeader>
           <div class="flex items-center gap-4 mb-4">
@@ -126,12 +162,15 @@ const goBack = () => {
             }"
             :errors="form.errors"
             :livestocks="livestocks"
+            :inventory-medicines="inventoryMedicines"
             :processing="form.processing"
             submit-text="Perbarui Catatan"
             @submit="submit"
           />
         </CardContent>
       </Card>
+        </div>
+      </div>
     </div>
   </AppLayout>
 </template>

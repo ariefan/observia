@@ -475,19 +475,26 @@ const handleFarmChange = (farmId: string) => {
           <!-- Pagination -->
           <div v-if="audits.links && audits.links.length > 3" class="mt-4 flex justify-center">
             <div class="flex space-x-1">
-              <Link
-                v-for="link in (audits.links || [])"
-                :key="link.label"
-                :href="link.url"
-                :class="[
-                  'px-3 py-2 text-sm',
-                  link.active 
-                    ? 'bg-primary text-primary-foreground rounded-md' 
-                    : 'text-muted-foreground hover:text-foreground',
-                  !link.url ? 'pointer-events-none opacity-50' : ''
-                ]"
-                v-html="link.label"
-              />
+              <template v-for="link in (audits.links || [])" :key="link.label">
+                <Link
+                  v-if="link.url"
+                  :href="link.url"
+                  :class="[
+                    'px-3 py-2 text-sm',
+                    link.active 
+                      ? 'bg-primary text-primary-foreground rounded-md' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  ]"
+                  v-html="link.label"
+                />
+                <span
+                  v-else
+                  :class="[
+                    'px-3 py-2 text-sm text-muted-foreground pointer-events-none opacity-50'
+                  ]"
+                  v-html="link.label"
+                />
+              </template>
             </div>
           </div>
         </CardContent>

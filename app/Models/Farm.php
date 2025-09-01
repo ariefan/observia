@@ -87,4 +87,65 @@ class Farm extends Model
     {
         return $this->hasMany(Ration::class);
     }
+
+    /**
+     * Create default medicine inventory items for this farm.
+     */
+    public function createDefaultMedicines(): void
+    {
+        // Get the medicine category and units
+        $medicineCategory = InventoryCategory::where('name', 'Obat-obatan')->first();
+        if (!$medicineCategory) {
+            return; // Skip if no medicine category exists
+        }
+
+        $units = InventoryUnit::whereIn('symbol', ['tablet', 'kapsul', 'vial', 'tube', 'ml', 'sachet'])->get()->keyBy('symbol');
+
+        $defaultMedicines = [
+            ['name' => 'Neomisin', 'sku' => 'QA07AA02', 'unit' => 'tablet', 'description' => 'Antibiotic for intestinal infections'],
+            ['name' => 'Doksisiklin', 'sku' => 'QJ01AA02', 'unit' => 'tablet', 'description' => 'Broad spectrum antibiotic'],
+            ['name' => 'Ampisilin', 'sku' => 'QJ01CA01', 'unit' => 'vial', 'description' => 'Penicillin antibiotic'],
+            ['name' => 'Penoksimetilpenisilin', 'sku' => 'QJ01CE02', 'unit' => 'tablet', 'description' => 'Oral penicillin'],
+            ['name' => 'Eritromisin', 'sku' => 'QJ01DA02', 'unit' => 'tablet', 'description' => 'Macrolide antibiotic'],
+            ['name' => 'Trimetoprim', 'sku' => 'QJ01EA01', 'unit' => 'tablet', 'description' => 'Sulfonamide antibiotic'],
+            ['name' => 'Klindamisin', 'sku' => 'QJ01FF01', 'unit' => 'vial', 'description' => 'Lincosamide antibiotic'],
+            ['name' => 'Kombinasi Garam', 'sku' => 'QA02AD01', 'unit' => 'sachet', 'description' => 'Electrolyte for dehydration'],
+            ['name' => 'Atropin', 'sku' => 'QA03AA04', 'unit' => 'vial', 'description' => 'Antispasmodic'],
+            ['name' => 'Bisakodil', 'sku' => 'QA06AB58', 'unit' => 'tablet', 'description' => 'Stimulant laxative'],
+            ['name' => 'Dinoprost', 'sku' => 'QG04BD04', 'unit' => 'vial', 'description' => 'Prostaglandin for reproduction'],
+            ['name' => 'Oktreotide', 'sku' => 'QH01CB02', 'unit' => 'vial', 'description' => 'Somatostatin analog'],
+            ['name' => 'Kloramfenikol', 'sku' => 'QJ01BA01', 'unit' => 'ml', 'description' => 'Chloramphenicol antibiotic'],
+            ['name' => 'Ketoprofen', 'sku' => 'QM01AE03', 'unit' => 'vial', 'description' => 'Anti-inflammatory'],
+            ['name' => 'Halotan', 'sku' => 'QN01AF01', 'unit' => 'ml', 'description' => 'General anesthetic'],
+            ['name' => 'Ivermektin', 'sku' => 'QP51AG02', 'unit' => 'ml', 'description' => 'Antiparasitic'],
+            ['name' => 'Albendazol', 'sku' => 'QP52AC11', 'unit' => 'tablet', 'description' => 'Anthelmintic'],
+        ];
+
+        foreach ($defaultMedicines as $medicine) {
+            $unit = $units->get($medicine['unit']);
+            if (!$unit) continue;
+
+            // Check if medicine already exists for this farm
+            $exists = InventoryItem::where('farm_id', $this->id)
+                ->where('name', $medicine['name'])
+                ->where('category_id', $medicineCategory->id)
+                ->exists();
+
+            if (!$exists) {
+                InventoryItem::create([
+                    'farm_id' => $this->id,
+                    'category_id' => $medicineCategory->id,
+                    'unit_id' => $unit->id,
+                    'name' => $medicine['name'],
+                    'description' => $medicine['description'],
+                    'sku' => $medicine['sku'],
+                    'minimum_stock' => 1,
+                    'current_stock' => 0, // Start with 0 stock
+                    'track_expiry' => true,
+                    'track_batch' => false,
+                    'is_active' => true,
+                ]);
+            }
+        }
+    }
 }

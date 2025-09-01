@@ -23,10 +23,13 @@ interface Livestock {
 }
 
 interface Medicine {
+  inventory_item_id?: number;
   name: string;
   type: string;
   quantity: number | undefined;
   dosage: string;
+  current_stock?: number;
+  template?: any; // Optional template reference for display
 }
 
 interface FormData {
@@ -55,10 +58,27 @@ interface FormErrors {
   record_date?: string;
 }
 
+interface InventoryItem {
+  id: number;
+  name: string;
+  sku?: string;
+  stock: number;
+  unit: {
+    id: number;
+    name: string;
+    symbol: string;
+  };
+  category: {
+    id: number;
+    name: string;
+  };
+}
+
 interface Props {
   form: FormData;
   errors: FormErrors;
   livestocks: Livestock[];
+  inventoryMedicines: InventoryItem[];
   processing?: boolean;
   submitText?: string;
 }
@@ -121,33 +141,9 @@ const venomCodes = [
 ];
 
 // ATCvet Codes (WHO) - Common veterinary medicines
-const atcvetCodes = [
-  { code: 'QA07AA02', label: 'Neomisin', description: 'Antibiotic for intestinal infections' },
-  { code: 'QJ01AA02', label: 'Doksisiklin', description: 'Broad spectrum antibiotic' },
-  { code: 'QJ01CA01', label: 'Ampisilin', description: 'Penicillin antibiotic' },
-  { code: 'QJ01CE02', label: 'Penoksimetilpenisilin', description: 'Oral penicillin' },
-  { code: 'QJ01DA02', label: 'Eritromisin', description: 'Macrolide antibiotic' },
-  { code: 'QJ01EA01', label: 'Trimetoprim', description: 'Sulfonamide antibiotic' },
-  { code: 'QJ01FF01', label: 'Klindamisin', description: 'Lincosamide antibiotic' },
-  { code: 'QA02AD01', label: 'Kombinasi Garam', description: 'Electrolyte for dehydration' },
-  { code: 'QA03AA04', label: 'Atropin', description: 'Antispasmodic' },
-  { code: 'QA06AB58', label: 'Bisakodil', description: 'Stimulant laxative' },
-  { code: 'QG04BD04', label: 'Dinoprost', description: 'Prostaglandin for reproduction' },
-  { code: 'QH01CB02', label: 'Oktreotide', description: 'Somatostatin analog' },
-  { code: 'QJ01BA01', label: 'Kloramfenikol', description: 'Chloramphenicol antibiotic' },
-  { code: 'QM01AE03', label: 'Ketoprofen', description: 'Anti-inflammatory' },
-  { code: 'QN01AF01', label: 'Halotan', description: 'General anesthetic' },
-  { code: 'QP51AG02', label: 'Ivermektin', description: 'Antiparasitic' },
-  { code: 'QP52AC11', label: 'Albendazol', description: 'Anthelmintic' },
-];
+// Medicine templates are now passed as props from the controller
 
-const medicineTypes = [
-  { value: 'tablet', label: 'Tablet' },
-  { value: 'kapsul', label: 'Kapsul' },
-  { value: 'cair', label: 'Cair/Inject' },
-  { value: 'salep', label: 'Salep' },
-  { value: 'serbuk', label: 'Serbuk' },
-];
+// Medicine types are now defined by the units in medicine templates
 
 // Filtered diagnosis options
 const filteredDiagnosis = computed(() => {
@@ -159,13 +155,31 @@ const filteredDiagnosis = computed(() => {
   );
 });
 
-// Filtered medicine options
+// Filtered medicine options from inventory
 const filteredMedicines = computed(() => {
-  if (!medicineSearch.value) return atcvetCodes;
-  return atcvetCodes.filter(code =>
-    code.label.toLowerCase().includes(medicineSearch.value.toLowerCase()) ||
-    code.description.toLowerCase().includes(medicineSearch.value.toLowerCase()) ||
-    code.code.toLowerCase().includes(medicineSearch.value.toLowerCase())
+  // Check if inventoryMedicines exists and has data
+  if (!props.inventoryMedicines || !Array.isArray(props.inventoryMedicines)) {
+    return [];
+  }
+
+  if (props.inventoryMedicines.length === 0) {
+    return [];
+  }
+
+  const medicines = props.inventoryMedicines.map(item => ({
+    id: item.id,
+    code: item.sku || `INV-${item.id}`,
+    label: item.name,
+    description: `Available: ${item.stock} ${item.unit?.symbol || 'unit'}`,
+    unit: item.unit,
+    currentStock: item.stock
+  }));
+
+  if (!medicineSearch.value) return medicines;
+  return medicines.filter(item =>
+    item.label.toLowerCase().includes(medicineSearch.value.toLowerCase()) ||
+    item.description.toLowerCase().includes(medicineSearch.value.toLowerCase()) ||
+    item.code.toLowerCase().includes(medicineSearch.value.toLowerCase())
   );
 });
 
@@ -189,11 +203,24 @@ const addMedicine = () => {
     formData.value.medicines = [];
   }
   formData.value.medicines.push({
+    inventory_item_id: undefined,
     name: '',
     type: '',
     quantity: undefined,
-    dosage: ''
+    dosage: '',
+    current_stock: undefined,
+    template: undefined
   });
+};
+
+const selectMedicine = (index: number, item: any) => {
+  if (formData.value.medicines && formData.value.medicines[index]) {
+    formData.value.medicines[index].name = item.label;
+    formData.value.medicines[index].type = item.unit.symbol;
+    formData.value.medicines[index].current_stock = item.currentStock;
+    formData.value.medicines[index].inventory_item_id = item.id;
+    formData.value.medicines[index].template = item;
+  }
 };
 
 const removeMedicine = (index: number) => {
@@ -462,7 +489,8 @@ const handleSubmit = () => {
                         Tidak ada obat ditemukan.
                       </div>
                       <ComboboxOption v-for="medicineOption in filteredMedicines" :key="medicineOption.code"
-                        v-slot="{ selected, active }" :value="medicineOption.label" as="template">
+                        v-slot="{ selected, active }" :value="medicineOption.label" as="template"
+                        @click="selectMedicine(index, medicineOption)">
                         <li :class="[
                           active ? 'bg-accent text-accent-foreground' : 'text-foreground',
                           'relative cursor-default select-none py-2 pl-10 pr-4',
@@ -470,6 +498,7 @@ const handleSubmit = () => {
                           <div class="flex flex-col">
                             <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
                               {{ medicineOption.label }}
+                              <span class="text-green-600 text-xs ml-1">[Stock: {{ medicineOption.currentStock }}]</span>
                             </span>
                             <span
                               :class="[active ? 'text-accent-foreground/70' : 'text-muted-foreground', 'block text-xs truncate']">
@@ -490,23 +519,26 @@ const handleSubmit = () => {
               </div>
 
               <div class="lg:col-span-1">
-                <Label v-if="index === 0" class="block text-sm font-medium mb-2">Jenis</Label>
-                <Select v-model="formData.medicines[index].type">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih jenis" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem v-for="type in medicineTypes" :key="type.value" :value="type.value">
-                      {{ type.label }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label v-if="index === 0" class="block text-sm font-medium mb-2">Satuan</Label>
+                <div class="h-10 px-3 py-2 bg-muted border border-input rounded-md flex items-center text-sm text-muted-foreground">
+                  {{ formData.medicines[index].template?.unit?.name || 'Pilih obat dulu' }}
+                  <span v-if="formData.medicines[index].template?.unit?.symbol" class="ml-1">
+                    ({{ formData.medicines[index].template.unit.symbol }})
+                  </span>
+                </div>
               </div>
 
               <div class="lg:col-span-1">
                 <Label v-if="index === 0" class="block text-sm font-medium mb-2">Jumlah</Label>
-                <Input v-model.number="formData.medicines[index].quantity" type="number" min="1"
-                  placeholder="Masukkan jumlah" class="w-full" />
+                <div class="relative">
+                  <Input v-model.number="formData.medicines[index].quantity" type="number" min="1"
+                    :max="formData.medicines[index].current_stock || undefined"
+                    placeholder="Masukkan jumlah" class="w-full" />
+                  <div v-if="formData.medicines[index].current_stock !== undefined" 
+                       class="absolute -bottom-5 left-0 text-xs text-muted-foreground">
+                    Stok: {{ formData.medicines[index].current_stock }}
+                  </div>
+                </div>
               </div>
 
               <div class="lg:col-span-1">

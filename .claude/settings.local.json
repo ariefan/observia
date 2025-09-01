@@ -25,7 +25,8 @@
       "Bash(npx eslint:*)",
       "Bash(npm install:*)",
       "Bash(node:*)",
-      "Bash(herd status:*)"
+      "Bash(herd status:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "additionalDirectories": [
