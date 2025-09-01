@@ -1,13 +1,27 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import type { SharedData } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, PlusCircle, X } from 'lucide-vue-next';
 import SecondSidebar from '@/components/SecondSidebar.vue';
-defineProps({
-    herds: Array,
-});
+interface Herd {
+    id: string;
+    name: string;
+    description: string;
+    capacity: number;
+    current_capacity?: number;
+    status: string;
+    type: string;
+    farm_id?: string;
+}
+
+defineProps<{
+    herds: Herd[];
+}>();
+
+const page = usePage<SharedData>();
 
 import { ref, reactive } from 'vue';
 import { Input } from '@/components/ui/input';
@@ -17,16 +31,26 @@ import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/components/
 
 const showDialog = ref(false);
 const showDeleteDialog = ref(false);
-const herdToDelete = ref(null);
+const herdToDelete = ref<Herd | null>(null);
 const isEdit = ref(false);
-const form = reactive({
+const form = reactive<{
+    id: string | null;
+    name: string;
+    description: string;
+    status: string;
+    type: string;
+    capacity: number;
+    farm_id: string;
+    errors: Record<string, string>;
+    processing: boolean;
+}>({
     id: null,
     name: '',
     description: '',
     status: '',
     type: '',
     capacity: 0,
-    farm_id: typeof window !== 'undefined' && window.currentFarmId ? window.currentFarmId : '',
+    farm_id: page.props.auth.user.current_farm_id || '',
     errors: {},
     processing: false,
 });
@@ -43,7 +67,7 @@ function openCreateDialog() {
     showDialog.value = true;
 }
 
-function openEditDialog(herd) {
+function openEditDialog(herd: Herd) {
     isEdit.value = true;
     form.id = herd.id;
     form.name = herd.name || '';
@@ -51,7 +75,7 @@ function openEditDialog(herd) {
     form.status = herd.status || '';
     form.type = herd.type || '';
     form.capacity = herd.capacity || 0;
-    form.farm_id = herd.farm_id || (typeof window !== 'undefined' && window.currentFarmId ? window.currentFarmId : '');
+    form.farm_id = herd.farm_id || page.props.auth.user.current_farm_id || '';
     form.errors = {};
     showDialog.value = true;
 }
@@ -71,7 +95,7 @@ function submitForm() {
         farm_id: form.farm_id,
     };
     if (isEdit.value && form.id) {
-        router.put(route('herds.update', form.id), payload, {
+        router.put(route('herds.update', { id: form.id }), payload, {
             onError: (errors) => {
                 form.errors = errors;
                 form.processing = false;
@@ -95,7 +119,7 @@ function submitForm() {
     }
 }
 
-function openDeleteDialog(herd) {
+function openDeleteDialog(herd: Herd) {
     herdToDelete.value = herd;
     showDeleteDialog.value = true;
 }
@@ -107,7 +131,7 @@ function closeDeleteDialog() {
 
 function confirmDelete() {
     if (herdToDelete.value) {
-        router.delete(route('herds.destroy', herdToDelete.value.id), {
+        router.delete(route('herds.destroy', { id: herdToDelete.value.id }), {
             onSuccess: () => {
                 closeDeleteDialog();
             },
@@ -153,7 +177,7 @@ function confirmDelete() {
                             <div>
                                 <h3 class="font-bold">
                                     <Button variant="link" class="text-lg text-left px-0"
-                                        @click="() => router.visit(route('herds.show', herd.id))">
+                                        @click="() => router.visit(route('herds.show', { id: herd.id }))">
                                         {{ herd.name }}
                                     </Button>
                                     <span class="ml-4 text-sm">

@@ -250,7 +250,7 @@ const availableYears = computed((): number[] => {
 });
 
 // Format date
-const formatDate = (dateStr: string): string => {
+const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
   const options: Intl.DateTimeFormatOptions = {
@@ -263,7 +263,7 @@ const formatDate = (dateStr: string): string => {
 };
 
 // Format date for monthly view
-const formatDateLong = (dateStr: string): string => {
+const formatDateLong = (dateStr: string | undefined): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
   const options: Intl.DateTimeFormatOptions = {

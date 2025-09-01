@@ -59,7 +59,7 @@ const deleteSpecies = (species: Species) => {
   }
   
   if (confirm(`Apakah Anda yakin ingin menghapus ${species.name}?`)) {
-    router.delete(route('species.destroy', species.id));
+    router.delete(route('species.destroy', { id: species.id }));
   }
 };
 </script>
@@ -137,7 +137,7 @@ const deleteSpecies = (species: Species) => {
               </TableCell>
               <TableCell class="text-right">
                 <div class="flex items-center justify-end gap-2">
-                  <Link :href="route('species.edit', species.id)">
+                  <Link :href="route('species.edit', { id: species.id })">
                     <Button variant="ghost" size="sm">
                       <Edit2 class="h-4 w-4" />
                     </Button>

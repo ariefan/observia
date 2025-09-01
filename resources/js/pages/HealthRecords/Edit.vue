@@ -5,21 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-vue-next';
 import HealthRecordForm from '@/components/forms/HealthRecordForm.vue';
-import { reactive, watch } from 'vue';
+import { watch } from 'vue';
 
 interface Medicine {
   name: string;
   type: string;
-  quantity: number | null;
+  quantity: number | undefined;
   dosage: string;
 }
 
 interface HealthRecord {
   id: string;
   livestock_id: string;
-  health_status: 'healthy' | 'sick';
+  health_status: 'sehat' | 'sakit';
   diagnosis: string[] | string | null;
-  treatment: string | null;
+  treatment: string[] | string | null;
   notes: string | null;
   medicines: Medicine[] | null;
   medicine_name?: string | null; // Legacy field
@@ -46,68 +46,42 @@ const props = defineProps<{
   }>;
 }>();
 
-const form = useForm<{
-  livestock_id: string;
-  health_status: 'healthy' | 'sick';
-  diagnosis: string[];
-  treatment: string;
-  notes: string;
-  medicines: Medicine[];
-  record_date: string;
-}>({
+const form = useForm({
   livestock_id: props.healthRecord.livestock_id,
   health_status: props.healthRecord.health_status,
   diagnosis: props.healthRecord.diagnosis && Array.isArray(props.healthRecord.diagnosis) 
     ? props.healthRecord.diagnosis 
     : props.healthRecord.diagnosis ? [props.healthRecord.diagnosis] : [''],
-  treatment: props.healthRecord.treatment || '',
+  treatment: props.healthRecord.treatment && Array.isArray(props.healthRecord.treatment) 
+    ? props.healthRecord.treatment 
+    : props.healthRecord.treatment ? [props.healthRecord.treatment] : [''],
   notes: props.healthRecord.notes || '',
   medicines: props.healthRecord.medicines && Array.isArray(props.healthRecord.medicines) && props.healthRecord.medicines.length > 0
-    ? props.healthRecord.medicines
+    ? props.healthRecord.medicines.map(m => ({
+        name: m.name || '',
+        type: m.type || '',
+        quantity: m.quantity || undefined,
+        dosage: m.dosage || ''
+      }))
     : props.healthRecord.medicine_name 
       ? [{ 
           name: props.healthRecord.medicine_name || '', 
           type: props.healthRecord.medicine_type || '', 
-          quantity: props.healthRecord.medicine_quantity || null, 
+          quantity: props.healthRecord.medicine_quantity || undefined, 
           dosage: '' 
         }]
-      : [{ name: '', type: '', quantity: null, dosage: '' }],
-  record_date: props.healthRecord.record_date,
-});
-
-// Create a local reactive copy for the form component
-const localFormData = reactive({
-  livestock_id: props.healthRecord.livestock_id,
-  health_status: props.healthRecord.health_status,
-  diagnosis: props.healthRecord.diagnosis && Array.isArray(props.healthRecord.diagnosis) 
-    ? props.healthRecord.diagnosis 
-    : props.healthRecord.diagnosis ? [props.healthRecord.diagnosis] : [''],
-  treatment: props.healthRecord.treatment || '',
-  notes: props.healthRecord.notes || '',
-  medicines: props.healthRecord.medicines && Array.isArray(props.healthRecord.medicines) && props.healthRecord.medicines.length > 0
-    ? props.healthRecord.medicines
-    : props.healthRecord.medicine_name 
-      ? [{ 
-          name: props.healthRecord.medicine_name || '', 
-          type: props.healthRecord.medicine_type || '', 
-          quantity: props.healthRecord.medicine_quantity || null, 
-          dosage: '' 
-        }]
-      : [{ name: '', type: '', quantity: null, dosage: '' }],
+      : [{ name: '', type: '', quantity: undefined, dosage: '' }],
   record_date: props.healthRecord.record_date,
 });
 
 // Watch for changes and sync with Inertia form
-watch(localFormData, (newData) => {
-  Object.assign(form.data, newData);
-}, { deep: true, immediate: true });
+watch(form.data, () => {
+  // Form data is automatically synced by Inertia
+}, { deep: true });
 
 
 
 const submit = () => {
-  // Ensure data is synced before submission
-  Object.assign(form.data, localFormData);
-  
   form.put(route('health-records.update', { id: props.healthRecord.id }));
 };
 
@@ -140,7 +114,16 @@ const goBack = () => {
         </CardHeader>
         <CardContent>
           <HealthRecordForm
-            v-model:form="localFormData"
+            :form="form.data()"
+            @update:form="(data) => {
+              form.livestock_id = data.livestock_id;
+              form.health_status = data.health_status;
+              form.diagnosis = data.diagnosis;
+              form.treatment = data.treatment;
+              form.notes = data.notes;
+              form.medicines = data.medicines;
+              form.record_date = data.record_date;
+            }"
             :errors="form.errors"
             :livestocks="livestocks"
             :processing="form.processing"

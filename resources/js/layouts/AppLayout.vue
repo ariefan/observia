@@ -2,13 +2,13 @@
 import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
 import BottomNavigation from '@/components/BottomNavigation.vue';
 import MobileFAB from '@/components/MobileFAB.vue';
-import type { BreadcrumbItemType } from '@/types';
+import type { BreadcrumbItemType, SharedData } from '@/types';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'vue-sonner';
 import { onMounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-const page = usePage();
+const page = usePage<SharedData>();
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];

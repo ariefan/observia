@@ -142,7 +142,7 @@ const formatDate = (date: string) => {
                 </span>
               </div>
               <Link 
-                :href="route('audits.show', audit.id)"
+                :href="route('audits.show', { id: audit.id })"
                 class="text-muted-foreground hover:text-foreground"
               >
                 <Eye class="h-3 w-3" />

@@ -34,7 +34,7 @@ const breadcrumbs = props.breadcrumbs ?? [];
 const description = props.description ?? '';
 const page = usePage<SharedData>();
 const auth = computed<Auth>(() => page.props.auth as Auth);
-const isSuperUser = computed(() => auth.value.user?.role === 'super_admin' || auth.value.user?.role === 'admin');
+const isSuperUser = computed(() => auth.value.user?.is_super_user === true);
 
 // Notification system
 const {
@@ -113,9 +113,8 @@ const createTestNotification = () => {
   
   addNotification({
     title: notificationForm.value.title,
-    description: notificationForm.value.description,
+    message: notificationForm.value.description,
     type: notificationForm.value.type,
-    priority: notificationForm.value.priority,
   });
   
   // Reset form
@@ -328,7 +327,7 @@ const getPriorityColor = (priority: string) => {
                                     :class="{ 'bg-blue-50 dark:bg-blue-900/20': !notification.isRead }">
                                     <div class="flex items-start gap-3">
                                         <div class="flex-shrink-0 mt-0.5">
-                                            <component :is="getNotificationIcon(notification.type)" class="h-4 w-4" :class="getPriorityColor(notification.priority)" />
+                                            <component :is="getNotificationIcon(notification.type)" class="h-4 w-4" :class="getPriorityColor(notification.priority || 'medium')" />
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-start justify-between gap-2">
@@ -340,11 +339,11 @@ const getPriorityColor = (priority: string) => {
                                                 </Badge>
                                             </div>
                                             <p class="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                                {{ notification.description }}
+                                                {{ notification.message }}
                                             </p>
                                             <div class="flex items-center justify-between mt-2">
                                                 <span class="text-xs text-muted-foreground">
-                                                    {{ formatNotificationTime(notification.createdAt) }}
+                                                    {{ formatNotificationTime(new Date(notification.created_at)) }}
                                                 </span>
                                                 <Button v-if="isSuperUser" @click.stop="removeNotification(notification.id)" variant="ghost" size="sm" class="h-6 w-6 p-0 opacity-0 group-hover:opacity-100">
                                                     <Trash2 class="h-3 w-3" />

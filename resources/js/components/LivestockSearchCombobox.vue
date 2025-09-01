@@ -14,7 +14,7 @@ interface Livestock {
 }
 
 interface Props {
-  modelValue?: Livestock | null;
+  modelValue?: Livestock | null | undefined;
   placeholder?: string;
   sexFilter?: 'M' | 'F';
   disabled?: boolean;
@@ -71,7 +71,7 @@ watch(selectedLivestock, (newValue) => {
 });
 
 watch(() => props.modelValue, (newValue) => {
-  selectedLivestock.value = newValue;
+  selectedLivestock.value = newValue || null;
 });
 
 onMounted(() => {

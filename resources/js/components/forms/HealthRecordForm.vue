@@ -33,7 +33,7 @@ interface FormData {
   livestock_id: string;
   health_status: string;
   diagnosis: string[];
-  treatment: string;
+  treatment: string[];
   notes: string;
   medicines: Medicine[];
   record_date: string;
@@ -45,6 +45,7 @@ interface FormErrors {
   diagnosis?: string;
   'diagnosis.*'?: string;
   treatment?: string;
+  'treatment.*'?: string;
   notes?: string;
   medicines?: string;
   'medicines.*.name'?: string;
@@ -163,36 +164,63 @@ const filteredMedicines = computed(() => {
 
 // Functions for managing multiple diagnoses
 const addDiagnosis = () => {
-  if (!formData.value.diagnosis) {
-    formData.value.diagnosis = [];
+  const currentData = { ...formData.value };
+  if (!currentData.diagnosis) {
+    currentData.diagnosis = [];
   }
-  formData.value.diagnosis.push('');
+  currentData.diagnosis.push('');
+  formData.value = currentData;
 };
 
 const removeDiagnosis = (index: number) => {
-  if (formData.value.diagnosis && formData.value.diagnosis.length > 1) {
-    formData.value.diagnosis.splice(index, 1);
+  const currentData = { ...formData.value };
+  if (currentData.diagnosis && currentData.diagnosis.length > 1) {
+    currentData.diagnosis.splice(index, 1);
+    formData.value = currentData;
   }
 };
 
 // Functions for managing multiple medicines
 const addMedicine = () => {
-  if (!formData.value.medicines) {
-    formData.value.medicines = [];
+  const currentData = { ...formData.value };
+  if (!currentData.medicines) {
+    currentData.medicines = [];
   }
-  formData.value.medicines.push({
+  currentData.medicines.push({
     name: '',
     type: '',
     quantity: undefined,
     dosage: ''
   });
+  formData.value = currentData;
 };
 
 const removeMedicine = (index: number) => {
-  if (formData.value.medicines && formData.value.medicines.length > 1) {
-    formData.value.medicines.splice(index, 1);
+  const currentData = { ...formData.value };
+  if (currentData.medicines && currentData.medicines.length > 1) {
+    currentData.medicines.splice(index, 1);
+    formData.value = currentData;
   }
 };
+
+// Functions for managing multiple treatments
+const addTreatment = () => {
+  const currentData = { ...formData.value };
+  if (!currentData.treatment) {
+    currentData.treatment = [];
+  }
+  currentData.treatment.push('');
+  formData.value = currentData;
+};
+
+const removeTreatment = (index: number) => {
+  const currentData = { ...formData.value };
+  if (currentData.treatment && currentData.treatment.length > 1) {
+    currentData.treatment.splice(index, 1);
+    formData.value = currentData;
+  }
+};
+
 
 const handleSubmit = () => {
   emit('submit');
@@ -369,12 +397,29 @@ const handleSubmit = () => {
       </div>
 
       <div>
-        <Label for="treatment" class="block text-sm font-medium mb-3">Treatment</Label>
-        <Input id="treatment" v-model="formData.treatment" type="text"
-          placeholder="Pemberian obat, vitamin, rawat dokter" class="w-full" />
+        <div class="flex justify-between items-center">
+          <Label class="block text-sm font-medium">Treatment</Label>
+          <Button type="button" @click="addTreatment" size="sm" variant="link">
+            <Plus class="h-3 w-3 mr-1" />
+            Tambah Treatment
+          </Button>
+        </div>
+
+        <div class="space-y-3">
+          <div v-for="(_, index) in (formData.treatment || [])" :key="index" class="flex gap-2">
+            <div class="flex-1">
+              <Input v-model="formData.treatment[index]" type="text"
+                placeholder="Pemberian obat, vitamin, rawat dokter" class="w-full" />
+            </div>
+            <Button v-if="formData.treatment && formData.treatment.length > 1" type="button"
+              @click="removeTreatment(index)" size="sm" variant="link">
+              <Trash2 class="h-3 w-3 text-red-500" />
+            </Button>
+          </div>
+        </div>
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Contoh: pemberian obat, vitamin, atau rawat
           dokter hewan.</p>
-        <InputError :message="errors.treatment" class="mt-1" />
+        <InputError :message="errors.treatment || errors['treatment.*']" class="mt-1" />
       </div>
     </div>
 

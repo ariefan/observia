@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-vue-next';
 import HealthRecordForm from '@/components/forms/HealthRecordForm.vue';
-import { reactive, ref } from 'vue';
 
 const { livestocks } = defineProps<{
   livestocks: Array<{
@@ -16,73 +15,27 @@ const { livestocks } = defineProps<{
   }>;
 }>();
 
-interface Medicine {
-  name: string;
-  type: string;
-  quantity: number | null;
-  dosage: string;
-}
 
-// Form state
-const localFormData = reactive({
+// Use Inertia form for proper type handling
+const form = useForm({
   livestock_id: '',
   health_status: '',
   diagnosis: [''],
-  treatment: '',
+  treatment: [''],
   notes: '',
   medicines: [{
     name: '',
     type: '',
-    quantity: null,
+    quantity: undefined,
     dosage: ''
   }],
   record_date: new Date().toISOString().split('T')[0],
 });
 
-const errors = ref({});
-const processing = ref(false);
-
 const submit = () => {
-  processing.value = true;
-  errors.value = {};
-  
-  // Direct submission with local form data
-  const submitData = {
-    livestock_id: localFormData.livestock_id,
-    health_status: localFormData.health_status,
-    diagnosis: localFormData.diagnosis,
-    treatment: localFormData.treatment,
-    notes: localFormData.notes,
-    medicines: localFormData.medicines,
-    record_date: localFormData.record_date,
-  };
-  
-  // Debug: Log what we're sending
-  console.log('Submitting data:', submitData);
-  
-  router.post(route('health-records.store'), submitData, {
+  form.post(route('health-records.store'), {
     onSuccess: () => {
-      // Reset local form data
-      localFormData.livestock_id = '';
-      localFormData.health_status = '';
-      localFormData.diagnosis = [''];
-      localFormData.treatment = '';
-      localFormData.notes = '';
-      localFormData.medicines = [{
-        name: '',
-        type: '',
-        quantity: null,
-        dosage: ''
-      }];
-      localFormData.record_date = new Date().toISOString().split('T')[0];
-      processing.value = false;
-    },
-    onError: (formErrors) => {
-      errors.value = formErrors;
-      processing.value = false;
-    },
-    onFinish: () => {
-      processing.value = false;
+      form.reset();
     },
   });
 };
@@ -112,10 +65,19 @@ const goBack = () => {
       <Card>
         <CardContent class="pt-4">
           <HealthRecordForm
-            v-model:form="localFormData"
-            :errors="errors"
+            :form="form.data()"
+            @update:form="(data) => {
+              form.livestock_id = data.livestock_id;
+              form.health_status = data.health_status;
+              form.diagnosis = data.diagnosis;
+              form.treatment = data.treatment;
+              form.notes = data.notes;
+              form.medicines = data.medicines;
+              form.record_date = data.record_date;
+            }"
+            :errors="form.errors"
             :livestocks="livestocks"
-            :processing="processing"
+            :processing="form.processing"
             @submit="submit"
           />
         </CardContent>

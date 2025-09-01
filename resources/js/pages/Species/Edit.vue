@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,7 @@ const form = useForm({
 });
 
 const submit = () => {
-  form.put(route('species.update', props.species.id));
+  form.put(route('species.update', { id: props.species.id }));
 };
 </script>
 
@@ -38,7 +38,7 @@ const submit = () => {
   <AppLayout>
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex items-center gap-4">
-        <Button variant="ghost" size="sm" @click="$inertia.visit(route('species.index'))">
+        <Button variant="ghost" size="sm" @click="router.visit(route('species.index'))">
           <ArrowLeft class="h-4 w-4" />
         </Button>
         <div>
@@ -87,7 +87,7 @@ const submit = () => {
                 <Button type="submit" :disabled="form.processing">
                   {{ form.processing ? 'Memperbarui...' : 'Perbarui Spesies' }}
                 </Button>
-                <Button type="button" variant="outline" @click="$inertia.visit(route('species.index'))">
+                <Button type="button" variant="outline" @click="router.visit(route('species.index'))">
                   Batal
                 </Button>
               </div>

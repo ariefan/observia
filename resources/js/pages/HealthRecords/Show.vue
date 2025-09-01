@@ -54,7 +54,7 @@ const formatDateTime = (dateString: string) => {
 
 const deleteRecord = () => {
   if (confirm('Yakin ingin menghapus catatan kesehatan ini?')) {
-    router.delete(route('health-records.destroy', props.healthRecord.id), {
+    router.delete(route('health-records.destroy', { id: props.healthRecord.id }), {
       onSuccess: () => {
         router.visit(route('health-records.index'));
       },
@@ -112,7 +112,7 @@ const getMedicineTypeText = (type: string | null) => {
         </div>
         <div class="flex gap-2">
           <Button variant="outline" size="sm" asChild>
-            <Link :href="route('health-records.edit', healthRecord.id)">
+            <Link :href="route('health-records.edit', { id: healthRecord.id })">
               <Pencil class="h-4 w-4 mr-2" />
               Edit
             </Link>
@@ -237,7 +237,7 @@ const getMedicineTypeText = (type: string | null) => {
             </CardHeader>
             <CardContent class="space-y-2">
               <Button variant="outline" size="sm" class="w-full justify-start" asChild>
-                <Link :href="route('livestocks.show', healthRecord.livestock.id)">
+                <Link :href="route('livestocks.show', { id: healthRecord.livestock.id })">
                   Lihat Detail Ternak
                 </Link>
               </Button>

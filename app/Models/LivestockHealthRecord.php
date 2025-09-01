@@ -27,6 +27,7 @@ class LivestockHealthRecord extends Model
         return [
             'record_date' => 'date',
             'diagnosis' => 'array', // Cast JSON to array
+            'treatment' => 'array', // Cast JSON to array
             'medicines' => 'array', // Cast JSON to array
         ];
     }

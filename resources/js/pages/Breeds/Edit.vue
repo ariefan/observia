@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -40,7 +40,7 @@ const form = useForm({
 });
 
 const submit = () => {
-  form.put(route('breeds.update', props.breed.id));
+  form.put(route('breeds.update', { id: props.breed.id }));
 };
 </script>
 
@@ -51,7 +51,7 @@ const submit = () => {
   <AppLayout>
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex items-center gap-4">
-        <Button variant="ghost" size="sm" @click="$inertia.visit(route('breeds.index'))">
+        <Button variant="ghost" size="sm" @click="router.visit(route('breeds.index'))">
           <ArrowLeft class="h-4 w-4" />
         </Button>
         <div>
@@ -114,7 +114,7 @@ const submit = () => {
             <div class="space-y-2">
               <Label for="description">Deskripsi</Label>
               <Textarea id="description" v-model="form.description" rows="3"
-                :class="{ 'border-red-500': form.errors.description }" />
+                :class="form.errors.description ? 'border-red-500' : ''" />
               <div v-if="form.errors.description" class="text-sm text-red-600">
                 {{ form.errors.description }}
               </div>

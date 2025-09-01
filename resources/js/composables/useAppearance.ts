@@ -1,9 +1,14 @@
 import { onMounted, ref } from 'vue';
 
-type Appearance = 'light' | 'dark';
+type Appearance = 'light' | 'dark' | 'system';
 
 export function updateTheme(value: Appearance) {
-    document.documentElement.classList.toggle('dark', value === 'dark');
+    if (value === 'system') {
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.classList.toggle('dark', systemTheme === 'dark');
+    } else {
+        document.documentElement.classList.toggle('dark', value === 'dark');
+    }
 }
 
 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
