@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { History, LogIn, Database, FileText, ClipboardPlus, Package, PackageOpen, TrendingUp, ArrowLeftRight } from 'lucide-vue-next';
+import { History, LogIn, Database, FileText, ClipboardPlus, Package, PackageOpen, TrendingUp, ArrowLeftRight, Settings } from 'lucide-vue-next';
 import { IconFileText, IconHorse, IconLock, IconDna, IconBug, IconFileAnalytics, IconStethoscope } from '@tabler/icons-vue';
 import type { SharedData } from '@/types';
 
@@ -84,6 +84,11 @@ const navigationItems = [
         title: 'Riwayat Error',
         route: 'error-logs.index',
         icon: IconBug,
+      },
+      {
+        title: 'Pengaturan',
+        route: 'admin.settings.index',
+        icon: Settings,
       },
     ]
     : []

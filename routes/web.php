@@ -22,6 +22,8 @@ use App\Http\Controllers\LivestockHealthRecordController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\InventoryTransactionController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\TelegramBotController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -44,6 +46,9 @@ Route::get('/google/callback', [GoogleLoginController::class, 'handleGoogleCallb
 
 // Pedigree image route for internal use (no auth required)
 Route::get('/livestocks/{livestock}/pedigree-image', [LivestockController::class, 'pedigreeImage'])->name('livestocks.pedigree-image');
+
+// Telegram webhook (no auth required)
+Route::post('/telegram/webhook', [TelegramBotController::class, 'webhook'])->name('telegram.webhook');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/livestocks/weight', [LivestockController::class, 'weighting'])->name('livestocks.weighting');
@@ -161,6 +166,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/inventory/transactions/create', [InventoryTransactionController::class, 'create'])->name('inventory.transactions.create');
     Route::post('/inventory/transactions', [InventoryTransactionController::class, 'store'])->name('inventory.transactions.store');
     Route::get('/inventory/transactions/{transaction}', [InventoryTransactionController::class, 'show'])->name('inventory.transactions.show');
+
+    // Admin Settings Routes (Super User Only)
+    Route::resource('admin/settings', SettingController::class)->names([
+        'index' => 'admin.settings.index',
+        'create' => 'admin.settings.create', 
+        'store' => 'admin.settings.store',
+        'show' => 'admin.settings.show',
+        'edit' => 'admin.settings.edit',
+        'update' => 'admin.settings.update',
+        'destroy' => 'admin.settings.destroy',
+    ]);
+    Route::post('/admin/settings/bulk-update', [SettingController::class, 'bulkUpdate'])->name('admin.settings.bulk-update');
+
+    // Telegram Bot Routes (Super User Only)
+    Route::prefix('telegram')->name('telegram.')->group(function () {
+        Route::get('/status', [TelegramBotController::class, 'getStatus'])->name('status');
+        Route::post('/test-connection', [TelegramBotController::class, 'testConnection'])->name('test-connection');
+        Route::post('/test-message', [TelegramBotController::class, 'sendTestMessage'])->name('test-message');
+        Route::post('/send-notification', [TelegramBotController::class, 'sendNotification'])->name('send-notification');
+        Route::post('/health-alert-test', [TelegramBotController::class, 'sendHealthAlertTest'])->name('health-alert-test');
+        Route::post('/refresh-bot', [TelegramBotController::class, 'refreshBot'])->name('refresh-bot');
+        Route::post('/chat-info', [TelegramBotController::class, 'getChatInfo'])->name('chat-info');
+    });
 
     Route::resources([
         'farms' => FarmController::class,

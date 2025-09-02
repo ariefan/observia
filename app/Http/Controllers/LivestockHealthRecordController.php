@@ -12,6 +12,8 @@ use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Traits\HasCurrentFarm;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\HealthAlertTelegramNotification;
 
 class LivestockHealthRecordController extends Controller
 {
@@ -158,7 +160,7 @@ class LivestockHealthRecordController extends Controller
             return redirect()->back()->withErrors(['livestock_id' => 'Invalid livestock selection.']);
         }
 
-        DB::transaction(function () use ($validated, $request) {
+        $healthRecord = DB::transaction(function () use ($validated, $request) {
             $healthRecordData = collect($validated)->except('medicines')->all();
             
             // Create the health record
@@ -197,7 +199,14 @@ class LivestockHealthRecordController extends Controller
                     }
                 }
             }
+            
+            return $healthRecord;
         });
+
+        // Send Telegram notification if health status is 'sick'
+        if ($validated['health_status'] === 'sick') {
+            $this->sendHealthAlert($healthRecord, $request->user());
+        }
 
         return redirect()->route('health-records.index')->with('success', 'Catatan kesehatan berhasil disimpan.');
     }
@@ -303,6 +312,8 @@ class LivestockHealthRecordController extends Controller
             return redirect()->back()->withErrors(['livestock_id' => 'Invalid livestock selection.']);
         }
 
+        $previousStatus = $healthRecord->health_status;
+        
         DB::transaction(function () use ($healthRecord, $validated, $request) {
             // Reverse previous inventory transactions for this health record
             $previousTransactions = InventoryTransaction::where('reference_type', 'health_record')
@@ -355,6 +366,11 @@ class LivestockHealthRecordController extends Controller
             }
         });
 
+        // Send Telegram notification if health status changed to 'sick'
+        if ($previousStatus !== 'sick' && $validated['health_status'] === 'sick') {
+            $this->sendHealthAlert($healthRecord->fresh(), $request->user());
+        }
+
         return redirect()->route('health-records.index')->with('success', 'Catatan kesehatan berhasil diperbarui.');
     }
 
@@ -382,5 +398,35 @@ class LivestockHealthRecordController extends Controller
         $healthRecord->delete();
 
         return redirect()->route('health-records.index')->with('success', 'Catatan kesehatan berhasil dihapus.');
+    }
+
+    /**
+     * Send health alert notification via Telegram
+     */
+    private function sendHealthAlert(LivestockHealthRecord $healthRecord, $user): void
+    {
+        try {
+            // Create a dummy notifiable for Telegram notification
+            $notifiable = new class {
+                public function routeNotificationForTelegram() {
+                    return null; // Use default chat
+                }
+            };
+
+            $livestock = $healthRecord->livestock()->with(['breed', 'farm'])->first();
+            $diagnosis = is_array($healthRecord->diagnosis) ? implode(', ', array_filter($healthRecord->diagnosis)) : ($healthRecord->diagnosis ?: 'Tidak disebutkan');
+
+            Notification::send($notifiable, new HealthAlertTelegramNotification([
+                'title' => '🚨 Peringatan Kesehatan Ternak',
+                'message' => "Ternak {$livestock->name} ({$livestock->tag_id}) menunjukkan kondisi sakit dan memerlukan perhatian segera.\n\nDiagnosis: {$diagnosis}",
+                'livestock_name' => $livestock->name . ' (' . $livestock->tag_id . ')',
+                'farm_name' => $livestock->farm->name ?? 'Unknown Farm',
+                'created_by' => $user->name,
+                'action_url' => route('health-records.show', $healthRecord->id)
+            ]));
+        } catch (\Exception $e) {
+            // Log error but don't interrupt the main flow
+            \Log::error('Failed to send health alert Telegram notification: ' . $e->getMessage());
+        }
     }
 }
