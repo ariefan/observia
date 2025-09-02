@@ -1,32 +1,31 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
+class EnsureDefaultSettings extends Command
 {
     /**
-     * Run the migrations.
+     * The name and signature of the console command.
+     *
+     * @var string
      */
-    public function up(): void
-    {
-        Schema::create('settings', function (Blueprint $table) {
-            $table->id();
-            $table->string('key')->unique();
-            $table->string('label');
-            $table->text('value')->nullable();
-            $table->string('type')->default('text'); // text, number, boolean, textarea, select
-            $table->json('options')->nullable(); // For select type and validation rules
-            $table->text('description')->nullable();
-            $table->string('category')->default('general');
-            $table->integer('sort_order')->default(0);
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-        });
+    protected $signature = 'settings:ensure-defaults';
 
-        // Insert default settings
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Ensure all default settings exist in the database';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
         $defaultSettings = [
             [
                 'key' => 'telegram_bot_token',
@@ -38,8 +37,6 @@ return new class extends Migration
                 'category' => 'telegram',
                 'sort_order' => 1,
                 'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'key' => 'telegram_chat_id',
@@ -51,8 +48,6 @@ return new class extends Migration
                 'category' => 'telegram',
                 'sort_order' => 2,
                 'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'key' => 'telegram_notifications_enabled',
@@ -64,8 +59,6 @@ return new class extends Migration
                 'category' => 'telegram',
                 'sort_order' => 3,
                 'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'key' => 'app_name',
@@ -77,8 +70,6 @@ return new class extends Migration
                 'category' => 'general',
                 'sort_order' => 1,
                 'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'key' => 'app_version',
@@ -90,19 +81,35 @@ return new class extends Migration
                 'category' => 'general',
                 'sort_order' => 2,
                 'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
         ];
 
-        DB::table('settings')->insert($defaultSettings);
-    }
+        $insertedCount = 0;
+        $skippedCount = 0;
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('settings');
+        foreach ($defaultSettings as $setting) {
+            $exists = DB::table('settings')->where('key', $setting['key'])->exists();
+            
+            if (!$exists) {
+                DB::table('settings')->insert(array_merge($setting, [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]));
+                $insertedCount++;
+                $this->info("✅ Inserted setting: {$setting['key']}");
+            } else {
+                $skippedCount++;
+                $this->line("⏭️  Skipped existing setting: {$setting['key']}");
+            }
+        }
+
+        $this->newLine();
+        $this->info("🎉 Complete! Inserted: {$insertedCount}, Skipped: {$skippedCount}");
+        
+        if ($insertedCount > 0) {
+            $this->info("The new settings are now available in Admin Settings page.");
+        }
+
+        return Command::SUCCESS;
     }
-};
+}

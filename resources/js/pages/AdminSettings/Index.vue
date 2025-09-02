@@ -128,6 +128,16 @@
               <span v-if="sendingHealthTest">Mengirim...</span>
               <span v-else>Test Kesehatan</span>
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              @click="sendLoginNotificationTest"
+              :disabled="sendingLoginTest"
+            >
+              <span v-if="sendingLoginTest">Mengirim...</span>
+              <span v-else>Test Login</span>
+            </Button>
           </div>
 
           <div class="flex space-x-3">
@@ -222,6 +232,7 @@ const resetForm = () => {
 const testingConnection = ref(false);
 const sendingTest = ref(false);
 const sendingHealthTest = ref(false);
+const sendingLoginTest = ref(false);
 
 const hasTelegramSettings = computed(() => {
   return Object.keys(props.settings).includes('telegram');
@@ -278,6 +289,24 @@ const sendHealthAlertTest = async () => {
     console.error('Error sending health alert test:', error);
   } finally {
     sendingHealthTest.value = false;
+  }
+};
+
+const sendLoginNotificationTest = async () => {
+  sendingLoginTest.value = true;
+  try {
+    const response = await axios.post(route('telegram.login-notification-test'));
+    if (response.data.success) {
+      // Show success message
+      console.log('Login notification test sent successfully');
+    } else {
+      // Show error message
+      console.error('Failed to send login notification test:', response.data.message);
+    }
+  } catch (error) {
+    console.error('Error sending login notification test:', error);
+  } finally {
+    sendingLoginTest.value = false;
   }
 };
 </script>

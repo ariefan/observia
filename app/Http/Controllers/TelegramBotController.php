@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\TelegramService;
 use App\Notifications\GeneralTelegramNotification;
+use App\Notifications\LoginTelegramNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -184,6 +185,42 @@ class TelegramBotController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengirim test notifikasi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Send login notification test
+     */
+    public function sendLoginNotificationTest(Request $request): JsonResponse
+    {
+        try {
+            $notifiable = new class {
+                public function routeNotificationForTelegram() {
+                    return null;
+                }
+            };
+
+            Notification::send($notifiable, new LoginTelegramNotification([
+                'type' => 'login',
+                'title' => 'Test Notifikasi Login',
+                'message' => 'Ini adalah test notifikasi login untuk memastikan sistem berfungsi dengan baik.',
+                'user_name' => 'Test User',
+                'user_email' => 'test@example.com',
+                'ip_address' => '192.168.1.100',
+                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0',
+                'login_method' => 'Email & Password',
+                'login_time' => now()->format('d/m/Y H:i:s'),
+            ]));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Test notifikasi login berhasil dikirim'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim test notifikasi login: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -186,6 +186,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/test-message', [TelegramBotController::class, 'sendTestMessage'])->name('test-message');
         Route::post('/send-notification', [TelegramBotController::class, 'sendNotification'])->name('send-notification');
         Route::post('/health-alert-test', [TelegramBotController::class, 'sendHealthAlertTest'])->name('health-alert-test');
+        Route::post('/login-notification-test', [TelegramBotController::class, 'sendLoginNotificationTest'])->name('login-notification-test');
         Route::post('/refresh-bot', [TelegramBotController::class, 'refreshBot'])->name('refresh-bot');
         Route::post('/chat-info', [TelegramBotController::class, 'getChatInfo'])->name('chat-info');
     });

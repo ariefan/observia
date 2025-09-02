@@ -115,13 +115,56 @@ class TelegramService
             $message .= "\n<b>👤 Oleh:</b> {$data['created_by']}";
         }
         
-        $message .= "\n\n<i>📅 " . now()->format('d/m/Y H:i') . "</i>";
+        // Login specific fields
+        if (isset($data['user_name'])) {
+            $message .= "\n<b>👤 Pengguna:</b> {$data['user_name']}";
+        }
+        
+        if (isset($data['user_email'])) {
+            $message .= "\n<b>📧 Email:</b> {$data['user_email']}";
+        }
+        
+        if (isset($data['ip_address'])) {
+            $message .= "\n<b>🌐 IP Address:</b> {$data['ip_address']}";
+        }
+        
+        if (isset($data['login_method'])) {
+            $message .= "\n<b>🔐 Metode Login:</b> {$data['login_method']}";
+        }
+        
+        if (isset($data['user_agent']) && strlen($data['user_agent']) < 100) {
+            $message .= "\n<b>📱 Perangkat:</b> " . $this->parseUserAgent($data['user_agent']);
+        }
+        
+        // Use login_time if provided, otherwise use current time
+        $timestamp = isset($data['login_time']) ? $data['login_time'] : now()->format('d/m/Y H:i');
+        $message .= "\n\n<i>📅 {$timestamp}</i>";
         
         if (isset($data['action_url'])) {
             $message .= "\n\n<a href=\"{$data['action_url']}\">🔗 Lihat Detail</a>";
         }
         
         return $message;
+    }
+
+    private function parseUserAgent(string $userAgent): string
+    {
+        // Simple user agent parsing for device info
+        if (str_contains($userAgent, 'Mobile')) {
+            if (str_contains($userAgent, 'iPhone')) return 'iPhone';
+            if (str_contains($userAgent, 'Android')) return 'Android Mobile';
+            return 'Mobile Device';
+        }
+        
+        if (str_contains($userAgent, 'iPad')) return 'iPad';
+        if (str_contains($userAgent, 'Tablet')) return 'Tablet';
+        
+        if (str_contains($userAgent, 'Chrome')) return 'Chrome Desktop';
+        if (str_contains($userAgent, 'Firefox')) return 'Firefox Desktop';
+        if (str_contains($userAgent, 'Safari')) return 'Safari Desktop';
+        if (str_contains($userAgent, 'Edge')) return 'Edge Desktop';
+        
+        return 'Desktop Browser';
     }
 
     private function getNotificationIcon(string $type): string
@@ -135,6 +178,9 @@ class TelegramService
             'breeding' => '💕',
             'inventory' => '📦',
             'reminder' => '⏰',
+            'login' => '🔑',
+            'logout' => '🚪',
+            'security' => '🛡️',
             default => 'ℹ️',
         };
     }
