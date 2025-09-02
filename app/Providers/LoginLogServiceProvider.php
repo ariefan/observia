@@ -64,6 +64,13 @@ class LoginLogServiceProvider extends ServiceProvider
     private function sendLoginNotification($user, $remember = false): void
     {
         try {
+            // Prevent duplicate notifications within 30 seconds
+            $cacheKey = "login_notification_sent_{$user->id}";
+            if (cache()->has($cacheKey)) {
+                return;
+            }
+            cache()->put($cacheKey, true, 30); // 30 seconds
+            
             // Determine login method
             $loginMethod = 'Email & Password';
             $currentRoute = request()->route()->getName() ?? '';

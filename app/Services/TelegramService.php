@@ -18,6 +18,13 @@ class TelegramService
 
     private function initializeBot(): void
     {
+        // Check if Nutgram class exists
+        if (!class_exists('SergiX44\Nutgram\Nutgram')) {
+            Log::warning('Nutgram library not found. Please install: composer require nutgram/nutgram');
+            $this->bot = null;
+            return;
+        }
+
         $botToken = Setting::getValue('telegram_bot_token');
         
         if ($botToken) {

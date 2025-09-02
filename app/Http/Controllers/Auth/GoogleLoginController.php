@@ -41,8 +41,7 @@ class GoogleLoginController extends Controller
         $minutes = config('auth.remember_cookie_duration', 20160); // 14 days
         config(['session.lifetime' => $minutes]);
         
-        // Manually trigger login event for Google login
-        event(new Login('web', $user, true));
+        // Note: Login event is automatically triggered by Auth::login(), no need to manually fire it
 
         return redirect()->route('home');
     }
