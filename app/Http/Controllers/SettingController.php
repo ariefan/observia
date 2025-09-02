@@ -30,7 +30,7 @@ class SettingController extends Controller
 
     public function create()
     {
-        return Inertia::render('AdminSettings/Create');
+        return Inertia::render('AdminSettings/Form');
     }
 
     public function store(Request $request)
@@ -63,7 +63,7 @@ class SettingController extends Controller
 
     public function edit(Setting $setting)
     {
-        return Inertia::render('AdminSettings/Edit', [
+        return Inertia::render('AdminSettings/Form', [
             'setting' => $setting,
         ]);
     }
@@ -98,16 +98,18 @@ class SettingController extends Controller
 
     public function bulkUpdate(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'settings' => 'required|array',
-            'settings.*.id' => 'required|integer|exists:settings,id',
             'settings.*.value' => 'nullable|string',
         ]);
-
-        foreach ($request->settings as $settingData) {
-            Setting::where('id', $settingData['id'])->update(['value' => $settingData['value']]);
+    
+        foreach ($validated['settings'] as $id => $data) {
+            $setting = Setting::find($id);
+            if ($setting) {
+                $setting->update(['value' => $data['value']]);
+            }
         }
-
+    
         return redirect()->route('admin.settings.index')->with('message', 'Pengaturan berhasil disimpan.');
     }
 }

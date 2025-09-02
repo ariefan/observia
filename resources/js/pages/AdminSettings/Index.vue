@@ -1,6 +1,16 @@
 <template>
   <AppLayout>
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <template #header>
+      <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        Pengaturan Sistem
+      </h2>
+    </template>
+
+    <div class="flex min-h-screen">
+      <!-- Sidebar -->
+      <SecondSidebar current-route="admin.settings.index" />
+
+      <div class="flex-1 flex flex-col gap-4 p-4 max-w-7xl mx-auto">
       <div class="md:flex md:items-center md:justify-between mb-8">
         <div class="flex-1 min-w-0">
           <h1 class="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">
@@ -47,33 +57,8 @@
                 </div>
 
                 <div class="col-span-2">
-                  <!-- Text Input -->
-                  <Input
-                    v-if="setting.type === 'text'"
-                    :id="`setting-${setting.id}`"
-                    v-model="form.settings[setting.id].value"
-                    type="text"
-                    :readonly="setting.options?.readonly"
-                  />
-
-                  <!-- Number Input -->
-                  <Input
-                    v-else-if="setting.type === 'number'"
-                    :id="`setting-${setting.id}`"
-                    v-model="form.settings[setting.id].value"
-                    type="number"
-                  />
-
-                  <!-- Textarea -->
-                  <Textarea
-                    v-else-if="setting.type === 'textarea'"
-                    :id="`setting-${setting.id}`"
-                    v-model="form.settings[setting.id].value"
-                    :rows="3"
-                  />
-
                   <!-- Boolean Toggle -->
-                  <div v-else-if="setting.type === 'boolean'" class="flex items-center">
+                  <div v-if="setting.type === 'boolean'" class="flex items-center">
                     <button
                       type="button"
                       @click="toggleBoolean(setting.id)"
@@ -94,26 +79,16 @@
                     </span>
                   </div>
 
-                  <!-- Select -->
-                  <Select
-                    v-else-if="setting.type === 'select'"
+                  <!-- Other Input Types -->
+                  <SettingValueInput
+                    v-else
+                    :type="setting.type"
                     v-model="form.settings[setting.id].value"
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem v-for="option in setting.options?.choices" :key="option.value" :value="option.value">
-                        {{ option.label }}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                    :setting="setting"
+                    :readonly="setting.options?.readonly"
+                  />
 
-                  <div v-if="form.errors[`settings.${setting.id}.value`]" class="mt-1">
-                    <p class="text-sm text-red-600 dark:text-red-400">
-                      {{ form.errors[`settings.${setting.id}.value`] }}
-                    </p>
-                  </div>
+                  <FormFieldError :error="form.errors[`settings.${setting.id}.value`]" />
                 </div>
               </div>
             </div>
@@ -173,6 +148,7 @@
           </div>
         </div>
       </form>
+      </div>
     </div>
   </AppLayout>
 </template>
@@ -181,13 +157,13 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { ref, computed } from 'vue';
 import axios from 'axios';
+import SettingValueInput from '@/components/SettingValueInput.vue';
+import FormFieldError from '@/components/ui/FormFieldError.vue';
+import { getCategoryTitle, getCategoryDescription } from '@/composables/useSettingsConstants';
+import SecondSidebar from '@/components/SecondSidebar.vue';
 
 interface Setting {
   id: number;
@@ -218,25 +194,6 @@ const form = useForm({
   settings: formData,
 });
 
-const getCategoryTitle = (category: string): string => {
-  const titles: Record<string, string> = {
-    telegram: 'Telegram Bot',
-    general: 'Pengaturan Umum',
-    notifications: 'Notifikasi',
-    system: 'Sistem',
-  };
-  return titles[category] || category.charAt(0).toUpperCase() + category.slice(1);
-};
-
-const getCategoryDescription = (category: string): string => {
-  const descriptions: Record<string, string> = {
-    telegram: 'Konfigurasi bot Telegram untuk notifikasi dan integrasi',
-    general: 'Pengaturan aplikasi secara umum',
-    notifications: 'Pengaturan notifikasi sistem',
-    system: 'Konfigurasi sistem dan performa',
-  };
-  return descriptions[category] || `Pengaturan ${category}`;
-};
 
 const toggleBoolean = (settingId: number) => {
   const currentValue = form.settings[settingId].value;

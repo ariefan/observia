@@ -35,10 +35,14 @@ class GoogleLoginController extends Controller
         }
 
 
-        Auth::login($user);
+        Auth::login($user, true); // Always remember for Google login
+        
+        // Set custom session lifetime for Google login (14 days)
+        $minutes = config('auth.remember_cookie_duration', 20160); // 14 days
+        config(['session.lifetime' => $minutes]);
         
         // Manually trigger login event for Google login
-        event(new Login('web', $user, false));
+        event(new Login('web', $user, true));
 
         return redirect()->route('home');
     }

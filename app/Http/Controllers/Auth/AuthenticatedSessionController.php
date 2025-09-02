@@ -34,6 +34,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Set custom session lifetime for remember me
+        if ($request->boolean('remember')) {
+            $minutes = config('auth.remember_cookie_duration', 20160); // 14 days
+            config(['session.lifetime' => $minutes]);
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
