@@ -159,8 +159,10 @@ class LivestockHealthRecordController extends Controller
         }
 
         DB::transaction(function () use ($validated, $request) {
+            $healthRecordData = collect($validated)->except('medicines')->all();
+            
             // Create the health record
-            $healthRecord = LivestockHealthRecord::create($validated);
+            $healthRecord = LivestockHealthRecord::create($healthRecordData);
             
             // Process medicine inventory transactions
             if (isset($validated['medicines'])) {
@@ -315,7 +317,8 @@ class LivestockHealthRecordController extends Controller
             }
             
             // Update the health record
-            $healthRecord->update($validated);
+            $healthRecordData = collect($validated)->except('medicines')->all();
+            $healthRecord->update($healthRecordData);
             
             // Process new medicine inventory transactions
             if (isset($validated['medicines'])) {

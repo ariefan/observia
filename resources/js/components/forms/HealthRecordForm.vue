@@ -213,15 +213,31 @@ const addMedicine = () => {
   });
 };
 
-const selectMedicine = (index: number, item: any) => {
-  if (formData.value.medicines && formData.value.medicines[index]) {
-    formData.value.medicines[index].name = item.label;
-    formData.value.medicines[index].type = item.unit.symbol;
-    formData.value.medicines[index].current_stock = item.currentStock;
-    formData.value.medicines[index].inventory_item_id = item.id;
-    formData.value.medicines[index].template = item;
-  }
-};
+watch(
+  () => formData.value.medicines,
+  (medicines) => {
+    medicines.forEach((medicine, index) => {
+      if (medicine.name && (!medicine.template || medicine.name !== medicine.template.label)) {
+        const selectedItem = props.inventoryMedicines.find(i => i.name === medicine.name);
+        if (selectedItem) {
+          const medicineToUpdate = formData.value.medicines[index];
+          medicineToUpdate.inventory_item_id = selectedItem.id;
+          medicineToUpdate.type = selectedItem.unit.symbol;
+          medicineToUpdate.current_stock = selectedItem.stock;
+          medicineToUpdate.template = {
+            id: selectedItem.id,
+            code: selectedItem.sku || `INV-${selectedItem.id}`,
+            label: selectedItem.name,
+            description: `Available: ${selectedItem.stock} ${selectedItem.unit?.symbol || 'unit'}`,
+            unit: selectedItem.unit,
+            currentStock: selectedItem.stock,
+          };
+        }
+      }
+    });
+  },
+  { deep: true },
+);
 
 const removeMedicine = (index: number) => {
   if (formData.value.medicines && formData.value.medicines.length > 1) {
@@ -369,7 +385,7 @@ const handleSubmit = () => {
                     class="relative w-full cursor-default rounded-lg bg-background border border-input py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:text-sm">
                     <span class="block truncate text-foreground">{{
                       formData.diagnosis[index] || 'Pilih diagnosa...'
-                    }}</span>
+                      }}</span>
                     <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                       <ChevronsUpDown class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                     </span>
@@ -434,8 +450,8 @@ const handleSubmit = () => {
         <div class="space-y-3">
           <div v-for="(_, index) in (formData.treatment || [])" :key="index" class="flex gap-2">
             <div class="flex-1">
-              <Input v-model="formData.treatment[index]" type="text"
-                placeholder="Pemberian obat, vitamin, rawat dokter" class="w-full" />
+              <Input v-model="formData.treatment[index]" type="text" placeholder="Pemberian obat, vitamin, rawat dokter"
+                class="w-full" />
             </div>
             <Button v-if="formData.treatment && formData.treatment.length > 1" type="button"
               @click="removeTreatment(index)" size="sm" variant="link">
@@ -471,7 +487,7 @@ const handleSubmit = () => {
                       class="relative w-full cursor-default rounded-lg bg-background border border-input py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:text-sm">
                       <span class="block truncate text-foreground">{{
                         formData.medicines[index].name || 'Pilih obat...'
-                        }}</span>
+                      }}</span>
                       <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                         <ChevronsUpDown class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                       </span>
@@ -489,8 +505,7 @@ const handleSubmit = () => {
                         Tidak ada obat ditemukan.
                       </div>
                       <ComboboxOption v-for="medicineOption in filteredMedicines" :key="medicineOption.code"
-                        v-slot="{ selected, active }" :value="medicineOption.label" as="template"
-                        @click="selectMedicine(index, medicineOption)">
+                        v-slot="{ selected, active }" :value="medicineOption.label" as="template">
                         <li :class="[
                           active ? 'bg-accent text-accent-foreground' : 'text-foreground',
                           'relative cursor-default select-none py-2 pl-10 pr-4',
@@ -498,7 +513,8 @@ const handleSubmit = () => {
                           <div class="flex flex-col">
                             <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
                               {{ medicineOption.label }}
-                              <span class="text-green-600 text-xs ml-1">[Stock: {{ medicineOption.currentStock }}]</span>
+                              <span class="text-green-600 text-xs ml-1">[Stock: {{ medicineOption.currentStock
+                                }}]</span>
                             </span>
                             <span
                               :class="[active ? 'text-accent-foreground/70' : 'text-muted-foreground', 'block text-xs truncate']">
@@ -520,7 +536,8 @@ const handleSubmit = () => {
 
               <div class="lg:col-span-1">
                 <Label v-if="index === 0" class="block text-sm font-medium mb-2">Satuan</Label>
-                <div class="h-10 px-3 py-2 bg-muted border border-input rounded-md flex items-center text-sm text-muted-foreground">
+                <div
+                  class="h-10 px-3 py-2 bg-muted border border-input rounded-md flex items-center text-sm text-muted-foreground">
                   {{ formData.medicines[index].template?.unit?.name || 'Pilih obat dulu' }}
                   <span v-if="formData.medicines[index].template?.unit?.symbol" class="ml-1">
                     ({{ formData.medicines[index].template.unit.symbol }})
@@ -532,12 +549,8 @@ const handleSubmit = () => {
                 <Label v-if="index === 0" class="block text-sm font-medium mb-2">Jumlah</Label>
                 <div class="relative">
                   <Input v-model.number="formData.medicines[index].quantity" type="number" min="1"
-                    :max="formData.medicines[index].current_stock || undefined"
-                    placeholder="Masukkan jumlah" class="w-full" />
-                  <div v-if="formData.medicines[index].current_stock !== undefined" 
-                       class="absolute -bottom-5 left-0 text-xs text-muted-foreground">
-                    Stok: {{ formData.medicines[index].current_stock }}
-                  </div>
+                    :max="formData.medicines[index].current_stock || undefined" placeholder="Masukkan jumlah"
+                    class="w-full" />
                 </div>
               </div>
 
