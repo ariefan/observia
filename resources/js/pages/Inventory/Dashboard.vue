@@ -5,7 +5,7 @@ import SecondSidebar from '@/components/SecondSidebar.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Package, AlertTriangle, TrendingUp, DollarSign } from 'lucide-vue-next';
-import { formatRupiah } from '@/utils/currency';
+import { formatRupiah, formatQuantity } from '@/utils/currency';
 
 interface Stats {
   totalItems: number;
@@ -78,10 +78,10 @@ defineProps<Props>();
 
           <Card>
             <CardContent class="flex items-center p-4">
-              <DollarSign class="h-8 w-8 text-green-600 mr-3" />
+              <span class="text-green-600 mr-3 font-semibold text-2xl">Rp</span>
               <div>
                 <p class="text-sm font-medium text-muted-foreground">Total Nilai</p>
-                <p class="text-2xl font-bold">{{ formatRupiah(stats.totalValue) }}</p>
+                <p class="text-2xl font-bold">{{ formatQuantity(stats.totalValue) }}</p>
               </div>
             </CardContent>
           </Card>

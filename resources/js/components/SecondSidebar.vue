@@ -14,6 +14,11 @@ const page = usePage<SharedData>();
 
 const navigationItems = [
   {
+    title: 'Laporan',
+    href: '/laporan',
+    icon: IconFileAnalytics,
+  },
+  {
     title: 'Pakan',
     route: 'rations.index',
     icon: IconFileText,
@@ -74,11 +79,6 @@ const navigationItems = [
         title: 'Ras',
         route: 'breeds.index',
         icon: IconDna,
-      },
-      {
-        title: 'Laporan',
-        href: '/laporan',
-        icon: IconFileAnalytics,
       },
       {
         title: 'Riwayat Error',

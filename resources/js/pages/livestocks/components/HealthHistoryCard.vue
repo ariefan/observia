@@ -121,11 +121,15 @@
 
             <div v-if="record.diagnosis" class="grid grid-cols-3 gap-4 text-sm">
               <span class="font-medium text-muted-foreground">Diagnosa:</span>
-              <div class="col-span-2 cursor-help" :title="getDiagnosisTooltip(record.diagnosis)">
-                {{ getDiagnosisText(record.diagnosis) }}
+              <div class="col-span-2">
+                {{ getDiagnosisTooltip(record.diagnosis) }}
               </div>
             </div>
 
+            <div v-if="record.treatment" class="grid grid-cols-3 gap-4 text-sm">
+                <span class="font-medium text-muted-foreground">Perawatan:</span>
+                <span class="col-span-2">{{ getTreatmentText(record.treatment) }}</span>
+            </div>
 
             <div v-if="record.medicines && record.medicines.length > 0" class="grid grid-cols-3 gap-4 text-sm">
               <span class="font-medium text-muted-foreground">Obat:</span>
@@ -184,7 +188,7 @@ interface HealthRecord {
   health_status?: 'healthy' | 'sick';
   status?: string;
   diagnosis?: string[] | string;
-  treatment?: string;
+  treatment?: string[] | string;
   notes?: string;
   desc?: string;
   medicines?: Medicine[];
@@ -300,6 +304,25 @@ const getDiagnosisTooltip = (diagnosis: string[] | string | undefined): string =
   }
   
   return diagnosis;
+};
+
+const getTreatmentText = (treatment: string[] | string | undefined): string => {
+  if (!treatment) return '';
+
+  if (Array.isArray(treatment)) {
+    return treatment.join(', ');
+  }
+
+  try {
+    // It might be a JSON string array
+    const parsed = JSON.parse(treatment);
+    if (Array.isArray(parsed)) {
+      return parsed.join(', ');
+    }
+  } catch (e) {
+    // Not a JSON string, return as is
+  }
+  return treatment;
 };
 
 // Get filtered health records based on selected month/year
