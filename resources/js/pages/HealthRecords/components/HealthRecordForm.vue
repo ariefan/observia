@@ -13,7 +13,17 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import InputError from '@/components/InputError.vue';
 import { Check, ChevronsUpDown, Plus, Trash2 } from 'lucide-vue-next';
-import { ref, computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+
+const formatStock = (stock: number | undefined | null) => {
+  if (stock === undefined || stock === null) {
+    return '0,00';
+  }
+  return new Intl.NumberFormat('id-ID', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(stock);
+};
 
 interface Livestock {
   id: string;
@@ -117,7 +127,7 @@ const filteredLivestocks = computed(() => {
   return props.livestocks.filter(livestock =>
     livestock.tag_id.toLowerCase().includes(livestockSearch.value.toLowerCase()) ||
     livestock.name.toLowerCase().includes(livestockSearch.value.toLowerCase()) ||
-    livestock.breed_name.toLowerCase().includes(livestockSearch.value.toLowerCase())
+    livestock.breed_name.toLowerCase().includes(livestockSearch.value.toLowerCase()),
   );
 });
 
@@ -151,7 +161,7 @@ const filteredDiagnosis = computed(() => {
   return venomCodes.filter(code =>
     code.label.toLowerCase().includes(diagnosisSearch.value.toLowerCase()) ||
     code.description.toLowerCase().includes(diagnosisSearch.value.toLowerCase()) ||
-    code.code.toLowerCase().includes(diagnosisSearch.value.toLowerCase())
+    code.code.toLowerCase().includes(diagnosisSearch.value.toLowerCase()),
   );
 });
 
@@ -170,16 +180,16 @@ const filteredMedicines = computed(() => {
     id: item.id,
     code: item.sku || `INV-${item.id}`,
     label: item.name,
-    description: `Available: ${item.stock} ${item.unit?.symbol || 'unit'}`,
+    description: `Available: ${formatStock(item.stock)} ${item.unit?.symbol || 'unit'}`,
     unit: item.unit,
-    currentStock: item.stock
+    currentStock: item.stock,
   }));
 
   if (!medicineSearch.value) return medicines;
   return medicines.filter(item =>
     item.label.toLowerCase().includes(medicineSearch.value.toLowerCase()) ||
     item.description.toLowerCase().includes(medicineSearch.value.toLowerCase()) ||
-    item.code.toLowerCase().includes(medicineSearch.value.toLowerCase())
+    item.code.toLowerCase().includes(medicineSearch.value.toLowerCase()),
   );
 });
 
@@ -209,7 +219,7 @@ const addMedicine = () => {
     quantity: undefined,
     dosage: '',
     current_stock: undefined,
-    template: undefined
+    template: undefined,
   });
 };
 
@@ -228,7 +238,7 @@ watch(
             id: selectedItem.id,
             code: selectedItem.sku || `INV-${selectedItem.id}`,
             label: selectedItem.name,
-            description: `Available: ${selectedItem.stock} ${selectedItem.unit?.symbol || 'unit'}`,
+            description: `Available: ${formatStock(selectedItem.stock)} ${selectedItem.unit?.symbol || 'unit'}`,
             unit: selectedItem.unit,
             currentStock: selectedItem.stock,
           };
@@ -524,7 +534,8 @@ const handleSubmit = () => {
                           <div class="flex flex-col">
                             <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
                               {{ medicineOption.label }}
-                              <span class="text-green-600 text-xs ml-1">[Stock: {{ medicineOption.currentStock
+                              <span class="text-green-600 text-xs ml-1">[Stock: {{
+                                formatStock(medicineOption.currentStock)
                               }}]</span>
                             </span>
                             <span
