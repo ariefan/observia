@@ -79,6 +79,17 @@
                     </span>
                   </div>
 
+                  <!-- Textarea (Direct Implementation) -->
+                  <Textarea
+                    v-else-if="setting.type === 'textarea'"
+                    :value="form.settings[setting.id].value"
+                    @input="(event) => form.settings[setting.id].value = event.target.value"
+                    :id="`setting-${setting.id}`"
+                    :rows="setting.options?.rows || 5"
+                    :placeholder="setting.options?.placeholder || ''"
+                    class="w-full"
+                  />
+                  
                   <!-- Other Input Types -->
                   <SettingValueInput
                     v-else
@@ -168,6 +179,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { ref, computed } from 'vue';
 import axios from 'axios';
 import SettingValueInput from '@/components/SettingValueInput.vue';
@@ -220,7 +232,7 @@ const saveSettings = () => {
   form.transform((data) => ({
     settings: settingsData
   })).post(route('admin.settings.bulk-update'), {
-    preserveScroll: true,
+    preserveScroll: false, // Allow full page refresh to show updated data
   });
 };
 

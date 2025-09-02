@@ -22,7 +22,13 @@ class SettingController extends Controller
 
     public function index()
     {
-        $settings = Setting::getAllGroupedByCategory();
+        // Force fresh data from database (no caching)
+        $settings = Setting::where('is_active', true)
+            ->orderBy('category')
+            ->orderBy('sort_order')
+            ->get()
+            ->fresh() // Force fresh query
+            ->groupBy('category');
         
         return Inertia::render('AdminSettings/Index', [
             'settings' => $settings,
