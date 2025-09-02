@@ -36,6 +36,7 @@ class LoginTelegramNotification extends Notification
             'message' => $this->data['message'] ?? '',
             'user_name' => $this->data['user_name'] ?? null,
             'user_email' => $this->data['user_email'] ?? null,
+            'farm_name' => $this->data['farm_name'] ?? null,
             'login_time' => $this->data['login_time'] ?? null,
             'ip_address' => $this->data['ip_address'] ?? null,
             'user_agent' => $this->data['user_agent'] ?? null,

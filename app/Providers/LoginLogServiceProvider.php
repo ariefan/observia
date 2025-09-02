@@ -79,6 +79,17 @@ class LoginLogServiceProvider extends ServiceProvider
                 $loginMethod = 'Google OAuth';
             }
 
+            // Get current farm information
+            $currentFarm = $user->currentFarm;
+            $farmInfo = null;
+            
+            if ($currentFarm) {
+                $farmInfo = $currentFarm->name;
+                if ($currentFarm->owner) {
+                    $farmInfo .= ' (Pemilik: ' . $currentFarm->owner . ')';
+                }
+            }
+
             // Create a dummy notifiable (we'll send to default chat anyway)
             $notifiable = new class {
                 public function routeNotificationForTelegram() {
@@ -86,12 +97,20 @@ class LoginLogServiceProvider extends ServiceProvider
                 }
             };
 
+            $message = $user->name . ' berhasil masuk ke sistem AI Farm.';
+            if ($farmInfo) {
+                $message .= "\n\nFarm saat ini: " . $farmInfo;
+            } else {
+                $message .= "\n\nBelum memilih farm.";
+            }
+
             Notification::send($notifiable, new LoginTelegramNotification([
                 'type' => 'login',
                 'title' => 'Pengguna Masuk ke Sistem',
-                'message' => $user->name . ' berhasil masuk ke sistem AI Farm.',
+                'message' => $message,
                 'user_name' => $user->name,
                 'user_email' => $user->email,
+                'farm_name' => $farmInfo,
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
                 'login_method' => $loginMethod . ($remember ? ' (Remember Me)' : ''),

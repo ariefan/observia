@@ -204,9 +204,10 @@ class TelegramBotController extends Controller
             Notification::send($notifiable, new LoginTelegramNotification([
                 'type' => 'login',
                 'title' => 'Test Notifikasi Login',
-                'message' => 'Ini adalah test notifikasi login untuk memastikan sistem berfungsi dengan baik.',
+                'message' => 'Ini adalah test notifikasi login untuk memastikan sistem berfungsi dengan baik.\n\nFarm saat ini: Test Farm (Pemilik: Test Owner)',
                 'user_name' => 'Test User',
                 'user_email' => 'test@example.com',
+                'farm_name' => 'Test Farm (Pemilik: Test Owner)',
                 'ip_address' => '192.168.1.100',
                 'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0',
                 'login_method' => 'Email & Password',
