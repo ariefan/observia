@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
-use SergiX44\Nutgram\RunningMode\Webhook;
 
 class TelegramBotController extends Controller
 {
@@ -46,8 +45,6 @@ class TelegramBotController extends Controller
             }
 
             // Handle the webhook update
-            // Set explicit webhook mode to avoid auto-detection issues
-            $bot->setRunningMode(new Webhook());
             $bot->run();
 
             return response()->json(['ok' => true]);

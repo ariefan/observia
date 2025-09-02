@@ -16,6 +16,5 @@ declare module 'vue' {
     TabPanel: typeof import('primevue/tabpanel')['default']
     TabPanels: typeof import('primevue/tabpanels')['default']
     Tabs: typeof import('primevue/tabs')['default']
-    Textarea: typeof import('primevue/textarea')['default']
   }
 }
