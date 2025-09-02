@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/InputError.vue';
-import { computed } from 'vue';
-import { X, Plus } from 'lucide-vue-next';
+import { computed, watch } from 'vue';
+import { X, Plus, Check, ChevronsUpDown } from 'lucide-vue-next';
+import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxList, ComboboxTrigger } from '@/components/ui/combobox';
 
 const props = defineProps({
     ration: Object,
     restock: Boolean,
+    feedItems: Array,
 });
 
 const isEditMode = computed(() => !!props.ration);
@@ -19,24 +21,58 @@ const isEditMode = computed(() => !!props.ration);
 const form = useForm({
     name: props.ration?.name || '',
     items: props.ration?.ration_items?.map(item => ({
+        inventory_item_id: null, // New field for inventory linking
         feed: item.feed,
         quantity: props.restock ? 0 : item.quantity,
         price: props.restock ? 0 : item.price,
+        current_stock: 0,
+        unit_cost: 0,
+        unit: null,
     })) || [],
     restock: props.restock ? '1' : '0',
 });
 
 const addItem = () => {
     form.items.push({
+        inventory_item_id: null,
         feed: '',
         quantity: 0,
         price: 0,
+        current_stock: 0,
+        unit_cost: 0,
+        unit: null,
     });
+};
+
+const selectFeedItem = (index, item) => {
+    if (form.items[index]) {
+        form.items[index].inventory_item_id = item.id;
+        form.items[index].feed = item.label;
+        form.items[index].current_stock = item.current_stock;
+        form.items[index].unit_cost = item.unit_cost || 0;
+        form.items[index].unit = item.unit;
+        // Auto-calculate price based on quantity and unit cost
+        if (form.items[index].quantity > 0 && item.unit_cost) {
+            form.items[index].price = form.items[index].quantity * item.unit_cost;
+        }
+    }
 };
 
 const removeItem = (index) => {
     form.items.splice(index, 1);
 };
+
+// Watch for quantity changes to auto-calculate price
+watch(() => form.items, (newItems, oldItems) => {
+    newItems.forEach((item, index) => {
+        if (item.unit_cost > 0 && item.quantity > 0) {
+            const newPrice = item.quantity * item.unit_cost;
+            if (newPrice !== item.price) {
+                item.price = newPrice;
+            }
+        }
+    });
+}, { deep: true });
 
 const submit = () => {
     if (isEditMode.value) {
@@ -95,9 +131,56 @@ const submit = () => {
                                 <div v-for="(item, index) in form.items" :key="index"
                                     class="grid grid-cols-5 gap-4 items-start">
                                     <div>
-                                        <Input :id="'feed_' + index" v-model="item.feed" type="text"
-                                            class="mt-1 block w-full h-8" required :disabled="restock" />
+                                        <Combobox v-if="!restock">
+                                            <ComboboxAnchor as="div" class="relative">
+                                                <ComboboxInput 
+                                                    :id="'feed_' + index"
+                                                    v-model:search-term="item.feed"
+                                                    :display-value="() => item.feed"
+                                                    class="mt-1 block w-full h-8 pr-8"
+                                                    placeholder="Pilih pakan dari inventory..."
+                                                    required
+                                                />
+                                                <ComboboxTrigger class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                                    <ChevronsUpDown class="h-4 w-4 shrink-0 opacity-50" />
+                                                </ComboboxTrigger>
+                                            </ComboboxAnchor>
+                                            <ComboboxList class="max-h-48 overflow-y-auto">
+                                                <ComboboxEmpty class="py-2 px-3 text-sm text-gray-500">
+                                                    Tidak ada pakan ditemukan
+                                                </ComboboxEmpty>
+                                                <ComboboxGroup>
+                                                    <ComboboxItem 
+                                                        v-for="feedOption in feedItems" 
+                                                        :key="feedOption.id" 
+                                                        :value="feedOption"
+                                                        @click="selectFeedItem(index, feedOption)"
+                                                        class="cursor-pointer"
+                                                    >
+                                                        <div class="flex items-center justify-between w-full">
+                                                            <div>
+                                                                <div class="font-medium text-sm">{{ feedOption.label }}</div>
+                                                                <div class="text-xs text-gray-500">
+                                                                    Stok: {{ feedOption.current_stock }} {{ feedOption.unit?.symbol || 'kg' }}
+                                                                    <span v-if="feedOption.unit_cost" class="ml-2">
+                                                                        | {{ feedOption.unit_cost.toLocaleString('id-ID', {style: 'currency', currency: 'IDR', maximumFractionDigits: 0}) }}/{{ feedOption.unit?.symbol || 'kg' }}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <ComboboxItemIndicator>
+                                                                <Check class="h-4 w-4" />
+                                                            </ComboboxItemIndicator>
+                                                        </div>
+                                                    </ComboboxItem>
+                                                </ComboboxGroup>
+                                            </ComboboxList>
+                                        </Combobox>
+                                        <Input v-else :id="'feed_' + index" v-model="item.feed" type="text"
+                                            class="mt-1 block w-full h-8" required disabled />
                                         <InputError class="mt-1" :message="form.errors[`items.${index}.feed`]" />
+                                        <div v-if="item.current_stock > 0" class="text-xs text-green-600 mt-1">
+                                            Stok tersedia: {{ item.current_stock }} {{ item.unit?.symbol || 'kg' }}
+                                        </div>
                                     </div>
 
                                     <div>

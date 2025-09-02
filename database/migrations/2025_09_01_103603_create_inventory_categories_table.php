@@ -26,7 +26,7 @@ return new class extends Migration
         DB::table('inventory_categories')->insert([
             ['name' => 'Obat-obatan', 'description' => 'Obat-obatan dan perawatan veteriner', 'icon' => 'pill', 'color' => '#ef4444', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Pakan', 'description' => 'Pakan ternak dan suplemen', 'icon' => 'wheat', 'color' => '#f59e0b', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Peralatan', 'description' => 'Alat dan peralatan peternakan', 'icon' => 'wrench', 'color' => '#3b82f6', 'created_at' => now(), 'updated_at' => now()],
+            // ['name' => 'Peralatan', 'description' => 'Alat dan peralatan peternakan', 'icon' => 'wrench', 'color' => '#3b82f6', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Perlengkapan', 'description' => 'Perlengkapan umum peternakan', 'icon' => 'package', 'color' => '#10b981', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }

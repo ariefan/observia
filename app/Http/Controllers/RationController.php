@@ -9,6 +9,8 @@ use App\Models\HistoryRationItem;
 use App\Models\HerdFeeding;
 use App\Models\FeedingLeftover;
 use App\Models\Herd;
+use App\Models\InventoryItem;
+use App\Models\InventoryCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -100,7 +102,34 @@ class RationController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Rations/Form');
+        // Get feed category items from inventory
+        $feedCategory = InventoryCategory::where('name', 'Pakan')->first();
+        $feedItems = [];
+        
+        if ($feedCategory) {
+            $feedItems = InventoryItem::with(['unit'])
+                ->where('farm_id', $this->getCurrentFarmId())
+                ->where('category_id', $feedCategory->id)
+                ->where('is_active', true)
+                ->where('current_stock', '>', 0)
+                ->select('id', 'name', 'brand', 'current_stock', 'unit_cost', 'unit_id')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'label' => $item->name . ($item->brand ? ' (' . $item->brand . ')' : ''),
+                        'name' => $item->name,
+                        'brand' => $item->brand,
+                        'current_stock' => $item->current_stock,
+                        'unit_cost' => $item->unit_cost,
+                        'unit' => $item->unit,
+                    ];
+                });
+        }
+
+        return Inertia::render('Rations/Form', [
+            'feedItems' => $feedItems
+        ]);
     }
 
     /**
@@ -111,6 +140,7 @@ class RationController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'items' => 'required|array|min:1',
+            'items.*.inventory_item_id' => 'nullable|exists:inventory_items,id',
             'items.*.feed' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric|min:0',
             'items.*.price' => 'required|numeric|min:0',
@@ -124,6 +154,7 @@ class RationController extends Controller
 
             foreach ($request->items as $item) {
                 $ration->rationItems()->create([
+                    'inventory_item_id' => $item['inventory_item_id'] ?? null,
                     'feed' => $item['feed'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
@@ -173,9 +204,35 @@ class RationController extends Controller
         $ration->load('rationItems');
         $restock = $request->query('restock', null) == "1" ? true : false;
 
+        // Get feed category items from inventory
+        $feedCategory = InventoryCategory::where('name', 'Pakan')->first();
+        $feedItems = [];
+        
+        if ($feedCategory) {
+            $feedItems = InventoryItem::with(['unit'])
+                ->where('farm_id', $this->getCurrentFarmId())
+                ->where('category_id', $feedCategory->id)
+                ->where('is_active', true)
+                ->where('current_stock', '>', 0)
+                ->select('id', 'name', 'brand', 'current_stock', 'unit_cost', 'unit_id')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'label' => $item->name . ($item->brand ? ' (' . $item->brand . ')' : ''),
+                        'name' => $item->name,
+                        'brand' => $item->brand,
+                        'current_stock' => $item->current_stock,
+                        'unit_cost' => $item->unit_cost,
+                        'unit' => $item->unit,
+                    ];
+                });
+        }
+
         return Inertia::render('Rations/Form', [
             'ration' => $ration,
             'restock' => $restock,
+            'feedItems' => $feedItems
         ]);
     }
 
@@ -192,6 +249,7 @@ class RationController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'items' => 'required|array|min:1',
+            'items.*.inventory_item_id' => 'nullable|exists:inventory_items,id',
             'items.*.feed' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric|min:0',
             'items.*.price' => 'required|numeric|min:0',
@@ -226,6 +284,7 @@ class RationController extends Controller
                 } else {
                     // Create new item
                     $ration->rationItems()->create([
+                        'inventory_item_id' => $item['inventory_item_id'] ?? null,
                         'feed' => $item['feed'],
                         'quantity' => $item['quantity'],
                         'price' => $item['price'],

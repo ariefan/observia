@@ -125,7 +125,7 @@ const cardTitle = computed(() => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="unit in units" :key="unit.id" :value="unit.id.toString()">
-                  {{ unit.name }} ({{ unit.symbol }}) - {{ unit.type }}
+                  {{ unit.name }} ({{ unit.symbol }}) <!-- - {{ unit.type }} -->
                 </SelectItem>
               </SelectContent>
             </Select>

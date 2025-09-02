@@ -18,6 +18,11 @@ class RationItem extends Model
         return $this->belongsTo(Ration::class);
     }
 
+    public function inventoryItem(): BelongsTo
+    {
+        return $this->belongsTo(InventoryItem::class);
+    }
+
     public function farm(): BelongsTo
     {
         return $this->belongsTo(Farm::class);
