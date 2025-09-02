@@ -9,6 +9,7 @@ import InputError from '@/components/InputError.vue';
 import { computed, watch } from 'vue';
 import { X, Plus, Check, ChevronsUpDown } from 'lucide-vue-next';
 import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxList, ComboboxTrigger } from '@/components/ui/combobox';
+import { formatRupiah } from '@/utils/currency';
 
 const formatStock = (stock: number | undefined | null) => {
     if (stock === undefined || stock === null) {
@@ -175,17 +176,17 @@ const submit = () => {
                                                                         <div>
                                                                             <div class="font-medium text-sm">{{
                                                                                 feedOption.label }}</div>
-                                                                            <div class="text-xs text-gray-500">
+                                                                            <div
+                                                                                class="text-xs text-gray-600 dark:text-gray-400">
                                                                                 Stok: {{
-                                                                                formatStock(feedOption.current_stock) }}
-                                                                                {{ feedOption.unit?.symbol || 'kg' }}
+                                                                                    formatStock(feedOption.current_stock) }}
+                                                                                {{ feedOption.unit?.symbol || 'kg' }},
                                                                                 <span v-if="feedOption.unit_cost"
                                                                                     class="ml-2">
-                                                                                    | {{
-                                                                                        feedOption.unit_cost.toLocaleString('id-ID',
-                                                                                    {style: 'currency', currency: 'IDR',
-                                                                                    maximumFractionDigits: 0}) }}/{{
-                                                                                    feedOption.unit?.symbol || 'kg' }}
+                                                                                    {{
+                                                                                        formatRupiah(feedOption.unit_cost)
+                                                                                    }}/{{ feedOption.unit?.symbol ||
+                                                                                        'kg' }}
                                                                                 </span>
                                                                             </div>
                                                                         </div>
@@ -204,7 +205,7 @@ const submit = () => {
                                                     <div v-if="item.current_stock > 0"
                                                         class="text-xs text-green-600 mt-1">
                                                         Stok tersedia: {{ formatStock(item.current_stock) }} {{
-                                                        item.unit?.symbol || 'kg' }}
+                                                            item.unit?.symbol || 'kg' }}
                                                     </div>
                                                 </div>
 
@@ -227,11 +228,7 @@ const submit = () => {
                                                     <span class="block w-full pt-2.5 rounded text-right">
                                                         {{
                                                             item.quantity > 0
-                                                                ? (item.price / item.quantity).toLocaleString('id-ID', {
-                                                                    style: 'currency',
-                                                                    currency: 'IDR',
-                                                                    maximumFractionDigits: 0
-                                                                }) + ' / kg'
+                                                                ? formatRupiah(item.price / item.quantity) + ' / kg'
                                                                 : '-'
                                                         }}
                                                     </span>
