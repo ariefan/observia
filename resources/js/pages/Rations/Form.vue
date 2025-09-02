@@ -111,13 +111,13 @@ const submit = () => {
             <SecondSidebar current-route="rations.create" />
             <div class="flex-1 p-6">
                 <div class="max-w-7xl mx-auto">
-                    <div class="mb-6">
+                    <div>
                         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                             {{ isEditMode ? 'Edit Catatan Ransum' : 'Buat Catatan Ransum' }}
                         </h2>
                     </div>
 
-                    <div class="py-12">
+                    <div class="py-4">
                         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
                                 <h3 class="text-md font-semibold mb-2">{{ restock ? 'Restock' : 'Buat' }} Ransum</h3>
