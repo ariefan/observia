@@ -57,6 +57,30 @@ class InventoryItemController extends Controller
             }
         }
 
+        // Filter by expiry status
+        if ($request->filled('expiry_status')) {
+            $expiryStatus = $request->get('expiry_status');
+            $today = now()->format('Y-m-d');
+            
+            if ($expiryStatus === 'expired') {
+                $query->where('track_expiry', true)
+                      ->where('expiry_date', '<', $today);
+            } elseif ($expiryStatus === 'expiring_soon') {
+                $query->where('track_expiry', true)
+                      ->where('expiry_date', '>=', $today)
+                      ->where('expiry_date', '<=', now()->addDays(7)->format('Y-m-d'));
+            } elseif ($expiryStatus === 'expiring_month') {
+                $query->where('track_expiry', true)
+                      ->where('expiry_date', '>', now()->addDays(7)->format('Y-m-d'))
+                      ->where('expiry_date', '<=', now()->addDays(30)->format('Y-m-d'));
+            } elseif ($expiryStatus === 'valid') {
+                $query->where('track_expiry', true)
+                      ->where('expiry_date', '>', now()->addDays(30)->format('Y-m-d'));
+            } elseif ($expiryStatus === 'no_tracking') {
+                $query->where('track_expiry', false);
+            }
+        }
+
         $items = $query->orderBy('name')->paginate(15)->withQueryString();
 
         $categories = InventoryCategory::where('is_active', true)->get();
@@ -68,6 +92,7 @@ class InventoryItemController extends Controller
                 'search' => $request->get('search'),
                 'category' => $request->get('category'),
                 'status' => $request->get('status'),
+                'expiry_status' => $request->get('expiry_status'),
             ],
         ]);
     }
@@ -103,7 +128,7 @@ class InventoryItemController extends Controller
             'minimum_stock' => 'required|numeric|min:0',
             'current_stock' => 'required|numeric|min:0',
             'track_expiry' => 'boolean',
-            'track_batch' => 'boolean',
+            'expiry_date' => 'nullable|date|after:today',
             'specifications' => 'nullable|array',
         ]);
 
@@ -177,7 +202,7 @@ class InventoryItemController extends Controller
             'minimum_stock' => 'required|numeric|min:0',
             'current_stock' => 'required|numeric|min:0',
             'track_expiry' => 'boolean',
-            'track_batch' => 'boolean',
+            'expiry_date' => 'nullable|date|after:today',
             'specifications' => 'nullable|array',
         ]);
 

@@ -183,7 +183,7 @@ class LivestockHealthRecordController extends Controller
                             'reference_type' => 'health_record',
                             'reference_id' => $healthRecord->id,
                             'quantity' => -$medicine['quantity'], // Negative for outgoing
-                            'notes' => "Used for {$healthRecord->livestock->name} ({$healthRecord->livestock->tag_id}) - " . ($medicine['dosage'] ?? 'No dosage specified'),
+                            'notes' => "Digunakan untuk {$healthRecord->livestock->name} ({$healthRecord->livestock->tag_id}) - " . ($medicine['dosage'] ?? 'No dosage specified'),
                             'metadata' => json_encode([
                                 'dosage' => $medicine['dosage'] ?? null,
                                 'livestock_id' => $healthRecord->livestock_id,
@@ -339,7 +339,7 @@ class LivestockHealthRecordController extends Controller
                             'reference_type' => 'health_record',
                             'reference_id' => $healthRecord->id,
                             'quantity' => -$medicine['quantity'], // Negative for outgoing
-                            'notes' => "Used for {$healthRecord->livestock->name} ({$healthRecord->livestock->tag_id}) - " . ($medicine['dosage'] ?? 'No dosage specified'),
+                            'notes' => "Digunakan untuk {$healthRecord->livestock->name} ({$healthRecord->livestock->tag_id}) - " . ($medicine['dosage'] ?? 'No dosage specified'),
                             'metadata' => json_encode([
                                 'dosage' => $medicine['dosage'] ?? null,
                                 'livestock_id' => $healthRecord->livestock_id,

@@ -217,10 +217,10 @@ const getStatusText = (status: string) => {
               <Stethoscope class="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Belum ada catatan kesehatan</h3>
               <p class="text-gray-500 dark:text-gray-400 mb-4">Mulai catat kesehatan ternak Anda sekarang</p>
-              <Button asChild class="bg-emerald-600 hover:bg-emerald-700">
+              <Button asChild>
                 <Link :href="route('health-records.create')">
                 <Plus class="h-4 w-4 mr-2" />
-                Tambah Catatan Pertama
+                Tambah Catatan
                 </Link>
               </Button>
             </div>
@@ -286,7 +286,7 @@ const getStatusText = (status: string) => {
                           <div class="text-sm text-gray-500 dark:text-gray-400">
                             <span v-if="medicine.type">{{ medicine.type }}</span>
                             <span v-if="medicine.quantity">{{ medicine.type ? ' - ' : '' }}{{ medicine.quantity
-                            }}</span>
+                              }}</span>
                             <span v-if="medicine.dosage">{{ (medicine.type || medicine.quantity) ? ' - ' : '' }}{{
                               medicine.dosage }}</span>
                           </div>

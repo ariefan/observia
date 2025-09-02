@@ -21,7 +21,7 @@ class InventoryItem extends Model
         'minimum_stock',
         'current_stock',
         'track_expiry',
-        'track_batch',
+        'expiry_date',
         'is_active',
         'specifications',
     ];
@@ -32,7 +32,7 @@ class InventoryItem extends Model
         'minimum_stock' => 'decimal:3',
         'current_stock' => 'decimal:3',
         'track_expiry' => 'boolean',
-        'track_batch' => 'boolean',
+        'expiry_date' => 'date',
         'is_active' => 'boolean',
         'specifications' => 'array',
     ];
@@ -52,10 +52,7 @@ class InventoryItem extends Model
         return $this->belongsTo(InventoryUnit::class);
     }
 
-    public function batches(): HasMany
-    {
-        return $this->hasMany(InventoryBatch::class);
-    }
+    // Removed batches relationship - using simplified expiry tracking
 
     public function transactions(): HasMany
     {

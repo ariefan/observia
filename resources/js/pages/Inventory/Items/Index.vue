@@ -26,6 +26,8 @@ interface InventoryItem {
   current_stock: number;
   minimum_stock: number;
   unit_cost?: number;
+  track_expiry: boolean;
+  expiry_date?: string;
   category: {
     id: number;
     name: string;
@@ -55,6 +57,7 @@ interface Props {
     search?: string;
     category?: string;
     status?: string;
+    expiry_status?: string;
   };
 }
 
@@ -65,6 +68,7 @@ const page = usePage();
 const searchQuery = ref(props.filters?.search || '');
 const selectedCategory = ref(props.filters?.category || '');
 const selectedStatus = ref(props.filters?.status || '');
+const selectedExpiryStatus = ref(props.filters?.expiry_status || '');
 
 // Debounced search function
 const debouncedSearch = debounce(() => {
@@ -76,6 +80,7 @@ const performSearch = () => {
     search: searchQuery.value || undefined,
     category: selectedCategory.value || undefined,
     status: selectedStatus.value || undefined,
+    expiry_status: selectedExpiryStatus.value || undefined,
   };
   
   // Remove undefined values
@@ -104,10 +109,15 @@ const handleStatusChange = () => {
   performSearch();
 };
 
+const handleExpiryStatusChange = () => {
+  performSearch();
+};
+
 const resetFilters = () => {
   searchQuery.value = '';
   selectedCategory.value = '';
   selectedStatus.value = '';
+  selectedExpiryStatus.value = '';
   router.get(route('inventory.items.index'), {}, {
     preserveState: true,
     replace: true,
@@ -124,6 +134,39 @@ const getStockStatusText = (current: number, minimum: number) => {
   if (current <= minimum) return 'Habis';
   if (current <= minimum * 1.5) return 'Menipis';
   return 'Normal';
+};
+
+// Expiry date utility functions
+const getExpiryStatus = (expiryDate: string | undefined, trackExpiry: boolean) => {
+  if (!trackExpiry || !expiryDate) return null;
+  
+  const today = new Date();
+  const expiry = new Date(expiryDate);
+  const timeDiff = expiry.getTime() - today.getTime();
+  const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  
+  if (daysDiff < 0) return 'expired';
+  if (daysDiff <= 7) return 'expiring_soon';
+  if (daysDiff <= 30) return 'expiring_month';
+  return 'valid';
+};
+
+const getExpiryBadgeVariant = (status: string | null) => {
+  switch (status) {
+    case 'expired': return 'destructive';
+    case 'expiring_soon': return 'destructive';
+    case 'expiring_month': return 'warning';
+    default: return null;
+  }
+};
+
+const getExpiryBadgeText = (status: string | null) => {
+  switch (status) {
+    case 'expired': return 'Kadaluarsa';
+    case 'expiring_soon': return 'Segera Kadaluarsa';
+    case 'expiring_month': return 'Mendekati Kadaluarsa';
+    default: return null;
+  }
 };
 
 const deleteItem = (item: InventoryItem) => {
@@ -194,6 +237,21 @@ const deleteItem = (item: InventoryItem) => {
           </select>
         </div>
 
+        <div>
+          <label class="text-xs font-medium">Status Kadaluarsa</label>
+          <select 
+            v-model="selectedExpiryStatus"
+            @change="handleExpiryStatusChange"
+            class="h-8 text-xs w-full border rounded-md px-3 py-1">
+            <option value="">Semua Kadaluarsa</option>
+            <option value="expired" class="text-red-600">🔴 Kadaluarsa</option>
+            <option value="expiring_soon" class="text-red-600">🔴 Segera Kadaluarsa (≤7 hari)</option>
+            <option value="expiring_month" class="text-yellow-600">🟡 Mendekati Kadaluarsa (≤30 hari)</option>
+            <option value="valid" class="text-green-600">✅ Masih Valid (>30 hari)</option>
+            <option value="no_tracking" class="text-gray-500">➖ Tidak Dilacak</option>
+          </select>
+        </div>
+
         <div class="flex items-end">
           <Button @click="resetFilters" variant="outline" class="h-8 text-xs w-full">
             Reset Filter
@@ -219,7 +277,18 @@ const deleteItem = (item: InventoryItem) => {
                 <p v-if="item.brand" class="text-sm text-muted-foreground">{{ item.brand }}</p>
               </div>
               <div class="flex items-center gap-2">
-                <Badge :variant="getStockStatusColor(item.current_stock, item.minimum_stock)">
+                <!-- Expiry Badge (higher priority) -->
+                <Badge 
+                  v-if="getExpiryBadgeVariant(getExpiryStatus(item.expiry_date, item.track_expiry))" 
+                  :variant="getExpiryBadgeVariant(getExpiryStatus(item.expiry_date, item.track_expiry))"
+                >
+                  {{ getExpiryBadgeText(getExpiryStatus(item.expiry_date, item.track_expiry)) }}
+                </Badge>
+                <!-- Stock Badge -->
+                <Badge 
+                  v-else 
+                  :variant="getStockStatusColor(item.current_stock, item.minimum_stock)"
+                >
                   {{ getStockStatusText(item.current_stock, item.minimum_stock) }}
                 </Badge>
                 <!-- Action Buttons -->

@@ -5,7 +5,7 @@ import SecondSidebar from '@/components/SecondSidebar.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-vue-next';
-import HealthRecordForm from '@/components/forms/HealthRecordForm.vue';
+import HealthRecordForm from './components/HealthRecordForm.vue';
 
 const { livestocks, inventoryMedicines } = defineProps<{
   livestocks: Array<{
@@ -88,7 +88,13 @@ const goBack = () => {
           <HealthRecordForm
             :form="form.data()"
             @update:form="(data) => {
-              Object.assign(form, data);
+              form.livestock_id = data.livestock_id;
+              form.health_status = data.health_status;
+              form.diagnosis = data.diagnosis;
+              form.treatment = data.treatment;
+              form.notes = data.notes;
+              form.medicines = data.medicines;
+              form.record_date = data.record_date;
             }"
             :errors="form.errors"
             :livestocks="livestocks"

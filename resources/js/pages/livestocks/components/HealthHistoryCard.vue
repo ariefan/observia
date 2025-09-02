@@ -15,14 +15,10 @@
               </p>
               <p v-else-if="item.desc" class="text-sm mt-1">{{ item.desc }}</p>
               <div v-if="item.diagnosis" class="mt-1">
-                <div v-if="Array.isArray(item.diagnosis)" class="space-y-1">
-                  <p v-for="(diag, index) in item.diagnosis" :key="index" class="text-sm font-medium">
-                    • {{ diag }}
-                  </p>
-                </div>
-                <p v-else class="text-sm font-medium">{{ item.diagnosis }}</p>
+                <p class="text-sm font-medium cursor-help" :title="getDiagnosisTooltip(item.diagnosis)">
+                  {{ getDiagnosisText(item.diagnosis) }}
+                </p>
               </div>
-              <p v-if="item.treatment" class="text-sm text-muted-foreground mt-1">Treatment: {{ item.treatment }}</p>
               <div v-if="item.medicines && item.medicines.length > 0" class="mt-1 space-y-1">
                 <!-- Intentionally hidden for future resolve  -->
                 <div v-for="(medicine, index) in item.medicines" :key="index"
@@ -125,18 +121,11 @@
 
             <div v-if="record.diagnosis" class="grid grid-cols-3 gap-4 text-sm">
               <span class="font-medium text-muted-foreground">Diagnosa:</span>
-              <div class="col-span-2">
-                <div v-if="Array.isArray(record.diagnosis)" class="space-y-1">
-                  <div v-for="(diag, index) in record.diagnosis" :key="index">• {{ diag }}</div>
-                </div>
-                <span v-else>{{ record.diagnosis }}</span>
+              <div class="col-span-2 cursor-help" :title="getDiagnosisTooltip(record.diagnosis)">
+                {{ getDiagnosisText(record.diagnosis) }}
               </div>
             </div>
 
-            <div v-if="record.treatment" class="grid grid-cols-3 gap-4 text-sm">
-              <span class="font-medium text-muted-foreground">Treatment:</span>
-              <span class="col-span-2">{{ record.treatment }}</span>
-            </div>
 
             <div v-if="record.medicines && record.medicines.length > 0" class="grid grid-cols-3 gap-4 text-sm">
               <span class="font-medium text-muted-foreground">Obat:</span>
@@ -288,6 +277,29 @@ const getMedicineTypeText = (type: string | null) => {
   };
 
   return types[type] || type;
+};
+
+// Get diagnosis text with ellipsis
+const getDiagnosisText = (diagnosis: string[] | string | undefined): string => {
+  if (!diagnosis) return '';
+  
+  if (Array.isArray(diagnosis)) {
+    const joined = diagnosis.join(', ');
+    return joined.length > 50 ? joined.substring(0, 47) + '...' : joined;
+  }
+  
+  return diagnosis.length > 50 ? diagnosis.substring(0, 47) + '...' : diagnosis;
+};
+
+// Get full diagnosis text for tooltip
+const getDiagnosisTooltip = (diagnosis: string[] | string | undefined): string => {
+  if (!diagnosis) return '';
+  
+  if (Array.isArray(diagnosis)) {
+    return diagnosis.join(', ');
+  }
+  
+  return diagnosis;
 };
 
 // Get filtered health records based on selected month/year

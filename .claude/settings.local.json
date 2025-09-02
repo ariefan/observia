@@ -26,7 +26,8 @@
       "Bash(npm install:*)",
       "Bash(node:*)",
       "Bash(herd status:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "additionalDirectories": [

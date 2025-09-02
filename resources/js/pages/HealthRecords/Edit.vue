@@ -5,7 +5,7 @@ import SecondSidebar from '@/components/SecondSidebar.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-vue-next';
-import HealthRecordForm from '@/components/forms/HealthRecordForm.vue';
+import HealthRecordForm from './components/HealthRecordForm.vue';
 import { watch } from 'vue';
 
 interface Medicine {

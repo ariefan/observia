@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             BreedSeeder::class,
             HerdSeeder::class,
             LivestockSeeder::class,
+            MedicineItemsSeeder::class,
         ]);
 
         // User::truncate();

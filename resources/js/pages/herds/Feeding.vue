@@ -6,6 +6,7 @@ import axios from "axios";
 
 // Layout and Components
 import AppLayout from "@/layouts/AppLayout.vue";
+import SecondSidebar from "@/components/SecondSidebar.vue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -200,7 +201,10 @@ const back = () => window.history.back();
     <Head title="Tambah Data Pakan" />
 
     <AppLayout>
-        <div class="flex h-full w-full flex-1 flex-col gap-4 p-4 max-w-7xl mx-auto">
+        <div class="flex min-h-screen">
+            <SecondSidebar current-route="herds.feeding" />
+            <div class="flex-1 p-6">
+                <div class="max-w-7xl mx-auto">
             <!-- Header Section -->
             <div class="flex items-center space-x-4">
                 <Button @click="back" variant="ghost" size="icon" class="h-10 w-10 shrink-0">
@@ -352,6 +356,8 @@ const back = () => window.history.back();
                     </Button>
                 </div>
             </form>
+                </div>
+            </div>
         </div>
     </AppLayout>
 </template>
