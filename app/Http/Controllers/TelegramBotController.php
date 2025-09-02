@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\TelegramService;
+use App\Services\GeminiService;
 use App\Notifications\GeneralTelegramNotification;
 use App\Notifications\LoginTelegramNotification;
 use Illuminate\Http\Request;
@@ -13,10 +14,12 @@ use Illuminate\Support\Facades\Notification;
 class TelegramBotController extends Controller
 {
     private TelegramService $telegramService;
+    private GeminiService $geminiService;
 
-    public function __construct(TelegramService $telegramService)
+    public function __construct(TelegramService $telegramService, GeminiService $geminiService)
     {
         $this->telegramService = $telegramService;
+        $this->geminiService = $geminiService;
         
         // Require super user for test endpoints
         $this->middleware('auth')->except(['webhook']);
@@ -222,6 +225,136 @@ class TelegramBotController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengirim test notifikasi login: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Test AI chatbot connection
+     */
+    public function testAiConnection(): JsonResponse
+    {
+        try {
+            $result = $this->geminiService->testConnection();
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menguji koneksi AI: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Test AI response
+     */
+    public function testAiResponse(Request $request): JsonResponse
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000'
+        ]);
+
+        try {
+            $response = $this->geminiService->generateResponse($request->message);
+            
+            if ($response) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'AI merespons dengan baik',
+                    'response' => $response
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'AI tidak dapat menghasilkan respons'
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menguji AI: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get AI chatbot status
+     */
+    public function getAiStatus(): JsonResponse
+    {
+        try {
+            $chatbotEnabled = $this->telegramService->isChatbotEnabled();
+            $geminiEnabled = $this->geminiService->isEnabled();
+            
+            return response()->json([
+                'success' => true,
+                'status' => [
+                    'chatbot_enabled' => $chatbotEnabled,
+                    'gemini_enabled' => $geminiEnabled,
+                    'gemini_api_key_configured' => !empty(env('GEMINI_API_KEY')),
+                    'operational' => $chatbotEnabled && $geminiEnabled
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mendapatkan status AI: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Send test AI message via Telegram
+     */
+    public function sendTestAiMessage(Request $request): JsonResponse
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000'
+        ]);
+
+        try {
+            if (!$this->telegramService->isChatbotEnabled()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'AI Chatbot belum diaktifkan'
+                ], 400);
+            }
+
+            // Get AI response
+            $aiResponse = $this->geminiService->generateResponse($request->message);
+            
+            if (!$aiResponse) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'AI tidak dapat menghasilkan respons'
+                ], 400);
+            }
+
+            // Send via Telegram
+            $telegramSuccess = $this->telegramService->sendToDefaultChat(
+                "🧪 <b>Test AI Chatbot</b>\n\n" .
+                "<b>Pertanyaan:</b> {$request->message}\n\n" .
+                "<b>Respons AI:</b>\n{$aiResponse}\n\n" .
+                "<i>📅 " . now()->format('d/m/Y H:i:s') . "</i>"
+            );
+
+            if ($telegramSuccess) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Test AI chatbot berhasil dikirim via Telegram',
+                    'ai_response' => $aiResponse
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'AI merespons dengan baik tetapi gagal mengirim via Telegram',
+                    'ai_response' => $aiResponse
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menguji AI chatbot: ' . $e->getMessage()
             ], 500);
         }
     }

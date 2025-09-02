@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Setting;
+use App\Services\GeminiService;
 use SergiX44\Nutgram\Nutgram;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
@@ -10,9 +11,11 @@ use Illuminate\Support\Facades\Cache;
 class TelegramService
 {
     private ?Nutgram $bot = null;
+    private GeminiService $geminiService;
     
-    public function __construct()
+    public function __construct(GeminiService $geminiService)
     {
+        $this->geminiService = $geminiService;
         $this->initializeBot();
     }
 
@@ -30,6 +33,7 @@ class TelegramService
         if ($botToken) {
             try {
                 $this->bot = new Nutgram($botToken);
+                $this->setupBotHandlers();
             } catch (\Exception $e) {
                 Log::error('Failed to initialize Telegram bot: ' . $e->getMessage());
                 $this->bot = null;
@@ -289,13 +293,16 @@ class TelegramService
             $botToken = Setting::getValue('telegram_bot_token');
             $chatId = Setting::getValue('telegram_chat_id');
             $enabled = Setting::getValue('telegram_notifications_enabled', false);
+            $aiEnabled = Setting::getValue('telegram_ai_chatbot_enabled', false);
             
             $status = [
                 'configured' => !empty($botToken),
                 'chat_configured' => !empty($chatId),
                 'enabled' => $enabled,
+                'ai_enabled' => $aiEnabled,
                 'bot_ready' => $this->bot !== null,
-                'fully_operational' => $enabled && $this->bot !== null && !empty($chatId)
+                'fully_operational' => $enabled && $this->bot !== null && !empty($chatId),
+                'ai_operational' => $aiEnabled && $this->geminiService->isEnabled()
             ];
             
             if ($status['bot_ready']) {
@@ -306,5 +313,169 @@ class TelegramService
             
             return $status;
         });
+    }
+
+    private function setupBotHandlers(): void
+    {
+        if (!$this->bot) {
+            return;
+        }
+
+        // Handle /start command
+        $this->bot->onCommand('start', function ($bot) {
+            $this->handleStartCommand($bot);
+        });
+
+        // Handle /help command  
+        $this->bot->onCommand('help', function ($bot) {
+            $this->handleHelpCommand($bot);
+        });
+
+        // Handle all text messages (AI chatbot)
+        $this->bot->onText('.*', function ($bot) {
+            $this->handleTextMessage($bot);
+        });
+    }
+
+    private function handleStartCommand($bot): void
+    {
+        $welcomeMessage = Setting::getValue('telegram_ai_welcome_message', 
+            '👋 Halo! Saya adalah asisten AI untuk sistem AI Farm. Silakan tanyakan apa saja tentang peternakan!');
+            
+        $bot->sendMessage($welcomeMessage, [
+            'parse_mode' => 'HTML'
+        ]);
+
+        Log::info('Telegram bot start command handled', [
+            'user_id' => $bot->userId(),
+            'chat_id' => $bot->chatId()
+        ]);
+    }
+
+    private function handleHelpCommand($bot): void
+    {
+        $helpMessage = "🤖 <b>AI Farm Assistant Bot</b>\n\n";
+        $helpMessage .= "Saya dapat membantu Anda dengan:\n";
+        $helpMessage .= "• Pertanyaan tentang peternakan\n";
+        $helpMessage .= "• Kesehatan hewan\n";
+        $helpMessage .= "• Manajemen farm\n";
+        $helpMessage .= "• Breeding dan feeding\n";
+        $helpMessage .= "• Dan topik peternakan lainnya\n\n";
+        $helpMessage .= "Cukup kirim pesan teks biasa dan saya akan merespons!";
+
+        $bot->sendMessage($helpMessage, [
+            'parse_mode' => 'HTML'
+        ]);
+    }
+
+    private function handleTextMessage($bot): void
+    {
+        // Skip if AI chatbot is not enabled
+        if (!Setting::getValue('telegram_ai_chatbot_enabled', false)) {
+            return;
+        }
+
+        // Skip commands (they have their own handlers)
+        $message = $bot->message()->text;
+        if (str_starts_with($message, '/')) {
+            return;
+        }
+
+        $userId = $bot->userId();
+        $chatId = $bot->chatId();
+        $isPrivateChat = $bot->chat()->type === 'private';
+        $isReplyToBot = $bot->message()->reply_to_message && 
+                       $bot->message()->reply_to_message->from->is_bot;
+        
+        // Check if bot is mentioned in the message
+        $botUsername = null;
+        try {
+            $me = $bot->getMe();
+            $botUsername = $me->username;
+        } catch (\Exception $e) {
+            Log::error('Failed to get bot username: ' . $e->getMessage());
+        }
+        
+        $isMentioned = $botUsername && 
+                      (str_contains($message, '@' . $botUsername) || 
+                       str_contains(strtolower($message), strtolower($botUsername)));
+
+        // Only respond if:
+        // 1. It's a private chat, OR
+        // 2. It's a reply to the bot, OR  
+        // 3. The bot is mentioned in the message
+        if (!$isPrivateChat && !$isReplyToBot && !$isMentioned) {
+            return;
+        }
+        
+        // Clean the message (remove bot mention if present)
+        $cleanMessage = $message;
+        if ($botUsername && $isMentioned) {
+            $cleanMessage = str_ireplace('@' . $botUsername, '', $cleanMessage);
+            $cleanMessage = str_ireplace($botUsername, '', $cleanMessage);
+            $cleanMessage = trim($cleanMessage);
+        }
+
+        Log::info('Telegram AI chatbot processing message', [
+            'user_id' => $userId,
+            'chat_id' => $chatId,
+            'is_private' => $isPrivateChat,
+            'is_reply' => $isReplyToBot,
+            'is_mentioned' => $isMentioned,
+            'message_length' => strlen($cleanMessage)
+        ]);
+
+        try {
+            // Send typing indicator
+            $bot->sendChatAction('typing');
+
+            // Get AI response
+            $aiResponse = $this->geminiService->generateResponse($cleanMessage, (string)$userId);
+            
+            if ($aiResponse) {
+                $bot->sendMessage($aiResponse, [
+                    'parse_mode' => 'Markdown'
+                ]);
+                
+                Log::info('Telegram AI response sent', [
+                    'user_id' => $userId,
+                    'response_length' => strlen($aiResponse)
+                ]);
+            } else {
+                // Send error message if AI fails
+                $errorMessage = Setting::getValue('telegram_ai_error_message',
+                    '😔 Maaf, saya sedang mengalami gangguan. Silakan coba lagi dalam beberapa saat.');
+                
+                $bot->sendMessage($errorMessage);
+                
+                Log::warning('Telegram AI failed to generate response', [
+                    'user_id' => $userId,
+                    'message' => $message
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Telegram AI chatbot error: ' . $e->getMessage(), [
+                'user_id' => $userId,
+                'message' => $message,
+                'error' => $e->getMessage()
+            ]);
+            
+            // Send error message
+            $errorMessage = Setting::getValue('telegram_ai_error_message',
+                '😔 Maaf, saya sedang mengalami gangguan. Silakan coba lagi dalam beberapa saat.');
+            
+            try {
+                $bot->sendMessage($errorMessage);
+            } catch (\Exception $sendError) {
+                Log::error('Failed to send error message: ' . $sendError->getMessage());
+            }
+        }
+    }
+
+    public function isChatbotEnabled(): bool
+    {
+        return Setting::getValue('telegram_ai_chatbot_enabled', false) && 
+               $this->geminiService->isEnabled() && 
+               $this->bot !== null;
     }
 }

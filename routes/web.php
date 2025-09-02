@@ -189,6 +189,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/login-notification-test', [TelegramBotController::class, 'sendLoginNotificationTest'])->name('login-notification-test');
         Route::post('/refresh-bot', [TelegramBotController::class, 'refreshBot'])->name('refresh-bot');
         Route::post('/chat-info', [TelegramBotController::class, 'getChatInfo'])->name('chat-info');
+        
+        // AI Chatbot Routes
+        Route::get('/ai-status', [TelegramBotController::class, 'getAiStatus'])->name('ai-status');
+        Route::post('/test-ai-connection', [TelegramBotController::class, 'testAiConnection'])->name('test-ai-connection');
+        Route::post('/test-ai-response', [TelegramBotController::class, 'testAiResponse'])->name('test-ai-response');
+        Route::post('/test-ai-message', [TelegramBotController::class, 'sendTestAiMessage'])->name('test-ai-message');
     });
 
     Route::resources([
