@@ -17,8 +17,16 @@ import { computed, ref, watch } from 'vue';
 
 const formatStock = (stock: number | undefined | null) => {
   if (stock === undefined || stock === null) {
-    return '0,00';
+    return '0';
   }
+  // If stock is an integer, format without decimal places.
+  if (stock % 1 === 0) {
+    return new Intl.NumberFormat('id-ID', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(stock);
+  }
+  // Otherwise, format with 2 decimal places.
   return new Intl.NumberFormat('id-ID', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
