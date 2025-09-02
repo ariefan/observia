@@ -67,7 +67,8 @@ const inputProps = computed(() => {
     case 'textarea':
       return {
         ...baseProps,
-        rows: 3,
+        rows: props.setting?.options?.rows || 5, // Use custom rows from settings options, default to 5
+        placeholder: props.setting?.options?.placeholder || '',
       };
     case 'boolean':
       return {

@@ -100,16 +100,24 @@ class SettingController extends Controller
     {
         $validated = $request->validate([
             'settings' => 'required|array',
-            'settings.*.value' => 'nullable|string',
+            'settings.*.value' => 'nullable|string|max:65535', // Increased max length for TEXT fields
         ]);
     
+        $updatedCount = 0;
         foreach ($validated['settings'] as $id => $data) {
             $setting = Setting::find($id);
             if ($setting) {
                 $setting->update(['value' => $data['value']]);
+                $updatedCount++;
             }
         }
     
-        return redirect()->route('admin.settings.index')->with('message', 'Pengaturan berhasil disimpan.');
+        Log::info('Bulk settings update', [
+            'total_settings' => count($validated['settings']),
+            'updated_count' => $updatedCount,
+            'settings_keys' => array_keys($validated['settings'])
+        ]);
+    
+        return redirect()->route('admin.settings.index')->with('message', "Pengaturan berhasil disimpan ({$updatedCount} setting diperbarui).");
     }
 }

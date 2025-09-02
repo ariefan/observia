@@ -211,13 +211,15 @@ const toggleBoolean = (settingId: number) => {
 };
 
 const saveSettings = () => {
-  const settingsArray = Object.entries(form.settings).map(([id, data]) => ({
-    id: parseInt(id),
-    value: data.value,
-  }));
+  // Convert form data to the format expected by backend
+  const settingsData: Record<string, { value: string | null }> = {};
+  Object.entries(form.settings).forEach(([id, data]) => {
+    settingsData[id] = { value: data.value };
+  });
 
-  form.post(route('admin.settings.bulk-update'), {
-    data: { settings: settingsArray },
+  form.transform((data) => ({
+    settings: settingsData
+  })).post(route('admin.settings.bulk-update'), {
     preserveScroll: true,
   });
 };
