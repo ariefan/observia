@@ -107,7 +107,7 @@
                     <p class="text-sm text-gray-600">
                         {{ $farm->address ?? 'Alamat tidak tersedia' }}
                         @if($farm && $farm->owner)
-                            | {{ $farm->owner->name }}
+                            | {{ $farm->owner }}
                         @endif
                         @if($farm && $farm->phone)
                             | {{ $farm->phone }}
