@@ -46,7 +46,7 @@
                             </div>
                             <p>{{ $livestock->farm->address }}</p>
                             @if($livestock->farm->owner)
-                                <p>Pemilik: {{ $livestock->farm->owner->name }}</p>
+                                <p>Pemilik: {{ $livestock->farm->owner }}</p>
                             @endif
                         </div>
                     @endif
