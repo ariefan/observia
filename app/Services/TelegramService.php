@@ -34,6 +34,7 @@ class TelegramService
             try {
                 $this->bot = new Nutgram($botToken);
                 $this->setupBotHandlers();
+                // Add fallback handler for all messages        $this->bot->fallback(function ($bot) {            $this->handleTextMessage($bot);        });
             } catch (\Exception $e) {
                 Log::error('Failed to initialize Telegram bot: ' . $e->getMessage());
                 $this->bot = null;
