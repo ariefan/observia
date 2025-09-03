@@ -24,6 +24,7 @@ use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\InventoryTransactionController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TelegramBotController;
+use App\Http\Controllers\BackupController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -54,7 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/livestocks/weight', [LivestockController::class, 'storeWeight'])->name('livestocks.weight.store');    
     Route::get('/livestocks/milking', [LivestockController::class, 'milking'])->name('livestocks.milking');
     Route::post('/livestocks/milking', [LivestockController::class, 'storeMilking'])->name('livestocks.milking.store');
-    Route::get('/livestocks/{livestock}/studbook', [LivestockController::class, 'studbook'])->name('livestocks.studbook');
+    Route::get('/livestocks/{livestock}/certificate', [LivestockController::class, 'certificate'])->name('livestocks.certificate');
     
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
@@ -177,6 +178,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'admin.settings.destroy',
     ]);
     Route::post('/admin/settings/bulk-update', [SettingController::class, 'bulkUpdate'])->name('admin.settings.bulk-update');
+
+    // Backup Routes (Super User Only)
+    Route::prefix('admin/backup')->name('admin.backup.')->group(function () {
+        Route::post('/create', [BackupController::class, 'createBackup'])->name('create');
+        Route::post('/test-google-drive', [BackupController::class, 'testGoogleDrive'])->name('test-google-drive');
+        Route::post('/cleanup', [BackupController::class, 'cleanupBackups'])->name('cleanup');
+        Route::get('/status', [BackupController::class, 'getBackupStatus'])->name('status');
+    });
 
     // Telegram Bot Routes (Super User Only)
     Route::prefix('telegram')->name('telegram.')->group(function () {

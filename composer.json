@@ -11,13 +11,17 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "*",
+        "google/apiclient": "*",
+        "google/apiclient-services": "*",
         "inertiajs/inertia-laravel": "^2.0",
         "intervention/image": "^3.11",
         "laravel/framework": "^12.0",
         "laravel/socialite": "^5.20",
         "laravel/tinker": "^2.10.1",
+        "maennchen/zipstream-php": "*",
         "nutgram/nutgram": "*",
         "phpoffice/phpspreadsheet": "*",
+        "spatie/laravel-backup": "*",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {

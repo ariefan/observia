@@ -9,6 +9,7 @@ export const SETTING_TYPES = [
 export const SETTING_CATEGORIES = [
   { value: 'general', label: 'General' },
   { value: 'telegram', label: 'Telegram' },
+  { value: 'backup', label: 'Backup' },
   { value: 'notifications', label: 'Notifications' },
   { value: 'system', label: 'System' }
 ] as const;
@@ -20,6 +21,7 @@ export const BOOLEAN_OPTIONS = [
 
 export const CATEGORY_TITLES: Record<string, string> = {
   telegram: 'Telegram Bot',
+  backup: 'Backup & Restore',
   general: 'Pengaturan Umum',
   notifications: 'Notifikasi',
   system: 'Sistem',
@@ -27,6 +29,7 @@ export const CATEGORY_TITLES: Record<string, string> = {
 
 export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   telegram: 'Konfigurasi bot Telegram untuk notifikasi dan integrasi',
+  backup: 'Pengaturan backup otomatis database dan file ke Google Drive',
   general: 'Pengaturan aplikasi secara umum',
   notifications: 'Pengaturan notifikasi sistem',
   system: 'Konfigurasi sistem dan performa',

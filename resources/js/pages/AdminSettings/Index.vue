@@ -107,8 +107,47 @@
         </div>
 
         <div class="flex justify-between items-center">
-          <!-- Telegram Test Buttons -->
-          <div v-if="hasTelegramSettings" class="flex space-x-2">
+          <!-- Test Buttons Section -->
+          <div class="flex flex-wrap gap-4">
+            <!-- Backup Test Buttons -->
+            <div v-if="hasBackupSettings" class="flex space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                @click="createManualBackup"
+                :disabled="creatingBackup"
+                class="bg-green-50 hover:bg-green-100 text-green-700 border-green-300"
+              >
+                <span v-if="creatingBackup">Membuat Backup...</span>
+                <span v-else>Buat Backup</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                @click="testGoogleDriveConnection"
+                :disabled="testingGoogleDrive"
+                class="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-300"
+              >
+                <span v-if="testingGoogleDrive">Testing...</span>
+                <span v-else>Test Google Drive</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                @click="cleanupOldBackups"
+                :disabled="cleaningUp"
+                class="bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-300"
+              >
+                <span v-if="cleaningUp">Membersihkan...</span>
+                <span v-else>Cleanup Backup Lama</span>
+              </Button>
+            </div>
+
+            <!-- Telegram Test Buttons -->
+            <div v-if="hasTelegramSettings" class="flex space-x-2">
             <Button
               type="button"
               variant="outline"
@@ -149,6 +188,7 @@
               <span v-if="sendingLoginTest">Mengirim...</span>
               <span v-else>Test Login</span>
             </Button>
+            </div>
           </div>
 
           <div class="flex space-x-3">
@@ -252,6 +292,15 @@ const hasTelegramSettings = computed(() => {
   return Object.keys(props.settings).includes('telegram');
 });
 
+const hasBackupSettings = computed(() => {
+  return Object.keys(props.settings).includes('Backup');
+});
+
+// Backup testing functionality
+const creatingBackup = ref(false);
+const testingGoogleDrive = ref(false);
+const cleaningUp = ref(false);
+
 const testTelegramConnection = async () => {
   testingConnection.value = true;
   try {
@@ -321,6 +370,62 @@ const sendLoginNotificationTest = async () => {
     console.error('Error sending login notification test:', error);
   } finally {
     sendingLoginTest.value = false;
+  }
+};
+
+// Backup functionality
+const createManualBackup = async () => {
+  creatingBackup.value = true;
+  try {
+    const response = await axios.post(route('admin.backup.create'));
+    if (response.data.success) {
+      // Show success message
+      console.log('Backup created successfully');
+      // You might want to add a toast notification here
+    } else {
+      // Show error message
+      console.error('Failed to create backup:', response.data.message);
+    }
+  } catch (error) {
+    console.error('Error creating backup:', error);
+  } finally {
+    creatingBackup.value = false;
+  }
+};
+
+const testGoogleDriveConnection = async () => {
+  testingGoogleDrive.value = true;
+  try {
+    const response = await axios.post(route('admin.backup.test-google-drive'));
+    if (response.data.success) {
+      // Show success message
+      console.log('Google Drive connection successful:', response.data);
+    } else {
+      // Show error message
+      console.error('Google Drive connection failed:', response.data.message);
+    }
+  } catch (error) {
+    console.error('Error testing Google Drive:', error);
+  } finally {
+    testingGoogleDrive.value = false;
+  }
+};
+
+const cleanupOldBackups = async () => {
+  cleaningUp.value = true;
+  try {
+    const response = await axios.post(route('admin.backup.cleanup'));
+    if (response.data.success) {
+      // Show success message
+      console.log('Old backups cleaned up successfully');
+    } else {
+      // Show error message
+      console.error('Failed to cleanup backups:', response.data.message);
+    }
+  } catch (error) {
+    console.error('Error cleaning up backups:', error);
+  } finally {
+    cleaningUp.value = false;
   }
 };
 </script>

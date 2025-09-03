@@ -70,15 +70,15 @@ const deleteLivestock = () => {
   }
 }
 
-const downloadStudbook = () => {
-  // Open studbook PDF in new tab
-  window.open(route('livestocks.studbook', props.livestock.id), '_blank');
+const downloadCertificate = () => {
+  // Open certificate PDF in new tab
+  window.open(route('livestocks.certificate', props.livestock.id), '_blank');
 }
 
 // Helper function to get status badge variant and label
 const getEndingStatusInfo = () => {
   if (!props.latestEnding) return null;
-  
+
   const statusMap = {
     'sold': { label: 'Dijual', variant: 'default' },
     'gifted': { label: 'Hibah', variant: 'secondary' },
@@ -86,7 +86,7 @@ const getEndingStatusInfo = () => {
     'died': { label: 'Mati', variant: 'destructive' },
     'slaughtered': { label: 'Dipotong', variant: 'destructive' },
   };
-  
+
   return statusMap[props.latestEnding.ending_status] || { label: props.latestEnding.ending_status, variant: 'secondary' };
 };
 
@@ -217,21 +217,21 @@ const getMonthYearName = (month, year) => {
 // Get available years from milking and weight history
 const availableYears = computed(() => {
   const years = new Set();
-  
+
   if (props.milkingHistory && props.milkingHistory.length > 0) {
     props.milkingHistory.forEach(milking => {
       const date = new Date(milking.date);
       years.add(date.getFullYear());
     });
   }
-  
+
   if (props.weightHistory && props.weightHistory.length > 0) {
     props.weightHistory.forEach(weight => {
       const [year] = weight.month.split('-');
       years.add(parseInt(year));
     });
   }
-  
+
   const yearArray = Array.from(years).sort((a, b) => b - a); // Latest year first
   return yearArray.length > 0 ? yearArray : [new Date().getFullYear()];
 });
@@ -405,20 +405,21 @@ const milkingTrend = computed(() => {
                 <span>Edit data ternak</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem @click="downloadStudbook" class="flex items-center gap-2 cursor-pointer">
+              <DropdownMenuItem class="flex items-center gap-2 cursor-pointer">
                 <TreeDeciduous class="h-4 w-4" />
                 <span>Studbook</span>
               </DropdownMenuItem>
-              <DropdownMenuItem as-child>
+              <DropdownMenuItem @click="downloadCertificate" class="flex items-center gap-2 cursor-pointer">
                 <div class="flex items-center gap-2">
                   <Award class="h-4 w-4" />
                   <span>Sertifikat ternak</span>
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem as-child>
-                <Link :href="route('livestock-endings.create', { livestock_id: livestock.id })" class="flex items-center gap-2">
-                  <Skull class="h-4 w-4" />
-                  <span>Data end</span>
+                <Link :href="route('livestock-endings.create', { livestock_id: livestock.id })"
+                  class="flex items-center gap-2">
+                <Skull class="h-4 w-4" />
+                <span>Data end</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem @click="deleteLivestock" class="flex items-center gap-2 text-red-600">
@@ -622,7 +623,8 @@ const milkingTrend = computed(() => {
           </CardContent>
           <div class="p-0 mt-auto">
             <Button @click="openMilkingDialog" variant="ghost"
-              class="w-full justify-center rounded-none text-primary hover:bg-primary/10 py-3" style="box-shadow: none;">
+              class="w-full justify-center rounded-none text-primary hover:bg-primary/10 py-3"
+              style="box-shadow: none;">
               <span class="font-semibold underline">Lihat bulan ini</span>
             </Button>
           </div>
@@ -661,7 +663,8 @@ const milkingTrend = computed(() => {
           </CardContent>
           <div class="p-0 mt-auto">
             <Button @click="openWeightDialog" variant="ghost"
-              class="w-full justify-center rounded-none text-primary hover:bg-primary/10 py-3" style="box-shadow: none;">
+              class="w-full justify-center rounded-none text-primary hover:bg-primary/10 py-3"
+              style="box-shadow: none;">
               <span class="font-semibold underline">Lihat bulan ini</span>
             </Button>
           </div>
@@ -731,7 +734,9 @@ const milkingTrend = computed(() => {
           </div>
           <div class="ml-4 space-y-1">
             <div class="text-sm text-muted-foreground">
-              <span class="font-medium">Volume rata-rata:</span> {{ parseFloat(milking.average_volume || 0).toFixed(1) }} liter/hari
+              <span class="font-medium">Volume rata-rata:</span> {{ parseFloat(milking.average_volume || 0).toFixed(1)
+              }}
+              liter/hari
             </div>
             <div v-if="milking.notes" class="text-xs text-muted-foreground italic">
               "{{ milking.notes }}"
@@ -800,7 +805,9 @@ const milkingTrend = computed(() => {
           </div>
           <div class="ml-4 space-y-1">
             <div class="text-sm text-muted-foreground">
-              <span class="font-medium">Bobot rata-rata bulan:</span> {{ parseFloat(weight.average_weight || 0).toFixed(1) }} kg
+              <span class="font-medium">Bobot rata-rata bulan:</span> {{ parseFloat(weight.average_weight ||
+                0).toFixed(1)
+              }} kg
             </div>
           </div>
         </div>

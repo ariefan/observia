@@ -306,7 +306,7 @@ class LivestockController extends Controller
         ]);
     }
 
-    public function studbook(Livestock $livestock)
+    public function certificate(Livestock $livestock)
     {
         $this->authorize('view', $livestock);
         
@@ -317,7 +317,7 @@ class LivestockController extends Controller
         $pedigreeData = \App\Models\Livestock::pedigree($livestock->id);
         
         // Return HTML view for printing
-        return view('studbook.print', [
+        return view('certificate.print', [
             'livestock' => $livestock,
             'pedigreeData' => $pedigreeData,
             'farm' => $livestock->farm
@@ -333,7 +333,7 @@ class LivestockController extends Controller
         $pedigreeData = \App\Models\Livestock::pedigree($livestock->id);
         
         // Return standalone pedigree view for image capture
-        return view('studbook.pedigree-standalone', [
+        return view('certificate.pedigree-standalone', [
             'pedigreeData' => $pedigreeData
         ]);
     }
