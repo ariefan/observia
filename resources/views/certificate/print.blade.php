@@ -145,7 +145,7 @@
                 <!-- QR Code -->
                 <div class="flex justify-end mt-6">
                     <div class="text-center">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ urlencode(url('/livestocks/' . $livestock->id)) }}" 
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ urlencode(route('public.livestock.show', $livestock->id)) }}" 
                              alt="QR Code" 
                              class="w-20 h-20 border border-gray-300 rounded">
                     </div>

@@ -48,6 +48,9 @@ Route::get('/google/callback', [GoogleLoginController::class, 'handleGoogleCallb
 // Pedigree image route for internal use (no auth required)
 Route::get('/livestocks/{livestock}/pedigree-image', [LivestockController::class, 'pedigreeImage'])->name('livestocks.pedigree-image');
 
+// Public livestock detail page (no auth required)
+Route::get('/livestock/{livestock}', [App\Http\Controllers\PublicLivestockController::class, 'show'])->name('public.livestock.show');
+
 // Telegram webhook moved to routes/api.php to avoid CSRF protection
 
 Route::middleware(['auth', 'verified'])->group(function () {

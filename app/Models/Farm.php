@@ -50,6 +50,14 @@ class Farm extends Model
                     ->withTimestamps();
     }
 
+    /**
+     * Get the owner (main user) of the farm.
+     */
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
 
     public function city()
     {
