@@ -2,24 +2,10 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Studbook - {{ $livestock->tag_id }}</title>
+    <title>Sertifikat Registrasi - {{ $livestock->tag_id }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        /* Print styles */
         @media print {
-            body {
-                padding: 15px;
-                font-size: 11px;
-            }
             .no-print {
                 display: none;
             }
@@ -29,67 +15,6 @@
             .avoid-page-break {
                 page-break-inside: avoid;
             }
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #14b8a6;
-        }
-        .title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #14b8a6;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 10px;
-        }
-        .farm-info {
-            font-size: 14px;
-            color: #888;
-        }
-        .section {
-            margin-bottom: 25px;
-            page-break-inside: avoid;
-        }
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #14b8a6;
-            margin-bottom: 15px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .info-grid {
-            display: table;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-        .info-row {
-            display: table-row;
-        }
-        .info-label {
-            display: table-cell;
-            font-weight: bold;
-            width: 30%;
-            padding: 5px 10px 5px 0;
-            vertical-align: top;
-        }
-        .info-value {
-            display: table-cell;
-            padding: 5px 0;
-            vertical-align: top;
-        }
-        .pedigree-section {
-            margin-top: 30px;
-        }
-        .pedigree-container {
-            margin: 20px 0;
-            overflow: visible;
         }
         
         /* Print button styles */
@@ -137,97 +62,60 @@
 </head>
 <body>
     <!-- Print Button -->
-    <button onclick="window.print()" class="print-button no-print">🖨️ Print Studbook</button>
+    <button onclick="window.print()" class="print-button no-print">🖨️ Print Certificate</button>
 
-    <!-- Header -->
-    <div class="header avoid-page-break">
-        <div class="title">Sertifikat Registrasi</div>
-        <div class="subtitle">{{ $livestock->tag_id }} - {{ $livestock->name }}</div>
-        @if($farm)
-        <div class="farm-info">{{ $farm->name }} | {{ $farm->address ?? 'Alamat tidak tersedia' }}</div>
-        @endif
-    </div>
+    <div class="min-h-screen bg-gradient-to-b from-teal-50 to-white p-8">
+        <div class="bg-teal-200/10 rounded-2xl border border-teal-500 p-8 max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-lg font-bold text-teal-700">Sertifikat Registrasi</h1>
+                    <p class="text-xl font-semibold">{{ $farm->name ?? 'Farm' }}</p>
+                    <p class="text-sm text-gray-600">
+                        {{ $farm->address ?? 'Alamat tidak tersedia' }}
+                        @if($farm && $farm->owner)
+                            | {{ $farm->owner->name }}
+                        @endif
+                        @if($farm && $farm->phone)
+                            | {{ $farm->phone }}
+                        @endif
+                    </p>
+                </div>
+                <div class="text-right">
+                    <img src="{{ Vite::asset('resources/js/assets/logo.png') }}" alt="Aifarm" class="h-12 w-auto">
+                </div>
+            </div>
 
-    <!-- Livestock Information -->
-    <div class="section avoid-page-break">
-        <div class="section-title">Informasi Ternak</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">Tag ID:</div>
-                <div class="info-value">{{ $livestock->tag_id }}</div>
+            <!-- Info section -->
+            <div class="grid grid-cols-2 gap-6 mt-8 text-sm">
+                <div>
+                    <p><span class="font-semibold">Nama:</span> {{ $livestock->name }}</p>
+                    <p><span class="font-semibold">Jenis {{ $livestock->breed->species->name ?? 'Hewan' }}:</span> {{ $livestock->breed->name ?? 'Tidak diketahui' }}</p>
+                    <p><span class="font-semibold">Jenis Kelamin:</span> {{ $livestock->sex === 'M' ? 'Jantan' : 'Betina' }}</p>
+                </div>
+                <div>
+                    <p><span class="font-semibold">Tanggal Lahir:</span> {{ $livestock->birthdate ? \Carbon\Carbon::parse($livestock->birthdate)->format('d F Y') : 'Tidak diketahui' }}</p>
+                    <p><span class="font-semibold">Aifarm ID:</span> {{ $livestock->tag_id }}</p>
+                    <p><span class="font-semibold">Nomor Ternak:</span> {{ $livestock->tag_id }}</p>
+                </div>
             </div>
-            <div class="info-row">
-                <div class="info-label">Nama:</div>
-                <div class="info-value">{{ $livestock->name }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Spesies:</div>
-                <div class="info-value">{{ $livestock->breed->species->name ?? 'Tidak diketahui' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Ras:</div>
-                <div class="info-value">{{ $livestock->breed->name ?? 'Tidak diketahui' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Jenis Kelamin:</div>
-                <div class="info-value">{{ $livestock->sex === 'M' ? 'Jantan' : 'Betina' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Tanggal Lahir:</div>
-                <div class="info-value">{{ $livestock->birthdate ? \Carbon\Carbon::parse($livestock->birthdate)->format('d F Y') : 'Tidak diketahui' }}</div>
-            </div>
-            @if($livestock->maleParent)
-            <div class="info-row">
-                <div class="info-label">Ayah:</div>
-                <div class="info-value">{{ $livestock->maleParent->tag_id }} - {{ $livestock->maleParent->name }}</div>
-            </div>
-            @endif
-            @if($livestock->femaleParent)
-            <div class="info-row">
-                <div class="info-label">Ibu:</div>
-                <div class="info-value">{{ $livestock->femaleParent->tag_id }} - {{ $livestock->femaleParent->name }}</div>
-            </div>
-            @endif
-            @if($livestock->herd)
-            <div class="info-row">
-                <div class="info-label">Kelompok:</div>
-                <div class="info-value">{{ $livestock->herd->name }}</div>
-            </div>
-            @endif
-        </div>
-    </div>
 
-    <!-- Farm Information -->
-    @if($farm)
-    <div class="section avoid-page-break">
-        <div class="section-title">Informasi Peternakan</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">Nama Peternakan:</div>
-                <div class="info-value">{{ $farm->name }}</div>
+            <!-- Pedigree Tree -->
+            <div class="mt-10">
+                <h2 class="text-center font-bold text-gray-800 mb-6">Pedigree</h2>
+                <div class="flex flex-col items-center">
+                    <div class="pedigree-container w-full">
+                        <!-- Include the exact pedigree component -->
+                        @include('certificate.pedigree-print', ['pedigreeData' => $pedigreeData])
+                    </div>
+                </div>
             </div>
-            @if($farm->address)
-            <div class="info-row">
-                <div class="info-label">Alamat:</div>
-                <div class="info-value">{{ $farm->address }}</div>
-            </div>
-            @endif
-            @if($farm->phone)
-            <div class="info-row">
-                <div class="info-label">Telepon:</div>
-                <div class="info-value">{{ $farm->phone }}</div>
-            </div>
-            @endif
-        </div>
-    </div>
-    @endif
 
-    <!-- Pedigree Diagram -->
-    <div class="pedigree-section page-break">
-        <div class="section-title">Silsilah (Pedigree)</div>
-        <div class="pedigree-container">
-            <!-- Include the exact pedigree component -->
-            @include('certificate.pedigree-print', ['pedigreeData' => $pedigreeData])
+            <!-- Footer -->
+            <div class="mt-12 border-t border-teal-200 pt-4 text-xs text-gray-600 text-center">
+                Di atas merupakan kutipan yang sah dari record Aifarm.id - Indonesia.<br />
+                Pada tanggal {{ \Carbon\Carbon::now()->format('d F Y') }}.
+            </div>
         </div>
     </div>
 
