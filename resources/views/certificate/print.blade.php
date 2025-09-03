@@ -5,6 +5,16 @@
     <title>Sertifikat Registrasi - {{ $livestock->tag_id }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+        
+        body {
+            width: 210mm;
+            min-height: 297mm;
+        }
+        
         @media print {
             .no-print {
                 display: none;
@@ -87,8 +97,13 @@
             <!-- Header -->
             <div class="flex justify-between items-start">
                 <div>
-                    <h1 class="text-lg font-bold text-teal-700">Sertifikat Registrasi</h1>
-                    <p class="text-xl font-semibold">{{ $farm->name ?? 'Farm' }}</p>
+                    <h1 class="text-lg font-bold text-teal-700 mt-6">Sertifikat Registrasi</h1>
+                    <div class="flex items-center gap-4">
+                        @if($farm && $farm->image)
+                            <img src="{{ asset('storage/' . $farm->image) }}" alt="{{ $farm->name }}" class="h-16 w-16 object-cover rounded-lg">
+                        @endif
+                        <p class="text-3xl font-semibold">{{ $farm->name ?? 'Farm' }}</p>
+                    </div>
                     <p class="text-sm text-gray-600">
                         {{ $farm->address ?? 'Alamat tidak tersedia' }}
                         @if($farm && $farm->owner)
@@ -119,9 +134,9 @@
             </div>
 
             <!-- Pedigree Tree -->
-            <div class="mt-10">
+            <div class="mt-20">
                 <div class="flex flex-col items-center">
-                    <div class="pedigree-container w-full">
+                    <div class="pedigree-container w-full mt-10">
                         <!-- Include the exact pedigree component -->
                         @include('certificate.pedigree-print', ['pedigreeData' => $pedigreeData])
                     </div>
