@@ -39,12 +39,12 @@
     ];
 @endphp
 
-<div class="w-full bg-gray-50 p-4 print:bg-white print:p-2" style="overflow-x: hidden;">
+<div class="w-full bg-transparent p-4 print:bg-transparent print:p-2" style="overflow-x: hidden;">
     <div class="flex items-start justify-center" style="transform: scale(0.85); transform-origin: center top;">
         <!-- Level 1 - Root -->
         <div class="relative flex items-center">
             <!-- Root Node Card -->
-            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1 print:shadow-none print:border-gray-400">
+            <div class="bg-white border-2 border-gray-600 rounded-lg p-2 w-48 h-24 flex items-center space-x-1 print:border-gray-700">
                 <div class="size-10 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center print:bg-gray-100">
                     <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -62,11 +62,11 @@
 
             @if($orgData->children && count($orgData->children) > 0)
                 <!-- Horizontal line from root to level 2 -->
-                <div class="w-8 h-px bg-gray-300 print:bg-gray-500"></div>
+                <div class="w-8 h-0.5 bg-gray-600 print:bg-gray-700"></div>
 
                 <!-- Vertical connector for level 2 nodes -->
                 @if(count($orgData->children) > 1)
-                    <div class="absolute bg-gray-300 print:bg-gray-500 w-px" style="left: 224px; height: {{ (count($orgData->children) - 1) * 248 }}px; top: 108px;"></div>
+                    <div class="absolute bg-gray-600 print:bg-gray-700 w-0.5" style="left: 224px; height: {{ (count($orgData->children) - 1) * 248 }}px; top: 108px;"></div>
                 @endif
 
                 <!-- Level 2 nodes -->
@@ -75,10 +75,10 @@
                         @foreach($orgData->children as $level2Node)
                             <div class="relative flex items-center">
                                 <!-- Horizontal connector from vertical line to level 2 node -->
-                                <div class="w-8 h-px bg-gray-300 print:bg-gray-500"></div>
+                                <div class="w-8 h-0.5 bg-gray-600 print:bg-gray-700"></div>
 
                                 <!-- Level 2 Node Card -->
-                                <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1 print:shadow-none print:border-gray-400">
+                                <div class="bg-white border-2 border-gray-600 rounded-lg p-2 w-48 h-24 flex items-center space-x-1 print:border-gray-700">
                                     <div class="size-10 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center print:bg-gray-100">
                                         <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -96,11 +96,11 @@
 
                                 @if($level2Node->children && count($level2Node->children) > 0)
                                     <!-- Horizontal line from level 2 to level 3 -->
-                                    <div class="w-8 h-px bg-gray-300 print:bg-gray-500"></div>
+                                    <div class="w-8 h-0.5 bg-gray-600 print:bg-gray-700"></div>
 
                                     <!-- Vertical connector for multiple level 3 nodes -->
                                     @if(count($level2Node->children) > 1)
-                                        <div class="absolute bg-gray-300 print:bg-gray-500 w-px" style="left: 256px; height: {{ (count($level2Node->children) - 1) * 120 }}px; top: 48px;"></div>
+                                        <div class="absolute bg-gray-600 print:bg-gray-700 w-0.5" style="left: 256px; height: {{ (count($level2Node->children) - 1) * 120 }}px; top: 48px;"></div>
                                     @endif
 
                                     <!-- Level 3 nodes -->
@@ -108,10 +108,10 @@
                                         @foreach($level2Node->children as $level3Node)
                                             <div class="relative flex items-center">
                                                 <!-- Horizontal connector from vertical line to level 3 node -->
-                                                <div class="w-8 h-px bg-gray-300 print:bg-gray-500"></div>
+                                                <div class="w-8 h-0.5 bg-gray-600 print:bg-gray-700"></div>
 
                                                 <!-- Level 3 Node Card -->
-                                                <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-2 w-48 h-24 flex items-center space-x-1 print:shadow-none print:border-gray-400">
+                                                <div class="bg-white border-2 border-gray-600 rounded-lg p-2 w-48 h-24 flex items-center space-x-1 print:border-gray-700">
                                                     <div class="size-10 bg-blue-100 rounded-full flex-shrink-0 flex items-center justify-center print:bg-gray-100">
                                                         <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>

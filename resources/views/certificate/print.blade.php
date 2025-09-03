@@ -15,6 +15,23 @@
             .avoid-page-break {
                 page-break-inside: avoid;
             }
+            /* Ensure only card background colors and borders print */
+            .bg-teal-200\/10 {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background-color: rgba(153, 246, 228, 0.1) !important;
+            }
+            .border-teal-500 {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                border-color: #14b8a6 !important;
+            }
+            /* Keep page background white for print */
+            .bg-gradient-to-b {
+                background: white !important;
+            }
         }
         
         /* Print button styles */
@@ -50,10 +67,11 @@
         
         @media print {
             .pedigree-container {
-                background-color: white !important;
+                background-color: transparent !important;
             }
-            .pedigree-container .bg-gray-50 { 
-                background-color: white !important; 
+            .pedigree-container .bg-gray-50, 
+            .pedigree-container .bg-transparent { 
+                background-color: transparent !important; 
                 -webkit-print-color-adjust: exact;
                 color-adjust: exact;
             }
@@ -64,7 +82,7 @@
     <!-- Print Button -->
     <button onclick="window.print()" class="print-button no-print">🖨️ Print Certificate</button>
 
-    <div class="min-h-screen bg-gradient-to-b from-teal-50 to-white p-8">
+    <div class="min-h-screen bg-gradient-to-b from-teal-50 to-white p-2">
         <div class="bg-teal-200/10 rounded-2xl border border-teal-500 p-8 max-w-4xl mx-auto">
             <!-- Header -->
             <div class="flex justify-between items-start">
@@ -102,11 +120,19 @@
 
             <!-- Pedigree Tree -->
             <div class="mt-10">
-                <h2 class="text-center font-bold text-gray-800 mb-6">Pedigree</h2>
                 <div class="flex flex-col items-center">
                     <div class="pedigree-container w-full">
                         <!-- Include the exact pedigree component -->
                         @include('certificate.pedigree-print', ['pedigreeData' => $pedigreeData])
+                    </div>
+                </div>
+                
+                <!-- QR Code -->
+                <div class="flex justify-end mt-6">
+                    <div class="text-center">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ urlencode(url('/livestocks/' . $livestock->id)) }}" 
+                             alt="QR Code" 
+                             class="w-20 h-20 border border-gray-300 rounded">
                     </div>
                 </div>
             </div>
