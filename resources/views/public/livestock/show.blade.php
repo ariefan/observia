@@ -20,15 +20,21 @@
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-6 max-w-6xl">
         <!-- Header Section -->
-        <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $livestock->name }}</h1>
-                    <div class="flex items-center gap-4 mb-4">
+        <div class="bg-white rounded-lg shadow-sm border p-4 md:p-6 mb-6">
+            <!-- Mobile: Logo at top -->
+            <div class="flex justify-center items-center gap-2 mb-4 md:hidden">
+                <img src="{{ Vite::asset('resources/js/assets/logo.png') }}" alt="Aifarm" class="h-8 w-auto">
+                <p class="text-xs text-gray-500">Powered by Aifarm.id</p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                <div class="flex-1">
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{{ $livestock->name }}</h1>
+                    <div class="flex flex-wrap items-center gap-2 md:gap-4 mb-4">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             {{ $livestock->tag_id }}
                         </span>
-                        <span class="text-gray-600">{{ $livestock->breed->species->name ?? 'Ternak' }} - {{ $livestock->breed->name ?? 'Unknown' }}</span>
+                        <span class="text-sm md:text-base text-gray-600">{{ $livestock->breed->species->name ?? 'Ternak' }} - {{ $livestock->breed->name ?? 'Unknown' }}</span>
                         @if($livestock->sex == 'M')
                             <span class="text-blue-500">♂ Jantan</span>
                         @else
@@ -40,7 +46,7 @@
                         <div class="text-sm text-gray-600">
                             <div class="flex items-center gap-2 mb-1">
                                 @if($livestock->farm->image)
-                                    <img src="{{ asset('storage/' . $livestock->farm->image) }}" alt="{{ $livestock->farm->name }}" class="h-8 w-8 object-cover rounded">
+                                    <img src="{{ asset('storage/' . $livestock->farm->image) }}" alt="{{ $livestock->farm->name }}" class="h-6 w-6 md:h-8 md:w-8 object-cover rounded">
                                 @endif
                                 <strong>{{ $livestock->farm->name }}</strong>
                             </div>
@@ -52,8 +58,9 @@
                     @endif
                 </div>
                 
-                <div class="text-right">
-                    <img src="{{ Vite::asset('resources/js/assets/logo.png') }}" alt="Aifarm" class="h-12 w-auto mb-2">
+                <!-- Desktop: Logo at right -->
+                <div class="hidden md:flex flex-col items-end text-right gap-2">
+                    <img src="{{ Vite::asset('resources/js/assets/logo.png') }}" alt="Aifarm" class="h-12 w-auto">
                     <p class="text-sm text-gray-500">Powered by Aifarm.id</p>
                 </div>
             </div>
