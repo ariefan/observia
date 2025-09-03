@@ -27,7 +27,8 @@
       "Bash(node:*)",
       "Bash(herd status:*)",
       "Bash(cat:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(ssh:*)"
     ],
     "deny": [],
     "additionalDirectories": [
