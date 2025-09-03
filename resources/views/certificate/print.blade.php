@@ -155,7 +155,7 @@
             <!-- Footer -->
             <div class="mt-12 border-t border-teal-200 pt-4 text-xs text-gray-600 text-center">
                 Di atas merupakan kutipan yang sah dari record Aifarm.id - Indonesia.<br />
-                Pada tanggal {{ \Carbon\Carbon::now()->format('d F Y') }}.
+                Pada tanggal {{ \Carbon\Carbon::now()->format('d F Y') }} pukul {{ \Carbon\Carbon::now()->format('H:i') }} WIB.
             </div>
         </div>
     </div>

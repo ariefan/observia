@@ -51,10 +51,10 @@
                     </svg>
                 </div>
                 <div class="flex-1 min-w-0 ml-1">
-                    <h3 class="text-xs font-semibold truncate {{ $orgData->isUnknown ? 'text-gray-500' : 'text-gray-900' }}" style="margin: 0; padding: 0;">
+                    <h3 class="text-xs font-semibold truncate text-black" style="margin: 0; padding: 0;">
                         {{ $orgData->name }}
                     </h3>
-                    <p class="text-xs truncate {{ $orgData->isUnknown ? 'text-gray-400' : 'text-gray-600' }}" style="margin: 0; padding: 0;">
+                    <p class="text-xs truncate text-black" style="margin: 0; padding: 0;">
                         {{ $orgData->title }}
                     </p>
                 </div>
@@ -85,10 +85,10 @@
                                         </svg>
                                     </div>
                                     <div class="flex-1 min-w-0 ml-1">
-                                        <h3 class="text-xs font-semibold truncate {{ $level2Node->isUnknown ? 'text-gray-500' : 'text-gray-900' }}" style="margin: 0; padding: 0;">
+                                        <h3 class="text-xs font-semibold truncate text-black" style="margin: 0; padding: 0;">
                                             {{ $level2Node->name }}
                                         </h3>
-                                        <p class="text-xs truncate {{ $level2Node->isUnknown ? 'text-gray-400' : 'text-gray-600' }}" style="margin: 0; padding: 0;">
+                                        <p class="text-xs truncate text-black" style="margin: 0; padding: 0;">
                                             {{ $level2Node->title }}
                                         </p>
                                     </div>
@@ -118,10 +118,10 @@
                                                         </svg>
                                                     </div>
                                                     <div class="flex-1 min-w-0 ml-1">
-                                                        <h3 class="text-xs font-semibold truncate {{ $level3Node->isUnknown ? 'text-gray-500' : 'text-gray-900' }}" style="margin: 0; padding: 0;">
+                                                        <h3 class="text-xs font-semibold truncate text-black" style="margin: 0; padding: 0;">
                                                             {{ $level3Node->name }}
                                                         </h3>
-                                                        <p class="text-xs truncate {{ $level3Node->isUnknown ? 'text-gray-400' : 'text-gray-600' }}" style="margin: 0; padding: 0;">
+                                                        <p class="text-xs truncate text-black" style="margin: 0; padding: 0;">
                                                             {{ $level3Node->title }}
                                                         </p>
                                                     </div>

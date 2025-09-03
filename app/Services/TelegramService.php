@@ -104,7 +104,7 @@ class TelegramService
     {
         $appName = Setting::getValue('app_name', 'AI Farm');
         
-        $message = "<b>🔔 {$appName} - Notifikasi</b>\n\n";
+        $message = "<b>{$appName} - Notifikasi</b>\n\n";
         
         if (isset($data['title'])) {
             $icon = $this->getNotificationIcon($data['type'] ?? 'info');
@@ -116,11 +116,11 @@ class TelegramService
         }
         
         if (isset($data['livestock_name'])) {
-            $message .= "\n<b>🐄 Ternak:</b> {$data['livestock_name']}";
+            $message .= "\n<b>Ternak:</b> {$data['livestock_name']}";
         }
         
         if (isset($data['farm_name'])) {
-            $message .= "\n<b>🏡 Farm:</b> {$data['farm_name']}";
+            $message .= "\n<b>Farm:</b> {$data['farm_name']}";
         }
         
         if (isset($data['created_by'])) {
@@ -133,24 +133,24 @@ class TelegramService
         }
         
         if (isset($data['user_email'])) {
-            $message .= "\n<b>📧 Email:</b> {$data['user_email']}";
+            $message .= "\n<b>Email:</b> {$data['user_email']}";
         }
         
         if (isset($data['ip_address'])) {
-            $message .= "\n<b>🌐 IP Address:</b> {$data['ip_address']}";
+            $message .= "\n<b>IP Address:</b> {$data['ip_address']}";
         }
         
         if (isset($data['login_method'])) {
-            $message .= "\n<b>🔐 Metode Login:</b> {$data['login_method']}";
+            $message .= "\n<b>Metode Login:</b> {$data['login_method']}";
         }
         
         if (isset($data['user_agent']) && strlen($data['user_agent']) < 100) {
-            $message .= "\n<b>📱 Perangkat:</b> " . $this->parseUserAgent($data['user_agent']);
+            $message .= "\n<b>Perangkat:</b> " . $this->parseUserAgent($data['user_agent']);
         }
         
         // Use login_time if provided, otherwise use current time
         $timestamp = isset($data['login_time']) ? $data['login_time'] : now()->format('d/m/Y H:i');
-        $message .= "\n\n<i>📅 {$timestamp}</i>";
+        $message .= "\n\n<i>{$timestamp}</i>";
         
         if (isset($data['action_url'])) {
             $message .= "\n\n<a href=\"{$data['action_url']}\">🔗 Lihat Detail</a>";
