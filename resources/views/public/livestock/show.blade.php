@@ -60,18 +60,29 @@
         </div>
 
         <!-- Photos Section -->
-        @if($livestock->photo && count($livestock->photo) > 0)
-            <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">Foto Ternak</h2>
+        <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Foto Ternak</h2>
+            @if($livestock->photo && count($livestock->photo) > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     @foreach($livestock->photo as $photo)
-                        <div class="aspect-square overflow-hidden rounded-lg">
-                            <img src="{{ asset('storage/' . $photo) }}" alt="Foto {{ $livestock->name }}" class="w-full h-full object-cover">
+                        <div class="aspect-square overflow-hidden rounded-lg border shadow-sm">
+                            <img src="{{ asset('storage/' . $photo) }}" 
+                                 alt="Foto {{ $livestock->name }}" 
+                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                                 onclick="openPhotoModal('{{ asset('storage/' . $photo) }}')">
                         </div>
                     @endforeach
                 </div>
-            </div>
-        @endif
+            @else
+                <div class="flex flex-col items-center justify-center py-12 text-gray-500">
+                    <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <p class="text-lg font-medium">Tidak ada foto</p>
+                    <p class="text-sm">Foto ternak belum tersedia</p>
+                </div>
+            @endif
+        </div>
 
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -159,6 +170,16 @@
         </div>
     </div>
 
+    <!-- Photo Modal -->
+    <div id="photoModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center p-4" onclick="closePhotoModal()">
+        <div class="relative max-w-4xl max-h-full">
+            <img id="modalPhoto" src="" alt="Livestock Photo" class="max-w-full max-h-full object-contain rounded-lg">
+            <button onclick="closePhotoModal()" class="absolute top-4 right-4 text-white hover:text-gray-300 text-2xl font-bold bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center">
+                ×
+            </button>
+        </div>
+    </div>
+
     <!-- Charts Script -->
     <script>
         // Milking Chart
@@ -241,6 +262,28 @@
                 }
             });
         @endif
+
+        // Photo Modal Functions
+        function openPhotoModal(photoUrl) {
+            const modal = document.getElementById('photoModal');
+            const modalPhoto = document.getElementById('modalPhoto');
+            modalPhoto.src = photoUrl;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePhotoModal() {
+            const modal = document.getElementById('photoModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closePhotoModal();
+            }
+        });
     </script>
 </body>
 </html>
