@@ -147,9 +147,12 @@
 
     <!-- Video Dialog -->
     <Dialog v-model:open="videoDialogOpen">
-      <DialogContent class="max-w-2xl">
+      <DialogContent class="max-w-2xl" aria-describedby="video-dialog-description">
         <DialogHeader>
           <DialogTitle>{{ editingVideo ? 'Edit Video' : 'Tambah Video' }}</DialogTitle>
+          <p id="video-dialog-description" class="sr-only">
+            Form untuk {{ editingVideo ? 'mengedit' : 'menambahkan' }} video baru
+          </p>
         </DialogHeader>
         <form @submit.prevent="saveVideo" class="space-y-4">
           <div class="space-y-2">
@@ -158,7 +161,13 @@
           </div>
           <div class="space-y-2">
             <Label for="video-description">Deskripsi (Opsional)</Label>
-            <Textarea id="video-description" v-model="videoForm.description" />
+            <textarea
+              id="video-description"
+              v-model="videoForm.description"
+              rows="3"
+              class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              placeholder="Masukkan deskripsi video..."
+            />
           </div>
           <div class="space-y-2">
             <Label for="video-youtube-id">YouTube ID</Label>
@@ -197,9 +206,12 @@
 
     <!-- Article Dialog -->
     <Dialog v-model:open="articleDialogOpen">
-      <DialogContent class="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent class="max-w-4xl max-h-[80vh] overflow-y-auto" aria-describedby="article-dialog-description">
         <DialogHeader>
           <DialogTitle>{{ editingArticle ? 'Edit Artikel' : 'Tambah Artikel' }}</DialogTitle>
+          <p id="article-dialog-description" class="sr-only">
+            Form untuk {{ editingArticle ? 'mengedit' : 'menambahkan' }} artikel baru
+          </p>
         </DialogHeader>
         <form @submit.prevent="saveArticle" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -214,15 +226,21 @@
           </div>
           <div class="space-y-2">
             <Label for="article-description">Deskripsi (Opsional)</Label>
-            <Textarea id="article-description" v-model="articleForm.description" />
+            <textarea
+              id="article-description"
+              v-model="articleForm.description"
+              rows="3"
+              class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              placeholder="Masukkan deskripsi artikel..."
+            />
           </div>
           <div class="space-y-2">
             <Label for="article-image">URL Gambar (Opsional)</Label>
             <Input id="article-image" v-model="articleForm.image_url" type="url" />
           </div>
           <div class="space-y-2">
-            <Label for="article-category">Kategori</Label>
-            <Select v-model="articleForm.category">
+            <Label for="article-category">Kategori *</Label>
+            <Select v-model="articleForm.category" required>
               <SelectTrigger>
                 <SelectValue placeholder="Pilih kategori" />
               </SelectTrigger>
@@ -235,7 +253,14 @@
           </div>
           <div class="space-y-2">
             <Label for="article-content">Konten</Label>
-            <Textarea id="article-content" v-model="articleForm.content" rows="8" required />
+            <textarea
+              id="article-content"
+              v-model="articleForm.content"
+              rows="8"
+              required
+              class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              placeholder="Masukkan konten artikel..."
+            />
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="flex items-center space-x-2">
@@ -253,6 +278,7 @@
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" @click="articleDialogOpen = false">Batal</Button>
+            <Button type="button" variant="outline" @click="console.log('Debug form data:', articleForm)">Debug</Button>
             <Button type="submit" :disabled="articleSaving">
               {{ articleSaving ? 'Menyimpan...' : 'Simpan' }}
             </Button>
@@ -276,6 +302,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2 } from 'lucide-vue-next';
 import axios from 'axios';
+
+// Configure axios to include CSRF token
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+if (csrfToken) {
+  axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+}
 
 const props = defineProps<{
   videos: Array<any>;
@@ -346,7 +378,7 @@ const resetArticleForm = () => {
     content: '',
     author: '',
     image_url: '',
-    category: '',
+    category: 'manajemen',
     is_active: true,
     sort_order: 0,
     published_at: '',
@@ -416,6 +448,7 @@ const openArticleDialog = (article = null) => {
 const saveArticle = async () => {
   articleSaving.value = true;
   try {
+    console.log('Sending article data:', articleForm.value);
     if (editingArticle.value) {
       await axios.put(`/api/articles/${editingArticle.value.id}`, articleForm.value);
       const index = articles.value.findIndex(a => a.id === editingArticle.value.id);
@@ -430,7 +463,15 @@ const saveArticle = async () => {
     resetArticleForm();
   } catch (error) {
     console.error('Error saving article:', error);
-    alert('Gagal menyimpan artikel. Silakan coba lagi.');
+    console.log('Article form data was:', articleForm.value);
+    if (error.response && error.response.status === 422) {
+      console.log('Validation errors:', error.response.data);
+      const errors = error.response.data.errors;
+      const errorMessages = Object.values(errors).flat();
+      alert('Validasi gagal:\n' + errorMessages.join('\n'));
+    } else {
+      alert('Gagal menyimpan artikel. Silakan coba lagi.');
+    }
   } finally {
     articleSaving.value = false;
   }

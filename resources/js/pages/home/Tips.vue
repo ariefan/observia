@@ -130,7 +130,7 @@ onMounted(() => {
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <YoutubePlayer :videoId="slotProps.data.youtube_id" />
+                                    <YoutubePlayer :videoId="slotProps.data.youtube_id" :title="slotProps.data.title" />
                                 </div>
                             </template>
                         </Carousel>
@@ -143,7 +143,7 @@ onMounted(() => {
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <YoutubePlayer :videoId="slotProps.data.youtube_id" />
+                                    <YoutubePlayer :videoId="slotProps.data.youtube_id" :title="slotProps.data.title" />
                                 </div>
                             </template>
                         </Carousel>
@@ -156,7 +156,7 @@ onMounted(() => {
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <YoutubePlayer :videoId="slotProps.data.youtube_id" />
+                                    <YoutubePlayer :videoId="slotProps.data.youtube_id" :title="slotProps.data.title" />
                                 </div>
                             </template>
                         </Carousel>
