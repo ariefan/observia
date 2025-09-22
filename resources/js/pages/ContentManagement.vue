@@ -383,7 +383,7 @@ const resetVideoForm = () => {
     title: '',
     description: '',
     youtube_id: '',
-    category: '',
+    category: 'manajemen',
     is_active: true,
     sort_order: 0,
   };
@@ -431,7 +431,15 @@ const saveVideo = async () => {
     resetVideoForm();
   } catch (error) {
     console.error('Error saving video:', error);
-    alert('Gagal menyimpan video. Silakan coba lagi.');
+    console.log('Video form data was:', videoForm.value);
+    if (error.response && error.response.status === 422) {
+      console.log('Validation errors:', error.response.data);
+      const errors = error.response.data.errors;
+      const errorMessages = Object.values(errors).flat();
+      alert('Validasi gagal:\n' + errorMessages.join('\n'));
+    } else {
+      alert('Gagal menyimpan video. Silakan coba lagi.');
+    }
   } finally {
     videoSaving.value = false;
   }
