@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import YoutubePlayer from '@/components/YoutubePlayer.vue';
 import Example1 from '@/assets/example-1.jpg';
+import { ImageOff } from 'lucide-vue-next';
 import axios from 'axios';
 
 const videos = ref({
@@ -240,7 +241,7 @@ onMounted(() => {
                                                 <img v-if="slotProps.data.image_url" alt="article header"
                                                     :src="slotProps.data.image_url"
                                                     style="height: 100%; width: 100%; object-fit: cover;" />
-                                                <FileText v-else style="width: 48px; height: 48px; color: #9ca3af;" />
+                                                <ImageOff v-else style="width: 48px; height: 48px; color: #9ca3af;" />
                                             </div>
                                         </template>
                                         <template #title>
@@ -279,7 +280,7 @@ onMounted(() => {
                                                 <img v-if="slotProps.data.image_url" alt="article header"
                                                     :src="slotProps.data.image_url"
                                                     style="height: 100%; width: 100%; object-fit: cover;" />
-                                                <FileText v-else style="width: 48px; height: 48px; color: #9ca3af;" />
+                                                <ImageOff v-else style="width: 48px; height: 48px; color: #9ca3af;" />
                                             </div>
                                         </template>
                                         <template #title>
@@ -318,7 +319,7 @@ onMounted(() => {
                                                 <img v-if="slotProps.data.image_url" alt="article header"
                                                     :src="slotProps.data.image_url"
                                                     style="height: 100%; width: 100%; object-fit: cover;" />
-                                                <FileText v-else style="width: 48px; height: 48px; color: #9ca3af;" />
+                                                <ImageOff v-else style="width: 48px; height: 48px; color: #9ca3af;" />
                                             </div>
                                         </template>
                                         <template #title>
@@ -357,7 +358,7 @@ onMounted(() => {
                                                 <img v-if="slotProps.data.image_url" alt="article header"
                                                     :src="slotProps.data.image_url"
                                                     style="height: 100%; width: 100%; object-fit: cover;" />
-                                                <FileText v-else style="width: 48px; height: 48px; color: #9ca3af;" />
+                                                <ImageOff v-else style="width: 48px; height: 48px; color: #9ca3af;" />
                                             </div>
                                         </template>
                                         <template #title>
