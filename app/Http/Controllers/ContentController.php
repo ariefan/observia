@@ -89,6 +89,19 @@ class ContentController extends Controller
         ]);
     }
 
+    // Article show page
+    public function showArticle(Article $article): Response
+    {
+        // Only show active and published articles
+        if (!$article->is_active || !$article->published_at || $article->published_at > now()) {
+            abort(404);
+        }
+
+        return Inertia::render('articles/Show', [
+            'article' => $article,
+        ]);
+    }
+
     // Article management
     public function storeArticle(Request $request): JsonResponse
     {

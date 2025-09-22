@@ -171,7 +171,7 @@
           </div>
           <div class="space-y-2">
             <Label for="video-youtube-id">YouTube ID</Label>
-            <Input id="video-youtube-id" v-model="videoForm.youtube_id" placeholder="e.g. dQw4w9WgXcQ" required />
+            <Input id="video-youtube-id" v-model="videoForm.youtube_id" @input="extractYouTubeId" placeholder="e.g. dQw4w9WgXcQ or YouTube URL" required />
           </div>
           <div class="space-y-2">
             <Label for="video-category">Kategori</Label>
@@ -226,12 +226,10 @@
           </div>
           <div class="space-y-2">
             <Label for="article-description">Deskripsi (Opsional)</Label>
-            <textarea
-              id="article-description"
+            <MarkdownEditor
               v-model="articleForm.description"
-              rows="3"
-              class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-              placeholder="Masukkan deskripsi artikel..."
+              placeholder="Masukkan deskripsi singkat artikel..."
+              :rows="4"
             />
           </div>
           <div class="space-y-2">
@@ -253,13 +251,10 @@
           </div>
           <div class="space-y-2">
             <Label for="article-content">Konten</Label>
-            <textarea
-              id="article-content"
+            <MarkdownEditor
               v-model="articleForm.content"
-              rows="8"
-              required
-              class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-              placeholder="Masukkan konten artikel..."
+              placeholder="Masukkan konten artikel dengan format Markdown..."
+              :rows="12"
             />
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -297,10 +292,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2 } from 'lucide-vue-next';
+import MarkdownEditor from '@/components/MarkdownEditor.vue';
 import axios from 'axios';
 
 // Configure axios to include CSRF token
@@ -358,6 +353,30 @@ const getCategoryLabel = (category: string) => {
     'breeding': 'Breeding'
   };
   return labels[category] || category;
+};
+
+const extractYouTubeId = () => {
+  const input = videoForm.value.youtube_id;
+  if (!input) return;
+
+  // YouTube URL patterns
+  const patterns = [
+    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/
+  ];
+
+  for (const pattern of patterns) {
+    const match = input.match(pattern);
+    if (match && match[1]) {
+      videoForm.value.youtube_id = match[1];
+      return;
+    }
+  }
+
+  // If it's already just an ID (11 characters, alphanumeric with dashes/underscores), keep it
+  if (/^[a-zA-Z0-9_-]{11}$/.test(input.trim())) {
+    videoForm.value.youtube_id = input.trim();
+  }
 };
 
 const resetVideoForm = () => {

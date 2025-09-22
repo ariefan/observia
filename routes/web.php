@@ -155,6 +155,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/api/articles/{article}', [ContentController::class, 'updateArticle'])->name('articles.update');
     Route::delete('/api/articles/{article}', [ContentController::class, 'destroyArticle'])->name('articles.destroy');
 
+    // Public article view (accessible to all authenticated users)
+    Route::get('/articles/{article}', [ContentController::class, 'showArticle'])->name('articles.show');
+
     // Inventory Routes
     Route::get('/inventory', [InventoryController::class, 'dashboard'])->name('inventory.dashboard');
     Route::get('/inventory/overview', [InventoryController::class, 'index'])->name('inventory.index');

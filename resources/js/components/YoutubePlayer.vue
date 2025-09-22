@@ -15,9 +15,20 @@ const props = defineProps({
 })
 
 const showModal = ref(false)
+const thumbnailError = ref(false)
+
+// Validate YouTube video ID
+const isValidYouTubeId = computed(() => {
+    return props.videoId && /^[a-zA-Z0-9_-]{11}$/.test(props.videoId)
+})
 
 const thumbnailUrl = computed(() => `https://img.youtube.com/vi/${props.videoId}/hqdefault.jpg`)
-const youtubeEmbedUrl = computed(() => `https://www.youtube.com/embed/${props.videoId}?autoplay=1`)
+const youtubeEmbedUrl = computed(() => `https://www.youtube.com/embed/${props.videoId}?autoplay=1&rel=0&modestbranding=1&fs=1&cc_load_policy=1&iv_load_policy=3&autohide=0&controls=1`)
+const youtubeWatchUrl = computed(() => `https://www.youtube.com/watch?v=${props.videoId}`)
+
+const handleThumbnailError = () => {
+    thumbnailError.value = true
+}
 </script>
 
 <template>
@@ -27,11 +38,25 @@ const youtubeEmbedUrl = computed(() => `https://www.youtube.com/embed/${props.vi
         <!-- Thumbnail & Overlay -->
         <div class="relative w-full aspect-video group">
             <!-- Thumbnail -->
-            <img :src="thumbnailUrl" :alt="title"
+            <img v-if="!thumbnailError && isValidYouTubeId"
+                :src="thumbnailUrl"
+                :alt="title"
+                @error="handleThumbnailError"
                 class="w-full h-full object-cover absolute top-0 left-0 z-0" />
 
+            <!-- Fallback for invalid/unavailable videos -->
+            <div v-if="thumbnailError || !isValidYouTubeId"
+                class="w-full h-full bg-gray-800 flex items-center justify-center absolute top-0 left-0 z-0">
+                <div class="text-center text-white p-4">
+                    <PlayIcon class="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p class="text-sm">{{ !isValidYouTubeId ? 'Invalid Video ID' : 'Video Unavailable' }}</p>
+                    <p class="text-xs opacity-75">{{ title }}</p>
+                </div>
+            </div>
+
             <!-- Centered Play Button with Black Circle -->
-            <button @click="showModal = true" class="absolute inset-0 flex items-center justify-center z-20">
+            <button @click="isValidYouTubeId ? showModal = true : window.open(youtubeWatchUrl, '_blank')"
+                class="absolute inset-0 flex items-center justify-center z-20">
                 <div
                     class="w-16 h-16 bg-black/70 hover:bg-black rounded-full flex items-center justify-center transition-all duration-200">
                     <PlayIcon class="w-8 h-8 text-white/50 hover:text-white" />
@@ -42,11 +67,12 @@ const youtubeEmbedUrl = computed(() => `https://www.youtube.com/embed/${props.vi
             <div
                 class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 via-black/70 to-transparent text-white z-10 p-4">
                 <h2 class="text-sm font-bold">{{ title }}</h2>
+                <p v-if="!isValidYouTubeId" class="text-xs text-red-300">Click to watch on YouTube</p>
             </div>
         </div>
     </div>
 
-    <Dialog v-model:visible="showModal" modal
+    <Dialog v-if="isValidYouTubeId" v-model:visible="showModal" modal
         class="p-0 m-0 overflow-hidden w-screen max-w-5xl !bg-transparent !border-0 -mt-10">
         <template #container="{ closeCallback }">
             <!-- Close Button -->
@@ -58,8 +84,11 @@ const youtubeEmbedUrl = computed(() => `https://www.youtube.com/embed/${props.vi
                 </svg>
             </button>
             <div class="relative w-full aspect-video bg-black rounded-xl overflow-hidden mt-10">
-                <!-- The Iframe of YouTube Doom -->
-                <iframe :src="youtubeEmbedUrl" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen
+                <!-- YouTube Video Embed -->
+                <iframe :src="youtubeEmbedUrl" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                    referrerpolicy="strict-origin-when-cross-origin"
                     class="absolute top-0 left-0 w-full h-full"></iframe>
             </div>
         </template>

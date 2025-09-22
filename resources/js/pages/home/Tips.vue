@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { router } from '@inertiajs/vue3';
 import YoutubePlayer from '@/components/YoutubePlayer.vue';
 import Example1 from '@/assets/example-1.jpg';
 import axios from 'axios';
@@ -85,6 +86,11 @@ const formatDate = (dateString: string) => {
         month: 'long',
         year: 'numeric'
     });
+};
+
+// Function to open article details
+const openArticle = (article: any) => {
+    router.visit(`/articles/${article.id}`);
 };
 
 onMounted(() => {
@@ -200,12 +206,12 @@ onMounted(() => {
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden" class="mb-1">
+                                    <Card style="overflow: hidden" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow" @click="openArticle(slotProps.data)">
                                         <template #header>
                                             <img alt="article header" :src="slotProps.data.image_url || Example1" />
                                         </template>
                                         <template #title>
-                                            <p class="text-sm">{{ slotProps.data.title }}</p>
+                                            <p class="text-sm hover:text-blue-600 transition-colors">{{ slotProps.data.title }}</p>
                                         </template>
                                         <template #subtitle>
                                             <p class="text-xs">{{ slotProps.data.author || 'Anonim' }}</p>
@@ -229,12 +235,12 @@ onMounted(() => {
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden" class="mb-1">
+                                    <Card style="overflow: hidden" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow" @click="openArticle(slotProps.data)">
                                         <template #header>
                                             <img alt="article header" :src="slotProps.data.image_url || Example1" />
                                         </template>
                                         <template #title>
-                                            <p class="text-sm">{{ slotProps.data.title }}</p>
+                                            <p class="text-sm hover:text-blue-600 transition-colors">{{ slotProps.data.title }}</p>
                                         </template>
                                         <template #subtitle>
                                             <p class="text-xs">{{ slotProps.data.author || 'Anonim' }}</p>
@@ -258,12 +264,12 @@ onMounted(() => {
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden" class="mb-1">
+                                    <Card style="overflow: hidden" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow" @click="openArticle(slotProps.data)">
                                         <template #header>
                                             <img alt="article header" :src="slotProps.data.image_url || Example1" />
                                         </template>
                                         <template #title>
-                                            <p class="text-sm">{{ slotProps.data.title }}</p>
+                                            <p class="text-sm hover:text-blue-600 transition-colors">{{ slotProps.data.title }}</p>
                                         </template>
                                         <template #subtitle>
                                             <p class="text-xs">{{ slotProps.data.author || 'Anonim' }}</p>

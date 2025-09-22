@@ -28,7 +28,8 @@
       "Bash(herd status:*)",
       "Bash(cat:*)",
       "Bash(sed:*)",
-      "Bash(ssh:*)"
+      "Bash(ssh:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "additionalDirectories": [
