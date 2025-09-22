@@ -225,9 +225,9 @@ onMounted(() => {
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow" @click="openArticle(slotProps.data)">
-                                        <template #header>
-                                            <img alt="article header" :src="slotProps.data.image_url || Example1" />
+                                    <Card style="overflow: hidden; height: 350px;" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col" @click="openArticle(slotProps.data)">
+                                        <template #header v-if="slotProps.data.image_url">
+                                            <img alt="article header" :src="slotProps.data.image_url" style="height: 150px; object-fit: cover;" />
                                         </template>
                                         <template #title>
                                             <p class="text-sm hover:text-blue-600 transition-colors">{{ slotProps.data.title }}</p>
@@ -254,9 +254,9 @@ onMounted(() => {
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow" @click="openArticle(slotProps.data)">
-                                        <template #header>
-                                            <img alt="article header" :src="slotProps.data.image_url || Example1" />
+                                    <Card style="overflow: hidden; height: 350px;" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col" @click="openArticle(slotProps.data)">
+                                        <template #header v-if="slotProps.data.image_url">
+                                            <img alt="article header" :src="slotProps.data.image_url" style="height: 150px; object-fit: cover;" />
                                         </template>
                                         <template #title>
                                             <p class="text-sm hover:text-blue-600 transition-colors">{{ slotProps.data.title }}</p>
@@ -283,9 +283,9 @@ onMounted(() => {
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow" @click="openArticle(slotProps.data)">
-                                        <template #header>
-                                            <img alt="article header" :src="slotProps.data.image_url || Example1" />
+                                    <Card style="overflow: hidden; height: 350px;" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col" @click="openArticle(slotProps.data)">
+                                        <template #header v-if="slotProps.data.image_url">
+                                            <img alt="article header" :src="slotProps.data.image_url" style="height: 150px; object-fit: cover;" />
                                         </template>
                                         <template #title>
                                             <p class="text-sm hover:text-blue-600 transition-colors">{{ slotProps.data.title }}</p>
@@ -312,9 +312,9 @@ onMounted(() => {
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow" @click="openArticle(slotProps.data)">
-                                        <template #header>
-                                            <img alt="article header" :src="slotProps.data.image_url || Example1" />
+                                    <Card style="overflow: hidden; height: 350px;" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col" @click="openArticle(slotProps.data)">
+                                        <template #header v-if="slotProps.data.image_url">
+                                            <img alt="article header" :src="slotProps.data.image_url" style="height: 150px; object-fit: cover;" />
                                         </template>
                                         <template #title>
                                             <p class="text-sm hover:text-blue-600 transition-colors">{{ slotProps.data.title }}</p>
@@ -353,5 +353,23 @@ onMounted(() => {
 .p-carousel-next-button:hover {
     background-color: #2dd4bf !important;
     border-radius: 50% !important;
+}
+
+/* Ensure consistent card heights and proper content distribution */
+.p-card {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.p-card .p-card-content {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.p-card .p-card-body {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 </style>
