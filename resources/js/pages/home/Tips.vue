@@ -123,7 +123,8 @@ onMounted(() => {
                         <p class="text-xs px-2">Budi Daya</p>
                     </Button>
                 </div>
-                <button @click="router.visit('/videos')" class="flex items-center gap-1 text-sm text-teal-900 font-semibold hover:underline mr-4 transition-colors">
+                <button @click="router.visit('/videos')"
+                    class="flex items-center gap-1 text-sm text-teal-900 font-semibold hover:underline mr-4 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                         <path
                             d="M9.29 6.71a1 1 0 011.42 0L16 12l-5.29 5.29a1 1 0 01-1.42-1.42L13.17 12l-3.88-3.88a1 1 0 010-1.41z" />
@@ -135,8 +136,10 @@ onMounted(() => {
             <Tabs v-model:value="value">
                 <TabPanels>
                     <TabPanel value="all">
-                        <Carousel v-if="[...(videos.manajemen || []), ...(videos.kesehatan || []), ...(videos.budidaya || [])].length > 0" :value="[...(videos.manajemen || []), ...(videos.kesehatan || []), ...(videos.budidaya || [])]" :numVisible="3" :numScroll="1" :circular="true"
-                            :responsiveOptions="responsiveOptions">
+                        <Carousel
+                            v-if="[...(videos.manajemen || []), ...(videos.kesehatan || []), ...(videos.budidaya || [])].length > 0"
+                            :value="[...(videos.manajemen || []), ...(videos.kesehatan || []), ...(videos.budidaya || [])]"
+                            :numVisible="3" :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
                                     <YoutubePlayer :videoId="slotProps.data.youtube_id" :title="slotProps.data.title" />
@@ -148,8 +151,8 @@ onMounted(() => {
                         </div>
                     </TabPanel>
                     <TabPanel value="0">
-                        <Carousel v-if="videos.manajemen.length > 0" :value="videos.manajemen" :numVisible="3" :numScroll="1" :circular="true"
-                            :responsiveOptions="responsiveOptions">
+                        <Carousel v-if="videos.manajemen.length > 0" :value="videos.manajemen" :numVisible="3"
+                            :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
                                     <YoutubePlayer :videoId="slotProps.data.youtube_id" :title="slotProps.data.title" />
@@ -161,8 +164,8 @@ onMounted(() => {
                         </div>
                     </TabPanel>
                     <TabPanel value="1">
-                        <Carousel v-if="videos.kesehatan.length > 0" :value="videos.kesehatan" :numVisible="3" :numScroll="1" :circular="true"
-                            :responsiveOptions="responsiveOptions">
+                        <Carousel v-if="videos.kesehatan.length > 0" :value="videos.kesehatan" :numVisible="3"
+                            :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
                                     <YoutubePlayer :videoId="slotProps.data.youtube_id" :title="slotProps.data.title" />
@@ -174,8 +177,8 @@ onMounted(() => {
                         </div>
                     </TabPanel>
                     <TabPanel value="2">
-                        <Carousel v-if="(videos.budidaya || []).length > 0" :value="videos.budidaya || []" :numVisible="3" :numScroll="1" :circular="true"
-                            :responsiveOptions="responsiveOptions">
+                        <Carousel v-if="(videos.budidaya || []).length > 0" :value="videos.budidaya || []"
+                            :numVisible="3" :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
                                     <YoutubePlayer :videoId="slotProps.data.youtube_id" :title="slotProps.data.title" />
@@ -209,7 +212,8 @@ onMounted(() => {
                         <p class="text-xs px-2">Budi Daya</p>
                     </Button>
                 </div>
-                <button @click="router.visit('/articles')" class="flex items-center gap-1 text-sm text-teal-900 font-semibold hover:underline mr-4 transition-colors">
+                <button @click="router.visit('/articles')"
+                    class="flex items-center gap-1 text-sm text-teal-900 font-semibold hover:underline mr-4 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                         <path
                             d="M9.29 6.71a1 1 0 011.42 0L16 12l-5.29 5.29a1 1 0 01-1.42-1.42L13.17 12l-3.88-3.88a1 1 0 010-1.41z" />
@@ -221,19 +225,27 @@ onMounted(() => {
             <Tabs v-model:value="articleValue">
                 <TabPanels>
                     <TabPanel value="all">
-                        <Carousel v-if="[...(articles.manajemen || []), ...(articles.kesehatan || []), ...(articles.budidaya || [])].length > 0" :value="[...(articles.manajemen || []), ...(articles.kesehatan || []), ...(articles.budidaya || [])]" :numVisible="4" :numScroll="1" :circular="true"
-                            :responsiveOptions="responsiveOptions">
+                        <Carousel
+                            v-if="[...(articles.manajemen || []), ...(articles.kesehatan || []), ...(articles.budidaya || [])].length > 0"
+                            :value="[...(articles.manajemen || []), ...(articles.kesehatan || []), ...(articles.budidaya || [])]"
+                            :numVisible="4" :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden; height: 350px;" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full" @click="openArticle(slotProps.data)">
+                                    <Card style="overflow: hidden; height: 380px;"
+                                        class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full"
+                                        @click="openArticle(slotProps.data)">
                                         <template #header>
-                                            <div style="height: 150px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
-                                                <img v-if="slotProps.data.image_url" alt="article header" :src="slotProps.data.image_url" style="height: 100%; width: 100%; object-fit: cover;" />
+                                            <div
+                                                style="height: 180px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                                <img v-if="slotProps.data.image_url" alt="article header"
+                                                    :src="slotProps.data.image_url"
+                                                    style="height: 100%; width: 100%; object-fit: cover;" />
                                                 <FileText v-else style="width: 48px; height: 48px; color: #9ca3af;" />
                                             </div>
                                         </template>
                                         <template #title>
-                                            <p class="text-sm hover:text-blue-600 transition-colors">{{ slotProps.data.title }}</p>
+                                            <p class="text-sm hover:text-blue-600 transition-colors">{{
+                                                slotProps.data.title }}</p>
                                         </template>
                                         <template #subtitle>
                                             <p class="text-xs">{{ slotProps.data.author || 'Anonim' }}</p>
@@ -241,7 +253,8 @@ onMounted(() => {
                                         </template>
                                         <template #content>
                                             <p class="m-0 text-sm">
-                                                {{ slotProps.data.description || slotProps.data.content.substring(0, 100) + '...' }}
+                                                {{ slotProps.data.description || slotProps.data.content.substring(0,
+                                                100) + '...' }}
                                             </p>
                                         </template>
                                     </Card>
@@ -253,19 +266,25 @@ onMounted(() => {
                         </div>
                     </TabPanel>
                     <TabPanel value="0">
-                        <Carousel v-if="articles.manajemen.length > 0" :value="articles.manajemen" :numVisible="4" :numScroll="1" :circular="true"
-                            :responsiveOptions="responsiveOptions">
+                        <Carousel v-if="articles.manajemen.length > 0" :value="articles.manajemen" :numVisible="4"
+                            :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden; height: 350px;" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full" @click="openArticle(slotProps.data)">
+                                    <Card style="overflow: hidden; height: 380px;"
+                                        class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full"
+                                        @click="openArticle(slotProps.data)">
                                         <template #header>
-                                            <div style="height: 150px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
-                                                <img v-if="slotProps.data.image_url" alt="article header" :src="slotProps.data.image_url" style="height: 100%; width: 100%; object-fit: cover;" />
+                                            <div
+                                                style="height: 180px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                                <img v-if="slotProps.data.image_url" alt="article header"
+                                                    :src="slotProps.data.image_url"
+                                                    style="height: 100%; width: 100%; object-fit: cover;" />
                                                 <FileText v-else style="width: 48px; height: 48px; color: #9ca3af;" />
                                             </div>
                                         </template>
                                         <template #title>
-                                            <p class="text-sm hover:text-blue-600 transition-colors">{{ slotProps.data.title }}</p>
+                                            <p class="text-sm hover:text-blue-600 transition-colors">{{
+                                                slotProps.data.title }}</p>
                                         </template>
                                         <template #subtitle>
                                             <p class="text-xs">{{ slotProps.data.author || 'Anonim' }}</p>
@@ -273,7 +292,8 @@ onMounted(() => {
                                         </template>
                                         <template #content>
                                             <p class="m-0 text-sm">
-                                                {{ slotProps.data.description || slotProps.data.content.substring(0, 100) + '...' }}
+                                                {{ slotProps.data.description || slotProps.data.content.substring(0,
+                                                100) + '...' }}
                                             </p>
                                         </template>
                                     </Card>
@@ -285,19 +305,25 @@ onMounted(() => {
                         </div>
                     </TabPanel>
                     <TabPanel value="1">
-                        <Carousel v-if="articles.kesehatan.length > 0" :value="articles.kesehatan" :numVisible="4" :numScroll="1" :circular="true"
-                            :responsiveOptions="responsiveOptions">
+                        <Carousel v-if="articles.kesehatan.length > 0" :value="articles.kesehatan" :numVisible="4"
+                            :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden; height: 350px;" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full" @click="openArticle(slotProps.data)">
+                                    <Card style="overflow: hidden; height: 380px;"
+                                        class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full"
+                                        @click="openArticle(slotProps.data)">
                                         <template #header>
-                                            <div style="height: 150px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
-                                                <img v-if="slotProps.data.image_url" alt="article header" :src="slotProps.data.image_url" style="height: 100%; width: 100%; object-fit: cover;" />
+                                            <div
+                                                style="height: 180px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                                <img v-if="slotProps.data.image_url" alt="article header"
+                                                    :src="slotProps.data.image_url"
+                                                    style="height: 100%; width: 100%; object-fit: cover;" />
                                                 <FileText v-else style="width: 48px; height: 48px; color: #9ca3af;" />
                                             </div>
                                         </template>
                                         <template #title>
-                                            <p class="text-sm hover:text-blue-600 transition-colors">{{ slotProps.data.title }}</p>
+                                            <p class="text-sm hover:text-blue-600 transition-colors">{{
+                                                slotProps.data.title }}</p>
                                         </template>
                                         <template #subtitle>
                                             <p class="text-xs">{{ slotProps.data.author || 'Anonim' }}</p>
@@ -305,7 +331,8 @@ onMounted(() => {
                                         </template>
                                         <template #content>
                                             <p class="m-0 text-sm">
-                                                {{ slotProps.data.description || slotProps.data.content.substring(0, 100) + '...' }}
+                                                {{ slotProps.data.description || slotProps.data.content.substring(0,
+                                                100) + '...' }}
                                             </p>
                                         </template>
                                     </Card>
@@ -317,19 +344,25 @@ onMounted(() => {
                         </div>
                     </TabPanel>
                     <TabPanel value="2">
-                        <Carousel v-if="(articles.budidaya || []).length > 0" :value="articles.budidaya || []" :numVisible="4" :numScroll="1" :circular="true"
-                            :responsiveOptions="responsiveOptions">
+                        <Carousel v-if="(articles.budidaya || []).length > 0" :value="articles.budidaya || []"
+                            :numVisible="4" :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden; height: 350px;" class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full" @click="openArticle(slotProps.data)">
+                                    <Card style="overflow: hidden; height: 380px;"
+                                        class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full"
+                                        @click="openArticle(slotProps.data)">
                                         <template #header>
-                                            <div style="height: 150px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
-                                                <img v-if="slotProps.data.image_url" alt="article header" :src="slotProps.data.image_url" style="height: 100%; width: 100%; object-fit: cover;" />
+                                            <div
+                                                style="height: 180px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                                <img v-if="slotProps.data.image_url" alt="article header"
+                                                    :src="slotProps.data.image_url"
+                                                    style="height: 100%; width: 100%; object-fit: cover;" />
                                                 <FileText v-else style="width: 48px; height: 48px; color: #9ca3af;" />
                                             </div>
                                         </template>
                                         <template #title>
-                                            <p class="text-sm hover:text-blue-600 transition-colors">{{ slotProps.data.title }}</p>
+                                            <p class="text-sm hover:text-blue-600 transition-colors">{{
+                                                slotProps.data.title }}</p>
                                         </template>
                                         <template #subtitle>
                                             <p class="text-xs">{{ slotProps.data.author || 'Anonim' }}</p>
@@ -337,7 +370,8 @@ onMounted(() => {
                                         </template>
                                         <template #content>
                                             <p class="m-0 text-sm">
-                                                {{ slotProps.data.description || slotProps.data.content.substring(0, 100) + '...' }}
+                                                {{ slotProps.data.description || slotProps.data.content.substring(0,
+                                                100) + '...' }}
                                             </p>
                                         </template>
                                     </Card>
@@ -392,7 +426,7 @@ onMounted(() => {
     width: 100% !important;
 }
 
-.p-carousel .p-carousel-content .p-carousel-container .p-carousel-items-content .p-carousel-items-container .p-carousel-item > div {
+.p-carousel .p-carousel-content .p-carousel-container .p-carousel-items-content .p-carousel-items-container .p-carousel-item>div {
     width: 100% !important;
 }
 </style>
