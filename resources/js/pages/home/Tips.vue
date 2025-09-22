@@ -231,12 +231,12 @@ onMounted(() => {
                             :numVisible="4" :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden; height: 380px;"
+                                    <Card style="overflow: hidden; height: 400px;"
                                         class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full"
                                         @click="openArticle(slotProps.data)">
                                         <template #header>
                                             <div
-                                                style="height: 180px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                                style="height: 200px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
                                                 <img v-if="slotProps.data.image_url" alt="article header"
                                                     :src="slotProps.data.image_url"
                                                     style="height: 100%; width: 100%; object-fit: cover;" />
@@ -270,12 +270,12 @@ onMounted(() => {
                             :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden; height: 380px;"
+                                    <Card style="overflow: hidden; height: 400px;"
                                         class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full"
                                         @click="openArticle(slotProps.data)">
                                         <template #header>
                                             <div
-                                                style="height: 180px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                                style="height: 200px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
                                                 <img v-if="slotProps.data.image_url" alt="article header"
                                                     :src="slotProps.data.image_url"
                                                     style="height: 100%; width: 100%; object-fit: cover;" />
@@ -309,12 +309,12 @@ onMounted(() => {
                             :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden; height: 380px;"
+                                    <Card style="overflow: hidden; height: 400px;"
                                         class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full"
                                         @click="openArticle(slotProps.data)">
                                         <template #header>
                                             <div
-                                                style="height: 180px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                                style="height: 200px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
                                                 <img v-if="slotProps.data.image_url" alt="article header"
                                                     :src="slotProps.data.image_url"
                                                     style="height: 100%; width: 100%; object-fit: cover;" />
@@ -348,12 +348,12 @@ onMounted(() => {
                             :numVisible="4" :numScroll="1" :circular="true" :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
-                                    <Card style="overflow: hidden; height: 380px;"
+                                    <Card style="overflow: hidden; height: 400px;"
                                         class="mb-1 cursor-pointer hover:shadow-lg transition-shadow flex flex-col w-full"
                                         @click="openArticle(slotProps.data)">
                                         <template #header>
                                             <div
-                                                style="height: 180px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                                style="height: 200px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
                                                 <img v-if="slotProps.data.image_url" alt="article header"
                                                     :src="slotProps.data.image_url"
                                                     style="height: 100%; width: 100%; object-fit: cover;" />
