@@ -182,7 +182,7 @@
               <SelectContent>
                 <SelectItem value="manajemen">Manajemen</SelectItem>
                 <SelectItem value="kesehatan">Kesehatan</SelectItem>
-                <SelectItem value="breeding">Breeding</SelectItem>
+                <SelectItem value="budidaya">Budi Daya</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -245,7 +245,7 @@
               <SelectContent>
                 <SelectItem value="manajemen">Manajemen</SelectItem>
                 <SelectItem value="kesehatan">Kesehatan</SelectItem>
-                <SelectItem value="breeding">Breeding</SelectItem>
+                <SelectItem value="budidaya">Budi Daya</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -273,7 +273,6 @@
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" @click="articleDialogOpen = false">Batal</Button>
-            <Button type="button" variant="outline" @click="console.log('Debug form data:', articleForm)">Debug</Button>
             <Button type="submit" :disabled="articleSaving">
               {{ articleSaving ? 'Menyimpan...' : 'Simpan' }}
             </Button>
@@ -350,7 +349,7 @@ const getCategoryLabel = (category: string) => {
   const labels = {
     'manajemen': 'Manajemen',
     'kesehatan': 'Kesehatan',
-    'breeding': 'Breeding'
+    'budidaya': 'Budi Daya'
   };
   return labels[category] || category;
 };

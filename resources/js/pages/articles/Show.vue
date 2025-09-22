@@ -8,7 +8,7 @@
       <div class="bg-white rounded-lg shadow-sm p-6 space-y-2">
         <!-- Back Button and Category Badge -->
         <div class="flex items-center justify-between mb-4">
-          <Button variant="outline" @click="$router.go(-1)">
+          <Button variant="outline" @click="goBack">
             <ArrowLeft class="h-4 w-4 mr-2" />
             Kembali
           </Button>
@@ -70,7 +70,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, User, Calendar, Share } from 'lucide-vue-next';
@@ -156,6 +156,16 @@ const renderMarkdown = (text: string) => {
 // Simple markdown-like rendering
 const renderedContent = computed(() => renderMarkdown(props.article.content));
 const renderedDescription = computed(() => renderMarkdown(props.article.description || ''));
+
+// Navigation
+const goBack = () => {
+  // Try to go back in history, fallback to home page
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    router.visit('/home');
+  }
+};
 
 // Share functionality
 const shareArticle = async () => {

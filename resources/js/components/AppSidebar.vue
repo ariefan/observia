@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { LayoutGrid, Home, Folder, BookOpen, Shield, History, LogIn, TrendingUp, Bell, FileText, Settings, Heart } from 'lucide-vue-next';
+import { LayoutGrid, Home, Folder, BookOpen, Shield, History, LogIn, TrendingUp, Bell, FileText, Settings, Heart, FolderOpen, Layers } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSidebar } from '@/components/ui/sidebar/utils';
@@ -25,7 +25,7 @@ const mainNavItems: NavItem[] = [
         {
             title: 'Manajemen Konten',
             href: '/content-management',
-            icon: Settings,
+            icon: Layers,
         }]
         : []
     ),
