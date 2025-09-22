@@ -54,20 +54,16 @@
       <!-- Articles Grid -->
       <div v-if="filteredArticles.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <article v-for="article in filteredArticles" :key="article.id" @click="openArticle(article)"
-          class="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 group">
+          class="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 group flex flex-col h-full">
           <!-- Article Image -->
-          <div class="aspect-video bg-gray-200 overflow-hidden">
-            <img v-if="article.image_url" :src="article.image_url" :alt="article.title"
+          <div v-if="article.image_url" class="aspect-video bg-gray-200 overflow-hidden">
+            <img :src="article.image_url" :alt="article.title"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
               @error="handleImageError" />
-            <div v-else
-              class="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-              <FileText class="h-12 w-12 text-blue-400" />
-            </div>
           </div>
 
           <!-- Article Content -->
-          <div class="p-6 space-y-3">
+          <div class="p-6 space-y-3 flex-1 flex flex-col">
             <!-- Category and Date -->
             <div class="flex items-center justify-between text-xs">
               <span class="inline-flex items-center px-2 py-1 rounded-full font-medium bg-blue-100 text-blue-800">
@@ -92,7 +88,7 @@
             </p>
 
             <!-- Author and Read More -->
-            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+            <div class="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
               <div v-if="article.author" class="flex items-center text-xs text-gray-500">
                 <User class="h-3 w-3 mr-1" />
                 {{ article.author }}
