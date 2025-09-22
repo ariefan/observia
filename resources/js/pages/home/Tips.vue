@@ -8,13 +8,13 @@ import axios from 'axios';
 const videos = ref({
     manajemen: [],
     kesehatan: [],
-    breeding: [],
+    budidaya: [],
 });
 
 const articles = ref({
     manajemen: [],
     kesehatan: [],
-    breeding: [],
+    budidaya: [],
 });
 
 const responsiveOptions = ref([
@@ -135,7 +135,7 @@ onMounted(() => {
             <Tabs v-model:value="value">
                 <TabPanels>
                     <TabPanel value="all">
-                        <Carousel v-if="[...videos.manajemen, ...videos.kesehatan, ...videos.budidaya].length > 0" :value="[...videos.manajemen, ...videos.kesehatan, ...videos.budidaya]" :numVisible="3" :numScroll="1" :circular="true"
+                        <Carousel v-if="[...(videos.manajemen || []), ...(videos.kesehatan || []), ...(videos.budidaya || [])].length > 0" :value="[...(videos.manajemen || []), ...(videos.kesehatan || []), ...(videos.budidaya || [])]" :numVisible="3" :numScroll="1" :circular="true"
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
@@ -174,7 +174,7 @@ onMounted(() => {
                         </div>
                     </TabPanel>
                     <TabPanel value="2">
-                        <Carousel v-if="videos.budidaya.length > 0" :value="videos.budidaya" :numVisible="3" :numScroll="1" :circular="true"
+                        <Carousel v-if="(videos.budidaya || []).length > 0" :value="videos.budidaya || []" :numVisible="3" :numScroll="1" :circular="true"
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
@@ -221,7 +221,7 @@ onMounted(() => {
             <Tabs v-model:value="articleValue">
                 <TabPanels>
                     <TabPanel value="all">
-                        <Carousel v-if="[...articles.manajemen, ...articles.kesehatan, ...articles.budidaya].length > 0" :value="[...articles.manajemen, ...articles.kesehatan, ...articles.budidaya]" :numVisible="4" :numScroll="1" :circular="true"
+                        <Carousel v-if="[...(articles.manajemen || []), ...(articles.kesehatan || []), ...(articles.budidaya || [])].length > 0" :value="[...(articles.manajemen || []), ...(articles.kesehatan || []), ...(articles.budidaya || [])]" :numVisible="4" :numScroll="1" :circular="true"
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
@@ -308,7 +308,7 @@ onMounted(() => {
                         </div>
                     </TabPanel>
                     <TabPanel value="2">
-                        <Carousel v-if="articles.budidaya.length > 0" :value="articles.budidaya" :numVisible="4" :numScroll="1" :circular="true"
+                        <Carousel v-if="(articles.budidaya || []).length > 0" :value="articles.budidaya || []" :numVisible="4" :numScroll="1" :circular="true"
                             :responsiveOptions="responsiveOptions">
                             <template #item="slotProps">
                                 <div class="mx-1">
