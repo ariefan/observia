@@ -53,7 +53,7 @@ const mainNavItems: NavItem[] = [
     ...(page.props.auth.user?.is_super_user || (page.props.auth.farms && page.props.auth.user.current_farm_id)
         ? [{
             title: 'Data',
-            href: '/rations',
+            href: '/laporan',
             icon: IconFileText,
         }]
         : []
