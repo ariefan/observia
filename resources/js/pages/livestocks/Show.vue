@@ -47,6 +47,7 @@ const props = defineProps<{
   livestock: any;
   weightHistory: any[];
   milkingHistory: any[];
+  detailedMilkingHistory?: any[];
   lactationDays: number;
   rank?: number;
   totalRanked?: number;
@@ -218,8 +219,8 @@ const getMonthYearName = (month, year) => {
 const availableYears = computed(() => {
   const years = new Set();
 
-  if (props.milkingHistory && props.milkingHistory.length > 0) {
-    props.milkingHistory.forEach(milking => {
+  if (props.detailedMilkingHistory && props.detailedMilkingHistory.length > 0) {
+    props.detailedMilkingHistory.forEach(milking => {
       const date = new Date(milking.date);
       years.add(date.getFullYear());
     });
@@ -251,14 +252,52 @@ const openWeightDialog = () => {
 
 // Get filtered milking data based on selected month/year
 const filteredMilkingData = computed(() => {
-  if (!props.milkingHistory || props.milkingHistory.length === 0) {
+  if (!props.detailedMilkingHistory || props.detailedMilkingHistory.length === 0) {
     return [];
   }
 
-  return props.milkingHistory.filter(milking => {
+  // Filter milkings for selected month/year
+  const monthlyMilkings = props.detailedMilkingHistory.filter(milking => {
     const milkingDate = new Date(milking.date);
     return milkingDate.getMonth() === selectedMonth.value && milkingDate.getFullYear() === selectedYear.value;
-  }).sort((a, b) => new Date(b.date) - new Date(a.date));
+  });
+
+  // Group by date
+  const grouped = {};
+
+  monthlyMilkings.forEach(milking => {
+    const date = milking.date;
+
+    if (!grouped[date]) {
+      grouped[date] = {
+        date,
+        totalVolume: 0,
+        sessions: {}
+      };
+    }
+
+    // Add to total volume
+    const milkVolume = parseFloat(milking.milk_volume || 0);
+    grouped[date].totalVolume += milkVolume;
+
+    // Group by session
+    const session = milking.session || 'unknown';
+    if (!grouped[date].sessions[session]) {
+      grouped[date].sessions[session] = {
+        volume: 0,
+        milkings: []
+      };
+    }
+    grouped[date].sessions[session].volume += milkVolume;
+    grouped[date].sessions[session].milkings.push(milking);
+  });
+
+  // Convert to array and sort by date (newest first)
+  return Object.values(grouped).sort((a, b) => {
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    return dateB - dateA;
+  });
 });
 
 // Get filtered weight data based on selected month/year
@@ -355,6 +394,38 @@ const milkingTrend = computed(() => {
     hasData: true
   };
 });
+
+// Translate session values to Indonesian
+const translateSession = (session) => {
+  if (!session) return '';
+
+  switch (session.toLowerCase()) {
+    case 'morning':
+      return 'Pagi';
+    case 'afternoon':
+      return 'Siang';
+    case 'evening':
+      return 'Sore';
+    case 'night':
+      return 'Malam';
+    case 'pagi':
+      return 'Pagi';
+    case 'siang':
+      return 'Siang';
+    case 'sore':
+      return 'Sore';
+    case 'malam':
+      return 'Malam';
+    case 'dawn':
+      return 'Subuh';
+    case 'dusk':
+      return 'Maghrib';
+    case 'midnight':
+      return 'Tengah Malam';
+    default:
+      return session;
+  }
+};
 </script>
 
 <template>
@@ -725,22 +796,37 @@ const milkingTrend = computed(() => {
       </div>
 
       <div v-if="filteredMilkingData && filteredMilkingData.length > 0" class="space-y-4">
-        <div v-for="milking in filteredMilkingData" :key="milking.id" class="border-b pb-3 last:border-b-0">
-          <div class="flex justify-between items-center mb-2">
-            <p class="font-semibold text-sm">{{ formatDate(milking.date) }}</p>
+        <div v-for="dayData in filteredMilkingData" :key="dayData.date" class="last:border-b-0">
+          <div class="flex justify-between items-center">
+            <p class="font-semibold text-sm">{{ formatDate(dayData.date || '') }}</p>
             <Badge class="text-xs">
-              {{ parseFloat(milking.total_volume || 0).toFixed(1) }} liter
+              {{ dayData.totalVolume.toFixed(1) }} liter
             </Badge>
           </div>
-          <div class="ml-4 space-y-1">
-            <div class="text-sm text-muted-foreground">
-              <span class="font-medium">Volume rata-rata:</span> {{ parseFloat(milking.average_volume || 0).toFixed(1)
-              }}
-              liter/hari
+
+          <div class="space-y-1 ml-4">
+            <div v-for="(sessionData, session) in dayData.sessions" :key="session">
+              <div class="space-y-1">
+                <div v-for="milking in sessionData.milkings" :key="milking.id"
+                  class="flex justify-between items-center text-sm">
+                  <div class="flex space-x-4">
+                    <span class="w-16">{{ translateSession(session) }}</span>
+                    <div class="flex flex-col">
+                      <span v-if="milking.time" class="font-medium text-xs text-muted-foreground">{{ milking.time }}</span>
+                      <span v-if="milking.notes" class="text-xs text-muted-foreground italic">"{{ milking.notes }}"</span>
+                    </div>
+                  </div>
+                  <span class="font-semibold">{{ parseFloat(milking.milk_volume || 0).toFixed(1) }} liter</span>
+                </div>
+              </div>
             </div>
-            <div v-if="milking.notes" class="text-xs text-muted-foreground italic">
-              "{{ milking.notes }}"
-            </div>
+          </div>
+
+          <!-- Show if no milkings for the day -->
+          <div
+            v-if="!Object.keys(dayData.sessions).length"
+            class="ml-4 text-sm text-muted-foreground italic">
+            Tidak ada data perahan
           </div>
         </div>
       </div>

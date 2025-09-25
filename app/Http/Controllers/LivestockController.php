@@ -292,10 +292,18 @@ class LivestockController extends Controller
             ->orderBy('ending_date', 'desc')
             ->first();
 
+        // Get detailed milking records for the dialog
+        $detailedMilkingHistory = $livestock->milkings()
+            ->where('date', '>=', now()->subMonths(12))
+            ->orderBy('date', 'desc')
+            ->orderBy('time', 'desc')
+            ->get();
+
         return Inertia::render('livestocks/Show', [
             'livestock' => $livestock,
             'weightHistory' => $weightHistory,
             'milkingHistory' => $milkingHistory,
+            'detailedMilkingHistory' => $detailedMilkingHistory,
             'lactationDays' => $lactationDays,
             'rank' => $rank,
             'totalRanked' => $totalRanked,
