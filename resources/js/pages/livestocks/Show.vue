@@ -580,7 +580,7 @@ const translateSession = (session) => {
             class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 rounded-b-lg text-3xl font-semibold">
             <template v-if="lactationDays > 0">
               {{(props.milkingHistory.reduce((sum, val) => sum + (val.total_volume || 0), 0) /
-                lactationDays).toFixed(1)}}
+                lactationDays).toFixed(2)}}
               <span class="text-sm font-normal">Liter/hari</span>
             </template>
             <template v-else>
@@ -799,9 +799,14 @@ const translateSession = (session) => {
         <div v-for="dayData in filteredMilkingData" :key="dayData.date" class="last:border-b-0">
           <div class="flex justify-between items-center">
             <p class="font-semibold text-sm">{{ formatDate(dayData.date || '') }}</p>
-            <Badge class="text-xs">
-              {{ dayData.totalVolume.toFixed(1) }} liter
-            </Badge>
+            <div class="flex gap-2">
+              <Badge variant="secondary" class="text-xs">
+                Rata-rata: {{ (dayData.totalVolume / Object.values(dayData.sessions).reduce((count, session) => count + session.milkings.length, 0)).toFixed(2) }} liter
+              </Badge>
+              <Badge class="text-xs">
+                Total: {{ dayData.totalVolume.toFixed(1) }} liter
+              </Badge>
+            </div>
           </div>
 
           <div class="space-y-1 ml-4">
