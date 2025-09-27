@@ -25,6 +25,7 @@ use App\Http\Controllers\InventoryTransactionController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TelegramBotController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\TransaksiController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -138,6 +139,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/productivity', [ProduktivitasController::class, 'susu'])->name('productivity.index');
     Route::get('/productivity/milk', [ProduktivitasController::class, 'susu'])->name('productivity.milk');
     Route::get('/productivity/weight', [ProduktivitasController::class, 'bobot'])->name('productivity.weight');
+
+    // Transaksi Routes
+    Route::get('/transaksi/paket-layanan', [TransaksiController::class, 'paketLayanan'])->name('transaksi.paket-layanan');
+    Route::get('/transaksi/tagihan', [TransaksiController::class, 'tagihan'])->name('transaksi.tagihan');
+    Route::get('/transaksi/riwayat-pembayaran', [TransaksiController::class, 'riwayatPembayaran'])->name('transaksi.riwayat-pembayaran');
 
     // Report Routes
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.api');

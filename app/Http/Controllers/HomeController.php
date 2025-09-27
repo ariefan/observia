@@ -166,52 +166,41 @@ class HomeController extends Controller
 
     private function generateNotification($todayMilk, $milkTrend, $weightTrend, $totalLivestock)
     {
+        // Milk price per liter (hard coded as requested)
+        $milkPrice = 18000;
+
         if ($totalLivestock === 0) {
             return [
-                'emoji' => '🏠',
-                'message' => 'Selamat datang! Mulai dengan menambahkan data ternak pertama Anda untuk melihat perkembangan populasi dan produksi susu.'
+                'emoji' => '😐',
+                'message' => 'Tidak ada aktivitas untuk hari ini'
             ];
         }
 
-        // Calculate overall performance score for emoji selection
-        $performanceScore = 0;
-        $milkPercentage = 0;
-        
-        if ($milkTrend !== null) {
-            $performanceScore += ($milkTrend > 0) ? 1 : (($milkTrend < 0) ? -1 : 0);
-            $milkPercentage = abs(round($milkTrend, 0));
+        // If no milk production data available
+        if ($todayMilk <= 0) {
+            return [
+                'emoji' => '😐',
+                'message' => 'Tidak ada aktivitas untuk hari ini'
+            ];
         }
-        
-        if ($weightTrend !== null) {
-            $performanceScore += ($weightTrend > 0) ? 1 : (($weightTrend < 0) ? -1 : 0);
-        }
-        
-        // Select emoji based on performance
-        $emoji = '😊'; // default
-        if ($performanceScore >= 2) {
-            $emoji = '🤩'; // excellent
-        } elseif ($performanceScore == 1) {
-            $emoji = '😊'; // good
-        } elseif ($performanceScore == 0) {
-            $emoji = '😐'; // neutral
-        } elseif ($performanceScore == -1) {
-            $emoji = '😕'; // concern
-        } else {
-            $emoji = '😰'; // worried
-        }
-        
-        // Generate message in the requested format
-        $milkText = '';
+
+        // Calculate revenue from today's milk production
+        $todayRevenue = $todayMilk * $milkPrice;
+
+        // Simple profit calculation based on milk trend
+        // If trend is positive, assume profit; if negative or neutral, assume loss
         if ($milkTrend !== null && $milkTrend > 0) {
-            $milkText = " dan peningkatan jumlah susu sebanyak {$milkPercentage}%";
-        } elseif ($milkTrend !== null && $milkTrend < 0) {
-            $milkText = " namun penurunan jumlah susu sebanyak {$milkPercentage}%";
-        } elseif ($todayMilk > 0) {
-            $milkText = " dengan produksi susu {$todayMilk} liter hari ini";
+            // Profit scenario
+            $emoji = '😊';
+            $profitAmount = number_format($todayRevenue / 2, 0, ',', '.'); // Example: half of revenue as profit
+            $message = "Pertumbuhan peternakan mu dari seluruh populasi hari ini *UNTUNG Rp.{$profitAmount},-*\n\n_Catatan :_\nHarga susu hari ini = *Rp.18.000,-*";
+        } else {
+            // Loss scenario (when trend is negative, neutral, or no trend data)
+            $emoji = '☹️';
+            $lossAmount = number_format($todayRevenue / 4, 0, ',', '.'); // Example: quarter of revenue as loss
+            $message = "Pertumbuhan peternakan mu dari seluruh populasi hari ini *RUGI Rp.{$lossAmount},-*\n\n_Catatan :_\nHarga susu hari ini = *Rp.18.000,-*";
         }
-        
-        $message = "Perkembangan populasi ternak dan susu seluruh peternakanmu hari ini untung Rp0 dari pengelolaan pakan{$milkText}.";
-        
+
         return [
             'emoji' => $emoji,
             'message' => $message

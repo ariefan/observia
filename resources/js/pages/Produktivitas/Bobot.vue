@@ -248,6 +248,49 @@ onMounted(() => {
                                 </div>
                             </CardContent>
                         </Card>
+
+                        <!-- Info Card -->
+                        <div class="mx-auto mt-4">
+                            <div
+                                class="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-r from-cyan-50 to-blue-50 shadow-sm">
+                                <div class="flex flex-col md:flex-row gap-6 md:gap-10 p-6 md:p-8">
+                                    <!-- Left: Copy -->
+                                    <div class="md:w-[60%]">
+                                        <h3 class="text-slate-900 text-xl md:text-2xl font-semibold">
+                                            Info penting untuk Anda!
+                                        </h3>
+
+                                        <p class="mt-3 text-slate-700 leading-relaxed">
+                                            Perhatikan kambing-kambing ini untuk melihat apakah ada faktor yang
+                                            mempengaruhi produktivitas mereka, seperti kesehatan, pakan,
+                                            atau waktu pemerahan.
+                                        </p>
+
+                                        <p class="mt-3 text-slate-700 leading-relaxed">
+                                            Gunakan informasi ini untuk membantu Anda mengoptimalkan produksi
+                                            susu di peternakan Anda.
+                                        </p>
+
+                                        <p class="mt-4 text-sm text-slate-600 italic">
+                                            Catatan: data ini hanya untuk hari ini.
+                                        </p>
+                                    </div>
+
+                                    <!-- Right: Illustration -->
+                                    <div class="md:w-[40%] relative flex items-center justify-center">
+                                        <!-- soft blob glow -->
+                                        <div class="absolute inset-0">
+                                            <div
+                                                class="absolute -top-6 -right-6 h-40 w-40 rounded-full bg-cyan-200/50 blur-2xl">
+                                            </div>
+                                            <div
+                                                class="absolute bottom-0 left-2 h-28 w-28 rounded-full bg-sky-200/50 blur-2xl">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Right side - Ranking List -->
@@ -265,6 +308,12 @@ onMounted(() => {
                                 <CardContent class="p-6">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center space-x-4">
+                                            <div class="text-center">
+                                                <div class="text-3xl font-bold" :class="getRankColor(livestock.rank)">
+                                                    {{ livestock.rank }}
+                                                </div>
+                                            </div>
+
                                             <div class="relative">
                                                 <Avatar class="h-16 w-16">
                                                     <AvatarImage v-if="livestock.avatar" :src="livestock.avatar"
@@ -282,38 +331,22 @@ onMounted(() => {
                                             </div>
 
                                             <div class="space-y-1">
-                                                <div class="flex items-center space-x-2">
+                                                <div class="flex flex-col space-y-1">
+                                                    <Badge variant="outline" class="w-fit">{{ livestock.tag_id }}
+                                                    </Badge>
                                                     <h3 class="text-lg font-semibold">{{ livestock.name || 'Tanpa Nama'
-                                                    }}</h3>
-                                                    <Badge variant="outline">{{ livestock.tag_id }}</Badge>
-                                                    <span v-if="livestock.record_date"
-                                                        class="text-xs text-muted-foreground">
-                                                        {{ new Date(livestock.record_date).toLocaleDateString('id-ID', {
-                                                            day: '2-digit',
-                                                            month: 'short',
-                                                            year: 'numeric'
-                                                        }) }}
-                                                    </span>
-                                                </div>
-                                                <p v-if="livestock.herd_name" class="text-sm text-muted-foreground">
-                                                    Kandang: {{ livestock.herd_name }}
-                                                </p>
-                                                <div class="flex items-center space-x-2">
-                                                    <IconScaleOutline class="h-4 w-4 text-green-500" />
-                                                    <span class="text-lg font-bold">
-                                                        {{ parseFloat(livestock.current_weight).toFixed(2) }} {{
-                                                            livestock.weight_unit || 'kg' }}
-                                                    </span>
+                                                        }}</h3>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div class="text-center">
-                                            <div class="text-3xl font-bold" :class="getRankColor(livestock.rank)">
-                                                #{{ livestock.rank }}
-                                            </div>
-                                            <p class="text-sm text-muted-foreground">Peringkat</p>
-                                        </div>
+                                        <Badge variant="secondary" class="flex items-center space-x-2 px-3 py-2">
+                                            <IconScaleOutline class="h-4 w-4 text-green-500" />
+                                            <span class="text-lg font-bold">
+                                                {{ parseFloat(livestock.current_weight).toFixed(2) }} {{
+                                                    livestock.weight_unit || 'kg' }}
+                                            </span>
+                                        </Badge>
                                     </div>
                                 </CardContent>
                             </Card>
