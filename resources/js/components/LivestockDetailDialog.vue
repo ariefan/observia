@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { X, Share, Calendar } from 'lucide-vue-next';
+import { X, Share2, Calendar } from 'lucide-vue-next';
 import LivestockDefault from "@/assets/livestock-default.png";
 import AifarmLogo from "@/assets/logo.png";
 
@@ -130,7 +130,7 @@ const shareCard = async () => {
                             @click="shareCard"
                             class="mb-3 mr-auto ml-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition ring-1 ring-white/30 backdrop-blur"
                         >
-                            <Share class="w-5 h-5 text-white" />
+                            <Share2 class="w-5 h-5 text-white" />
                         </button>
 
                         <!-- Right stat chips -->
