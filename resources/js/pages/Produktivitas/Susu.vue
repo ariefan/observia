@@ -11,6 +11,7 @@ import type { SharedData } from '@/types';
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import LivestockDefault from "@/assets/livestock-default.png";
+import LivestockDetailDialog from '@/components/LivestockDetailDialog.vue';
 
 const page = usePage<SharedData>();
 
@@ -57,6 +58,10 @@ const topRankings = ref<RankingData>({ milk_rankings: [], weight_rankings: [] })
 const loading = ref(true);
 const error = ref<string | null>(null);
 
+// Dialog state
+const showDialog = ref(false);
+const selectedLivestock = ref<LivestockRanking | null>(null);
+
 
 const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -92,7 +97,32 @@ const getPhotoUrl = (livestock: LivestockRanking) => {
     return LivestockDefault;
 };
 
-const viewLivestock = (id: string) => {
+const viewLivestock = (livestock: LivestockRanking) => {
+    selectedLivestock.value = {
+        ...livestock,
+        national_rank: Math.floor(Math.random() * 1000) + 1, // Mock data
+        barn_rank: Math.floor(Math.random() * 50) + 1, // Mock data
+        total_national_livestock: 10000
+    };
+    showDialog.value = true;
+};
+
+const viewMilkRanking = (milkRanking: MilkRanking) => {
+    selectedLivestock.value = {
+        id: milkRanking.id,
+        name: milkRanking.name,
+        aifarm_id: milkRanking.tag_id,
+        photo: milkRanking.avatar || null,
+        species: 'Kambing Etawa', // Default species for milk rankings
+        average_litre_per_day: milkRanking.daily_milk_production,
+        national_rank: Math.floor(Math.random() * 1000) + 1, // Mock data
+        barn_rank: milkRanking.rank,
+        total_national_livestock: 10000
+    };
+    showDialog.value = true;
+};
+
+const viewLivestockById = (id: string) => {
     window.location.href = route('livestocks.show', { livestock: id });
 };
 
@@ -182,7 +212,7 @@ onMounted(() => {
                                         <!-- 2nd Place -->
                                         <div v-if="topMilkProducers[1]"
                                             class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                                            @click="viewLivestock(topMilkProducers[1].id)">
+                                            @click="viewLivestock(topMilkProducers[1])">
                                             <Avatar class="border-2 border-primary" shape="circle">
                                                 <AvatarImage :src="getPhotoUrl(topMilkProducers[1])"
                                                     :alt="topMilkProducers[1].name" />
@@ -202,7 +232,7 @@ onMounted(() => {
                                         <!-- 1st Place -->
                                         <div v-if="topMilkProducers[0]"
                                             class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                                            @click="viewLivestock(topMilkProducers[0].id)">
+                                            @click="viewLivestock(topMilkProducers[0])">
                                             <Avatar class="border-2 border-primary" shape="circle">
                                                 <AvatarImage :src="getPhotoUrl(topMilkProducers[0])"
                                                     :alt="topMilkProducers[0].name" />
@@ -222,7 +252,7 @@ onMounted(() => {
                                         <!-- 3rd Place -->
                                         <div v-if="topMilkProducers[2]"
                                             class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                                            @click="viewLivestock(topMilkProducers[2].id)">
+                                            @click="viewLivestock(topMilkProducers[2])">
                                             <Avatar class="border-2 border-primary" shape="circle">
                                                 <AvatarImage :src="getPhotoUrl(topMilkProducers[2])"
                                                     :alt="topMilkProducers[2].name" />
@@ -307,7 +337,7 @@ onMounted(() => {
                                 </p>
                             </div>
 
-                            <Card v-for="livestock in rankings" :key="livestock.id" class="overflow-hidden">
+                            <Card v-for="livestock in rankings" :key="livestock.id" class="overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200" @click="viewMilkRanking(livestock)">
                                 <CardContent class="p-6">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center space-x-4">
@@ -357,6 +387,12 @@ onMounted(() => {
                 </div>
             </div>
         </div>
+
+        <!-- Livestock Detail Dialog -->
+        <LivestockDetailDialog
+            v-model:open="showDialog"
+            :livestock="selectedLivestock"
+        />
     </div>
 </template>
 
