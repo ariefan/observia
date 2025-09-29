@@ -22,6 +22,7 @@ interface LivestockDetail {
 interface Props {
     open: boolean;
     livestock: LivestockDetail | null;
+    context?: 'milk' | 'weight';
 }
 
 const props = defineProps<Props>();
@@ -98,7 +99,9 @@ const shareCard = async () => {
                     </div>
                     <!-- Title + date -->
                     <div class="text-right">
-                        <div class="text-white text-xl font-extrabold drop-shadow-sm">Produktivitas Susu</div>
+                        <div class="text-white text-xl font-extrabold drop-shadow-sm">
+                            {{ context === 'weight' ? 'Produktivitas Bobot' : 'Produktivitas Susu' }}
+                        </div>
                         <div class="text-white/70 text-[12px] -mt-0.5 flex items-center gap-1">
                             <Calendar class="w-3 h-3" />
                             Update {{ formatDate() }}
@@ -142,13 +145,18 @@ const shareCard = async () => {
                                 </div>
                                 <div class="text-white/80 text-[11px] mt-1">Rank Nasional</div>
                             </div>
-                            <!-- Barn Rank -->
+                            <!-- Performance Metric -->
                             <div class="w-[120px] rounded-2xl bg-teal-600/90 backdrop-blur-sm p-4 text-center ring-1 ring-black/10 shadow-md">
                                 <div class="text-white text-3xl font-extrabold leading-none">
                                     {{ livestock.barn_rank || 'N/A' }}
                                 </div>
                                 <div class="text-white/80 text-[12px] mt-0.5">
-                                    {{ livestock.average_litre_per_day || '0.0' }} liter/hari
+                                    <span v-if="context === 'weight'">
+                                        {{ livestock.current_weight || '0.0' }} kg
+                                    </span>
+                                    <span v-else>
+                                        {{ livestock.average_litre_per_day || '0.0' }} liter/hari
+                                    </span>
                                 </div>
                                 <div class="text-white/80 text-[11px] mt-1">Rank Kandang</div>
                             </div>

@@ -392,6 +392,7 @@ onMounted(() => {
         <LivestockDetailDialog
             v-model:open="showDialog"
             :livestock="selectedLivestock"
+            context="milk"
         />
     </div>
 </template>
