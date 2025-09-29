@@ -37,7 +37,23 @@ const closeDialog = () => {
 
 const getPhotoUrl = (livestock: LivestockDetail) => {
     if (livestock.photo) {
-        return `/storage/${livestock.photo}`;
+        let photoUrl;
+        // Handle different photo path formats
+        if (livestock.photo.startsWith('http')) {
+            // Already a full URL
+            photoUrl = livestock.photo;
+        } else if (livestock.photo.startsWith('/storage/')) {
+            // Already has /storage/ prefix
+            photoUrl = livestock.photo;
+        } else if (livestock.photo.startsWith('storage/')) {
+            // Has storage/ prefix without leading slash
+            photoUrl = `/${livestock.photo}`;
+        } else {
+            // Assume it's just the filename, add /storage/
+            photoUrl = `/storage/${livestock.photo}`;
+        }
+        console.log('Livestock photo URL:', livestock.photo, '-> Generated URL:', photoUrl);
+        return photoUrl;
     }
     return LivestockDefault;
 };
@@ -75,6 +91,7 @@ const shareCard = async () => {
                     :alt="livestock.name"
                     class="absolute inset-0 w-full h-full object-cover"
                     :src="getPhotoUrl(livestock)"
+                    @error="$event.target.src = LivestockDefault"
                 />
 
                 <!-- Soft vignette + tint -->
