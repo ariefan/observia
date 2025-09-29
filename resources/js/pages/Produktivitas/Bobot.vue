@@ -11,6 +11,7 @@ import type { SharedData } from '@/types';
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import LivestockDefault from "@/assets/livestock-default.png";
+import LivestockDetailDialog from '@/components/LivestockDetailDialog.vue';
 
 const page = usePage<SharedData>();
 
@@ -58,6 +59,10 @@ const topRankings = ref<RankingData>({ milk_rankings: [], weight_rankings: [] })
 const loading = ref(true);
 const error = ref<string | null>(null);
 
+// Dialog state
+const showDialog = ref(false);
+const selectedLivestock = ref<LivestockRanking | null>(null);
+
 
 const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -93,7 +98,32 @@ const getPhotoUrl = (livestock: LivestockRanking) => {
     return LivestockDefault;
 };
 
-const viewLivestock = (id: string) => {
+const viewLivestock = (livestock: LivestockRanking) => {
+    selectedLivestock.value = {
+        ...livestock,
+        national_rank: Math.floor(Math.random() * 1000) + 1, // Mock data
+        barn_rank: Math.floor(Math.random() * 50) + 1, // Mock data
+        total_national_livestock: 10000
+    };
+    showDialog.value = true;
+};
+
+const viewWeightRanking = (weightRanking: WeightRanking) => {
+    selectedLivestock.value = {
+        id: weightRanking.id,
+        name: weightRanking.name,
+        aifarm_id: weightRanking.tag_id,
+        photo: weightRanking.avatar || null,
+        species: 'Kambing Etawa', // Default species for weight rankings
+        current_weight: weightRanking.current_weight,
+        national_rank: Math.floor(Math.random() * 1000) + 1, // Mock data
+        barn_rank: weightRanking.rank,
+        total_national_livestock: 10000
+    };
+    showDialog.value = true;
+};
+
+const viewLivestockById = (id: string) => {
     window.location.href = route('livestocks.show', { livestock: id });
 };
 
@@ -183,7 +213,7 @@ onMounted(() => {
                                         <!-- 2nd Place -->
                                         <div v-if="topWeightLivestock[1]"
                                             class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                                            @click="viewLivestock(topWeightLivestock[1].id)">
+                                            @click="viewLivestock(topWeightLivestock[1])">
                                             <Avatar class="border-2 border-primary mr-2" shape="circle">
                                                 <AvatarImage :src="getPhotoUrl(topWeightLivestock[1])"
                                                     :alt="topWeightLivestock[1].name" />
@@ -202,7 +232,7 @@ onMounted(() => {
                                         <!-- 1st Place -->
                                         <div v-if="topWeightLivestock[0]"
                                             class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                                            @click="viewLivestock(topWeightLivestock[0].id)">
+                                            @click="viewLivestock(topWeightLivestock[0])">
                                             <Avatar class="border-2 border-primary mr-2" shape="circle">
                                                 <AvatarImage :src="getPhotoUrl(topWeightLivestock[0])"
                                                     :alt="topWeightLivestock[0].name" />
@@ -221,7 +251,7 @@ onMounted(() => {
                                         <!-- 3rd Place -->
                                         <div v-if="topWeightLivestock[2]"
                                             class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                                            @click="viewLivestock(topWeightLivestock[2].id)">
+                                            @click="viewLivestock(topWeightLivestock[2])">
                                             <Avatar class="border-2 border-primary mr-2" shape="circle">
                                                 <AvatarImage :src="getPhotoUrl(topWeightLivestock[2])"
                                                     :alt="topWeightLivestock[2].name" />
@@ -304,7 +334,7 @@ onMounted(() => {
                                 </p>
                             </div>
 
-                            <Card v-for="livestock in rankings" :key="livestock.id" class="overflow-hidden">
+                            <Card v-for="livestock in rankings" :key="livestock.id" class="overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200" @click="viewWeightRanking(livestock)">
                                 <CardContent class="p-6">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center space-x-4">
@@ -355,6 +385,12 @@ onMounted(() => {
                 </div>
             </div>
         </div>
+
+        <!-- Livestock Detail Dialog -->
+        <LivestockDetailDialog
+            v-model:open="showDialog"
+            :livestock="selectedLivestock"
+        />
     </div>
 </template>
 
