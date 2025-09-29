@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { X, Share, Calendar } from 'lucide-vue-next';
 import LivestockDefault from "@/assets/livestock-default.png";
+import AifarmLogo from "@/assets/logo.png";
 
 interface LivestockDetail {
     id: string;
@@ -93,9 +94,8 @@ const shareCard = async () => {
                 <!-- Top bar content -->
                 <div class="absolute top-4 left-4 right-16 flex items-start justify-between">
                     <!-- Logo -->
-                    <div class="flex items-center gap-2">
-                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-600 text-white text-[11px] font-black">A</div>
-                        <span class="text-white/90 font-semibold tracking-tight">Aifarm</span>
+                    <div class="flex items-center">
+                        <img :src="AifarmLogo" alt="Aifarm" class="h-8 w-auto" />
                     </div>
                     <!-- Title + date -->
                     <div class="text-right">
