@@ -39,7 +39,7 @@ class LivestockMilkingObserver
     private function sendTelegramNotification(LivestockMilking $milking, string $event): void
     {
         try {
-            $milking->load('livestock', 'user', 'audits');
+            $milking->load('livestock', 'user');
 
             $livestock = $milking->livestock;
             $user = $milking->user ?? auth()->user();
@@ -51,9 +51,16 @@ class LivestockMilkingObserver
             $message = $this->formatMessage($milking, $event);
             $title = $this->getTitle($event);
 
-            // Get the latest audit for this model
-            $audit = $milking->audits()->where('event', $event)->first();
-            $actionUrl = $audit ? url("/audits/{$audit->id}") : url("/livestocks/{$livestock->id}");
+            // Refresh to get the latest audits created by Auditable trait
+            $milking->refresh();
+
+            // Get the latest audit for this model and event
+            $audit = $milking->audits()
+                ->where('event', $event)
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            $actionUrl = $audit ? url("/audits/{$audit->id}") : null;
 
             // Create a dummy notifiable (will send to default chat)
             $notifiable = new class {
@@ -62,15 +69,21 @@ class LivestockMilkingObserver
                 }
             };
 
-            Notification::send($notifiable, new GeneralTelegramNotification([
+            $notificationData = [
                 'type' => 'feeding',
                 'title' => $title,
                 'message' => $message,
                 'livestock_name' => $livestock->name . ' (' . $livestock->aifarm_id . ')',
                 'farm_name' => $livestock->farm->name ?? null,
                 'created_by' => $user->name ?? 'System',
-                'action_url' => $actionUrl,
-            ]));
+            ];
+
+            // Only add action_url if audit exists
+            if ($actionUrl) {
+                $notificationData['action_url'] = $actionUrl;
+            }
+
+            Notification::send($notifiable, new GeneralTelegramNotification($notificationData));
 
         } catch (\Exception $e) {
             Log::error('Failed to send milking Telegram notification: ' . $e->getMessage(), [

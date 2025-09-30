@@ -39,7 +39,7 @@ class LivestockWeightObserver
     private function sendTelegramNotification(LivestockWeight $weight, string $event): void
     {
         try {
-            $weight->load('livestock', 'user', 'audits');
+            $weight->load('livestock', 'user');
 
             $livestock = $weight->livestock;
             $user = $weight->user ?? auth()->user();
@@ -51,9 +51,16 @@ class LivestockWeightObserver
             $message = $this->formatMessage($weight, $event, $livestock);
             $title = $this->getTitle($event);
 
-            // Get the latest audit for this model
-            $audit = $weight->audits()->where('event', $event)->first();
-            $actionUrl = $audit ? url("/audits/{$audit->id}") : url("/livestocks/{$livestock->id}");
+            // Refresh to get the latest audits created by Auditable trait
+            $weight->refresh();
+
+            // Get the latest audit for this model and event
+            $audit = $weight->audits()
+                ->where('event', $event)
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            $actionUrl = $audit ? url("/audits/{$audit->id}") : null;
 
             // Create a dummy notifiable (will send to default chat)
             $notifiable = new class {
@@ -62,15 +69,21 @@ class LivestockWeightObserver
                 }
             };
 
-            Notification::send($notifiable, new GeneralTelegramNotification([
+            $notificationData = [
                 'type' => 'success',
                 'title' => $title,
                 'message' => $message,
                 'livestock_name' => $livestock->name . ' (' . $livestock->aifarm_id . ')',
                 'farm_name' => $livestock->farm->name ?? null,
                 'created_by' => $user->name ?? 'System',
-                'action_url' => $actionUrl,
-            ]));
+            ];
+
+            // Only add action_url if audit exists
+            if ($actionUrl) {
+                $notificationData['action_url'] = $actionUrl;
+            }
+
+            Notification::send($notifiable, new GeneralTelegramNotification($notificationData));
 
         } catch (\Exception $e) {
             Log::error('Failed to send weight Telegram notification: ' . $e->getMessage(), [

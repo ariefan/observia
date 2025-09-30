@@ -97,11 +97,11 @@ class LoginLogServiceProvider extends ServiceProvider
                 }
             };
 
-            $message = $user->name . ' berhasil masuk ke sistem AI Farm.';
+            $message = "Berhasil masuk ke sistem";
             if ($farmInfo) {
-                $message .= "\n\nFarm saat ini: " . $farmInfo;
+                $message .= "\nFarm saat ini: " . $farmInfo;
             } else {
-                $message .= "\n\nBelum memilih farm.";
+                $message .= "\nBelum memilih farm";
             }
 
             Notification::send($notifiable, new LoginTelegramNotification([
@@ -110,7 +110,6 @@ class LoginLogServiceProvider extends ServiceProvider
                 'message' => $message,
                 'user_name' => $user->name,
                 'user_email' => $user->email,
-                'farm_name' => $farmInfo,
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
                 'login_method' => $loginMethod . ($remember ? ' (Remember Me)' : ''),
