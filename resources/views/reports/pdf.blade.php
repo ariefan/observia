@@ -10,11 +10,48 @@
             line-height: 1.4;
             color: #333;
         }
+        .logo-header {
+            display: table;
+            width: 100%;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #14b8a6;
+        }
+        .logo-left, .logo-right {
+            display: table-cell;
+            vertical-align: middle;
+        }
+        .logo-left {
+            width: 30%;
+            text-align: left;
+        }
+        .logo-right {
+            width: 30%;
+            text-align: right;
+        }
+        .logo-center {
+            display: table-cell;
+            width: 40%;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .app-logo {
+            max-height: 50px;
+            width: auto;
+        }
+        .farm-logo {
+            max-height: 45px;
+            width: auto;
+            margin-bottom: 5px;
+        }
+        .farm-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #374151;
+        }
         .header {
             text-align: center;
             margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #14b8a6;
         }
         .title {
             font-size: 24px;
@@ -108,10 +145,26 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <div class="title">{{ $data['title'] }}</div>
-        <div class="subtitle">Laporan Manajemen Peternakan</div>
+    <!-- Logo Header -->
+    <div class="logo-header">
+        <div class="logo-left">
+            <img src="{{ public_path('build/assets/logo.png') }}" alt="App Logo" class="app-logo">
+        </div>
+        <div class="logo-center">
+            <div class="title">{{ $data['title'] }}</div>
+            <div class="subtitle">Laporan Manajemen Peternakan</div>
+        </div>
+        <div class="logo-right">
+            @php
+                $farm = auth()->user()->currentFarm ?? null;
+            @endphp
+            @if($farm)
+                @if($farm->image)
+                    <img src="{{ public_path('storage/' . $farm->image) }}" alt="Farm Logo" class="farm-logo"><br>
+                @endif
+                <div class="farm-name">{{ $farm->name }}</div>
+            @endif
+        </div>
     </div>
 
     <!-- Report Information -->
