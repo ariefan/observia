@@ -218,19 +218,46 @@ class FarmController extends Controller
         }
 
         $previousFarm = $user->currentFarm;
+        $previousFarmId = $user->current_farm_id;
 
         // Update the user's current farm
         $user->update(['current_farm_id' => $farm->id]);
 
-        // Send Telegram notification
-        $this->sendFarmSwitchNotification($user, $farm, $previousFarm);
+        // Create custom audit entry for farm switch
+        $audit = \App\Models\Audit::create([
+            'auditable_type' => get_class($user),
+            'auditable_id' => $user->id,
+            'event' => 'pindah peternakan',
+            'old_values' => [
+                'current_farm_id' => $previousFarmId,
+                'farm_name' => $previousFarm?->name,
+            ],
+            'new_values' => [
+                'current_farm_id' => $farm->id,
+                'farm_name' => $farm->name,
+            ],
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_email' => $user->email,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'url' => $request->fullUrl(),
+            'farm_id' => $farm->id,
+            'metadata' => [
+                'previous_farm_name' => $previousFarm?->name,
+                'new_farm_name' => $farm->name,
+            ],
+        ]);
+
+        // Send Telegram notification with audit link
+        $this->sendFarmSwitchNotification($user, $farm, $previousFarm, $audit);
 
         $currentRoute = $request->route()->getName();
 
        return redirect()->route('dashboard')->with('success', 'Anda telah beralih ke peternakan: ' . $farm->name);
     }
 
-    private function sendFarmSwitchNotification($user, $newFarm, $previousFarm = null): void
+    private function sendFarmSwitchNotification($user, $newFarm, $previousFarm = null, $audit = null): void
     {
         try {
             $message = "Pengguna beralih farm:\n";
@@ -248,13 +275,16 @@ class FarmController extends Controller
                 }
             };
 
+            // Use audit link if available, otherwise fallback to dashboard
+            $actionUrl = $audit ? url("/audits/{$audit->id}") : url('/dashboard');
+
             \Illuminate\Support\Facades\Notification::send($notifiable, new \App\Notifications\GeneralTelegramNotification([
                 'type' => 'info',
-                'title' => 'Beralih Farm',
+                'title' => 'Pindah Peternakan',
                 'message' => $message,
                 'farm_name' => $newFarm->name,
                 'created_by' => $user->name,
-                'action_url' => url('/dashboard'),
+                'action_url' => $actionUrl,
             ]));
 
         } catch (\Exception $e) {

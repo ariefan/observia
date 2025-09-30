@@ -16,7 +16,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasFarmRoles, HasUuids, Auditable;
 
     // Sensitive fields to exclude from auditing
-    protected $auditExclude = ['password', 'remember_token', 'email_verified_at', 'current_farm_id'];
+    protected $auditExclude = ['password', 'remember_token', 'email_verified_at'];
 
     /**
      * The attributes that are mass assignable.
