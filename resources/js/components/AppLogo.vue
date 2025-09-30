@@ -14,6 +14,6 @@ defineProps<Props>();
         <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
     </div> -->
     <div class="ml-1 grid flex-1 text-left text-sm">
-        <img :src="Logo" alt="Logo">
+        <img :src="Logo" alt="Logo" class="h-10 w-auto" />
     </div>
 </template>
