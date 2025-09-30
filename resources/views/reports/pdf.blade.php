@@ -36,11 +36,11 @@
             vertical-align: middle;
         }
         .app-logo {
-            max-height: 50px;
+            max-height: 40px;
             width: auto;
         }
         .farm-logo {
-            max-height: 45px;
+            max-height: 40px;
             width: auto;
             margin-bottom: 5px;
         }
@@ -166,7 +166,13 @@
         </div>
         <div class="logo-right">
             @php
-                $farm = auth()->user()->currentFarm ?? null;
+                $user = auth()->user();
+                $farm = null;
+
+                // Try to get farm through current_farm_id relationship
+                if ($user && $user->current_farm_id) {
+                    $farm = \App\Models\Farm::find($user->current_farm_id);
+                }
             @endphp
             @if($farm)
                 @if($farm->image)

@@ -38,11 +38,11 @@
             vertical-align: middle;
         }
         .app-logo {
-            max-height: 55px;
+            max-height: 40px;
             width: auto;
         }
         .farm-logo {
-            max-height: 50px;
+            max-height: 40px;
             width: auto;
             margin-bottom: 5px;
         }
