@@ -145,9 +145,9 @@ const downloadCard = async () => {
             <!-- Soft vignette + tint -->
             <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/40"></div>
 
-            <!-- White gradient overlays -->
-            <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-            <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white/10 to-transparent pointer-events-none"></div>
+            <!-- Black gradient overlays -->
+            <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/30 to-transparent pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
 
             <!-- Rounded border -->
             <div class="pointer-events-none absolute inset-0 rounded-[28px] ring-1 ring-black/10"></div>
@@ -179,13 +179,13 @@ const downloadCard = async () => {
                         <h1 class="text-white text-5xl font-semibold leading-none tracking-tight drop-shadow-sm">
                             {{ livestock.name }}
                         </h1>
-                        <div class="flex items-center gap-2 mt-2">
+                        <div class="flex items-center gap-2 my-2">
                             <span
                                 class="shrink-0 px-2 py-0.5 rounded-full text-[12px] font-semibold bg-teal-500/40 text-white/95 ring-1 ring-teal-400/30 backdrop-blur">
                                 {{ livestock.aifarm_id }}
                             </span>
-                            <div class="text-white/90 text-sm">{{ livestock.species }}</div>
                         </div>
+                        <div class="text-white/90 text-sm">{{ livestock.species }}</div>
                     </div>
 
                     <!-- Action buttons -->
@@ -205,15 +205,6 @@ const downloadCard = async () => {
 
                     <!-- Right stat chips and title -->
                     <div class="flex flex-col items-end gap-3">
-                        <!-- Title + date -->
-                        <div class="text-right">
-                            <div class="text-white text-xl font-extrabold drop-shadow-sm">
-                                {{ context === 'weight' ? 'Produktivitas Bobot' : 'Produktivitas Susu' }}
-                            </div>
-                            <div class="text-white/70 text-[12px] -mt-0.5">
-                                Update {{ formatDate() }}
-                            </div>
-                        </div>
                         <!-- Stat chips -->
                         <div class="flex gap-3">
                             <!-- National Rank -->
@@ -242,6 +233,16 @@ const downloadCard = async () => {
                                     </span>
                                 </div>
                                 <div class="text-white/80 text-[11px] mt-1">Rank Kandang</div>
+                            </div>
+                        </div>
+
+                        <!-- Title + date -->
+                        <div class="text-right">
+                            <div class="text-white text-xl font-extrabold drop-shadow-sm">
+                                {{ context === 'weight' ? 'Produktivitas Bobot' : 'Produktivitas Susu' }}
+                            </div>
+                            <div class="text-white/70 text-[12px] -mt-0.5">
+                                Update {{ formatDate() }}
                             </div>
                         </div>
                     </div>

@@ -40,6 +40,10 @@ interface LivestockRanking {
     total_volume?: number;
     lactation_days?: number;
     current_weight?: number;
+    farm?: {
+        name: string;
+        image?: string;
+    };
 }
 
 interface RankingData {
