@@ -57,6 +57,22 @@ const getPhotoUrl = (livestock: LivestockDetail) => {
     return LivestockDefault;
 };
 
+const getFarmImageUrl = (image?: string | null) => {
+    if (!image) {
+        return null;
+    }
+    if (image.startsWith('http')) {
+        return image;
+    }
+    if (image.startsWith('/storage/')) {
+        return image;
+    }
+    if (image.startsWith('storage/')) {
+        return `/${image}`;
+    }
+    return `/storage/${image}`;
+};
+
 const formatDate = () => {
     const today = new Date();
     const day = today.getDate().toString().padStart(2, '0');
@@ -160,11 +176,11 @@ const downloadCard = async () => {
                 </div>
                 <!-- Farm logo and name -->
                 <div class="text-right flex flex-col items-end gap-1">
-                    <img v-if="livestock.farm?.image"
-                        :src="livestock.farm.image.startsWith('http') ? livestock.farm.image : `/storage/${livestock.farm.image}`"
-                        :alt="livestock.farm.name"
+                    <img v-if="getFarmImageUrl(livestock.farm?.image)"
+                        :src="getFarmImageUrl(livestock.farm?.image)"
+                        :alt="livestock.farm?.name || 'Farm'"
                         class="h-12 w-auto"
-                        @error="$event.target.style.display='none'" />
+                        @error="($event.target as HTMLImageElement).style.display='none'" />
                     <div v-if="livestock.farm?.name" class="text-white text-sm font-semibold drop-shadow-sm">
                         {{ livestock.farm.name }}
                     </div>

@@ -28,6 +28,10 @@ interface WeightRanking {
     rank: number;
     herd_name?: string;
     weight_unit?: string;
+    farm?: {
+        name: string;
+        image?: string;
+    };
 }
 
 interface LivestockRanking {
@@ -122,7 +126,8 @@ const viewWeightRanking = (weightRanking: WeightRanking) => {
         current_weight: weightRanking.current_weight,
         national_rank: null,
         barn_rank: weightRanking.rank,
-        total_national_livestock: props.rankings.length
+        total_national_livestock: props.rankings.length,
+        farm: weightRanking.farm,
     };
     showDialog.value = true;
 };

@@ -31,7 +31,10 @@ class ProduktivitasController extends Controller
             })
             ->with([
                 'livestock' => function ($query) {
-                    $query->with('herd:id,name');
+                    $query->with([
+                        'herd:id,name',
+                        'farm:id,name,image',
+                    ]);
                 }
             ])
             ->orderBy('date', 'desc')
@@ -95,7 +98,10 @@ class ProduktivitasController extends Controller
             })
             ->with([
                 'livestock' => function ($query) {
-                    $query->with('herd:id,name');
+                    $query->with([
+                        'herd:id,name',
+                        'farm:id,name,image',
+                    ]);
                 }
             ])
             ->orderBy('date', 'desc')
@@ -125,6 +131,10 @@ class ProduktivitasController extends Controller
                     'avatar' => $avatarUrl,
                     'herd_name' => $livestock->herd?->name,
                     'weight_unit' => 'kg',
+                    'farm' => $livestock->farm ? [
+                        'name' => $livestock->farm->name,
+                        'image' => $livestock->farm->image,
+                    ] : null,
                 ];
             })
             ->sortByDesc(function ($item) {
