@@ -81,6 +81,10 @@ class PublicLivestockController extends Controller
             'national_rank' => $nationalRank,
             'barn_rank' => $barnRank,
             'total_national_livestock' => $totalNationalLivestock,
+            'farm' => $livestock->farm ? [
+                'name' => $livestock->farm->name,
+                'image' => $livestock->farm->image,
+            ] : null,
         ];
 
         return Inertia::render('PublicLivestock', [

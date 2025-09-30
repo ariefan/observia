@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { X, Share2, Calendar, Download } from 'lucide-vue-next';
+import { X, Share2, Download } from 'lucide-vue-next';
 import LivestockDefault from "@/assets/livestock-default.png";
 import AifarmLogo from "@/assets/logo.png";
 import html2canvas from 'html2canvas';
@@ -19,6 +19,10 @@ interface LivestockDetail {
     national_rank?: number;
     barn_rank?: number;
     total_national_livestock?: number;
+    farm?: {
+        name: string;
+        image?: string;
+    };
 }
 
 interface Props {
@@ -61,11 +65,14 @@ const getPhotoUrl = (livestock: LivestockDetail) => {
 
 const formatDate = () => {
     const today = new Date();
-    return today.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    });
+    const day = today.getDate().toString().padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const month = months[today.getMonth()];
+    const year = today.getFullYear();
+    const hours = today.getHours().toString().padStart(2, '0');
+    const minutes = today.getMinutes().toString().padStart(2, '0');
+    const seconds = today.getSeconds().toString().padStart(2, '0');
+    return `${day} ${month} ${year} ${hours}:${minutes}:${seconds}`;
 };
 
 const cardRef = ref<HTMLElement | null>(null);
@@ -164,14 +171,15 @@ const downloadCard = async () => {
                     <div class="flex items-center">
                         <img :src="AifarmLogo" alt="Aifarm" class="h-16 w-auto" />
                     </div>
-                    <!-- Title + date -->
-                    <div class="text-right">
-                        <div class="text-white text-xl font-extrabold drop-shadow-sm">
-                            {{ context === 'weight' ? 'Produktivitas Bobot' : 'Produktivitas Susu' }}
-                        </div>
-                        <div class="text-white/70 text-[12px] -mt-0.5 flex items-center gap-1">
-                            <Calendar class="w-3 h-3" />
-                            Update {{ formatDate() }}
+                    <!-- Farm logo and name -->
+                    <div class="text-right flex flex-col items-end gap-1">
+                        <img v-if="livestock.farm?.image"
+                            :src="livestock.farm.image.startsWith('http') ? livestock.farm.image : `/storage/${livestock.farm.image}`"
+                            :alt="livestock.farm.name"
+                            class="h-12 w-auto"
+                            @error="$event.target.style.display='none'" />
+                        <div v-if="livestock.farm?.name" class="text-white text-sm font-semibold drop-shadow-sm">
+                            {{ livestock.farm.name }}
                         </div>
                     </div>
                 </div>
@@ -181,17 +189,16 @@ const downloadCard = async () => {
                     <div class="flex items-end justify-between gap-3">
                         <!-- Left identity block -->
                         <div class="min-w-0">
-                            <div class="flex items-center gap-2">
-                                <h1
-                                    class="text-white text-5xl font-semibold leading-none tracking-tight drop-shadow-sm">
-                                    {{ livestock.name }}
-                                </h1>
+                            <h1 class="text-white text-5xl font-semibold leading-none tracking-tight drop-shadow-sm">
+                                {{ livestock.name }}
+                            </h1>
+                            <div class="flex items-center gap-2 mt-2">
                                 <span
-                                    class="shrink-0 px-2 py-0.5 rounded-full text-[12px] font-semibold bg-white/15 text-white/95 ring-1 ring-white/25">
+                                    class="shrink-0 px-2 py-0.5 rounded-full text-[12px] font-semibold bg-teal-500/40 text-white/95 ring-1 ring-teal-400/30 backdrop-blur">
                                     {{ livestock.aifarm_id }}
                                 </span>
+                                <div class="text-white/90 text-sm">{{ livestock.species }}</div>
                             </div>
-                            <div class="mt-1 text-white/90 text-sm">{{ livestock.species }}</div>
                         </div>
 
                         <!-- Action buttons -->
@@ -209,34 +216,46 @@ const downloadCard = async () => {
                             </button>
                         </div>
 
-                        <!-- Right stat chips -->
-                        <div class="flex gap-3">
-                            <!-- National Rank -->
-                            <div
-                                class="hidden w-[120px] rounded-2xl bg-teal-700/90 backdrop-blur-sm p-4 text-center ring-1 ring-black/10 shadow-md">
-                                <div class="text-white text-3xl font-extrabold leading-none">
-                                    {{ livestock.national_rank || 'N/A' }}
+                        <!-- Right stat chips and title -->
+                        <div class="flex flex-col items-end gap-3">
+                            <!-- Title + date -->
+                            <div class="text-right">
+                                <div class="text-white text-xl font-extrabold drop-shadow-sm">
+                                    {{ context === 'weight' ? 'Produktivitas Bobot' : 'Produktivitas Susu' }}
                                 </div>
-                                <div class="text-white/80 text-[12px] mt-0.5">
-                                    /{{ livestock.total_national_livestock || '10.000' }}
+                                <div class="text-white/70 text-[12px] -mt-0.5">
+                                    Update {{ formatDate() }}
                                 </div>
-                                <div class="text-white/80 text-[11px] mt-1">Rank Nasional</div>
                             </div>
-                            <!-- Performance Metric -->
-                            <div
-                                class="w-[120px] rounded-2xl bg-teal-600/90 backdrop-blur-sm p-4 text-center ring-1 ring-black/10 shadow-md">
-                                <div class="text-white text-3xl font-extrabold leading-none">
-                                    {{ livestock.barn_rank || 'N/A' }}
+                            <!-- Stat chips -->
+                            <div class="flex gap-3">
+                                <!-- National Rank -->
+                                <div
+                                    class="hidden w-[120px] rounded-2xl bg-teal-700/90 backdrop-blur-sm p-4 text-center ring-1 ring-black/10 shadow-md">
+                                    <div class="text-white text-3xl font-extrabold leading-none">
+                                        {{ livestock.national_rank || 'N/A' }}
+                                    </div>
+                                    <div class="text-white/80 text-[12px] mt-0.5">
+                                        /{{ livestock.total_national_livestock || '10.000' }}
+                                    </div>
+                                    <div class="text-white/80 text-[11px] mt-1">Rank Nasional</div>
                                 </div>
-                                <div class="text-white/80 text-[12px] mt-0.5">
-                                    <span v-if="context === 'weight'">
-                                        {{ livestock.current_weight || '0.0' }} kg
-                                    </span>
-                                    <span v-else>
-                                        {{ livestock.average_litre_per_day || '0.0' }} liter/hari
-                                    </span>
+                                <!-- Performance Metric -->
+                                <div
+                                    class="w-[120px] rounded-2xl bg-teal-600/90 backdrop-blur-sm p-4 text-center ring-1 ring-black/10 shadow-md">
+                                    <div class="text-white text-3xl font-extrabold leading-none">
+                                        {{ livestock.barn_rank || 'N/A' }}
+                                    </div>
+                                    <div class="text-white/80 text-[12px] mt-0.5">
+                                        <span v-if="context === 'weight'">
+                                            {{ livestock.current_weight || '0.0' }} kg
+                                        </span>
+                                        <span v-else>
+                                            {{ livestock.average_litre_per_day || '0.0' }} liter/hari
+                                        </span>
+                                    </div>
+                                    <div class="text-white/80 text-[11px] mt-1">Rank Kandang</div>
                                 </div>
-                                <div class="text-white/80 text-[11px] mt-1">Rank Kandang</div>
                             </div>
                         </div>
                     </div>

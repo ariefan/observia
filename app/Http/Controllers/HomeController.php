@@ -78,6 +78,11 @@ class HomeController extends Controller
         $selectedDate = $request->input('date');
         $selectedMonth = $request->input('month');
 
+        // Default to current month if no parameters provided
+        if (!$selectedDate && !$selectedMonth) {
+            $selectedMonth = Carbon::now()->format('Y-m');
+        }
+
         if ($selectedMonth) {
             // Monthly view - aggregate data for the entire month
             [$year, $month] = explode('-', $selectedMonth);

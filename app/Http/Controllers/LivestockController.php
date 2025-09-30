@@ -522,15 +522,15 @@ class LivestockController extends Controller
         // Get all livestocks in the current farm with necessary relationships
         $livestocks = Livestock::whereHas('breed.species')
             ->where('farm_id', $currentFarmId)
-            ->with(['breed.species', 'milkings', 'weights'])
+            ->with(['breed.species', 'milkings', 'weights', 'farm'])
             ->get();
-        
+
         // Calculate milk production rankings
         $milkRankings = $livestocks->map(function($livestock) {
             $lactationDays = $livestock->milkings->unique('date')->count();
             $totalVolume = $livestock->milkings->sum('milk_volume');
             $avgPerDay = $lactationDays > 0 ? $totalVolume / $lactationDays : 0;
-            
+
             return [
                 'id' => $livestock->id,
                 'name' => $livestock->name,
@@ -539,7 +539,11 @@ class LivestockController extends Controller
                 'species' => $livestock->breed->species->name,
                 'average_litre_per_day' => round($avgPerDay, 2),
                 'total_volume' => $totalVolume,
-                'lactation_days' => $lactationDays
+                'lactation_days' => $lactationDays,
+                'farm' => $livestock->farm ? [
+                    'name' => $livestock->farm->name,
+                    'image' => $livestock->farm->image,
+                ] : null,
             ];
         })
         ->filter(function($item) {
@@ -552,14 +556,18 @@ class LivestockController extends Controller
         $weightRankings = $livestocks->map(function($livestock) {
             $latestWeight = $livestock->weights->sortByDesc('date')->first();
             $currentWeight = $latestWeight ? $latestWeight->weight : $livestock->weight;
-            
+
             return [
                 'id' => $livestock->id,
                 'name' => $livestock->name,
                 'aifarm_id' => $livestock->aifarm_id,
                 'photo' => $livestock->photo ? (is_array($livestock->photo) && count($livestock->photo) > 0 ? $livestock->photo[0] : null) : null,
                 'species' => $livestock->breed->species->name,
-                'current_weight' => $currentWeight ? round($currentWeight, 2) : 0
+                'current_weight' => $currentWeight ? round($currentWeight, 2) : 0,
+                'farm' => $livestock->farm ? [
+                    'name' => $livestock->farm->name,
+                    'image' => $livestock->farm->image,
+                ] : null,
             ];
         })
         ->filter(function($item) {

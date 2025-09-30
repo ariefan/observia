@@ -163,7 +163,6 @@
         </div>
         <div class="logo-center">
             <div class="title">{{ $data['title'] }}</div>
-            <div class="subtitle">Laporan Manajemen Peternakan</div>
         </div>
         <div class="logo-right">
             @php

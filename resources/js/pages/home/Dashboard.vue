@@ -56,10 +56,10 @@ const props = defineProps<{
     }>;
 }>();
 
-const isMonthView = ref(false);
+const isMonthView = ref(true);
 const selectedDate = ref(new Date().toISOString().split('T')[0]);
 const selectedMonth = ref(new Date().toISOString().slice(0, 7));
-const viewType = ref<'date' | 'month'>('date');
+const viewType = ref<'date' | 'month'>('month');
 
 const fetchStatsForDate = () => {
     router.get('/dashboard', {
