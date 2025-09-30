@@ -148,7 +148,18 @@
     <!-- Logo Header -->
     <div class="logo-header">
         <div class="logo-left">
-            <img src="{{ public_path('build/assets/logo.png') }}" alt="App Logo" class="app-logo">
+            @php
+                // Find the app logo in build assets
+                $logoFiles = glob(public_path('build/assets/logo-*.png'));
+                $appLogoPath = !empty($logoFiles) ? $logoFiles[0] : null;
+                $appLogoBase64 = null;
+                if ($appLogoPath && file_exists($appLogoPath)) {
+                    $appLogoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($appLogoPath));
+                }
+            @endphp
+            @if($appLogoBase64)
+                <img src="{{ $appLogoBase64 }}" alt="App Logo" class="app-logo">
+            @endif
         </div>
         <div class="logo-center">
             <div class="title">{{ $data['title'] }}</div>
@@ -160,7 +171,18 @@
             @endphp
             @if($farm)
                 @if($farm->image)
-                    <img src="{{ public_path('storage/' . $farm->image) }}" alt="Farm Logo" class="farm-logo"><br>
+                    @php
+                        $farmLogoPath = public_path('storage/' . $farm->image);
+                        $farmLogoBase64 = null;
+                        if (file_exists($farmLogoPath)) {
+                            $imageData = file_get_contents($farmLogoPath);
+                            $imageType = pathinfo($farmLogoPath, PATHINFO_EXTENSION);
+                            $farmLogoBase64 = 'data:image/' . $imageType . ';base64,' . base64_encode($imageData);
+                        }
+                    @endphp
+                    @if($farmLogoBase64)
+                        <img src="{{ $farmLogoBase64 }}" alt="Farm Logo" class="farm-logo"><br>
+                    @endif
                 @endif
                 <div class="farm-name">{{ $farm->name }}</div>
             @endif
