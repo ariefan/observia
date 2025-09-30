@@ -217,12 +217,49 @@ class FarmController extends Controller
             return redirect()->route('farms.index')->with('error', 'Anda tidak memiliki akses ke peternakan ini.');
         }
 
+        $previousFarm = $user->currentFarm;
+
         // Update the user's current farm
         $user->update(['current_farm_id' => $farm->id]);
+
+        // Send Telegram notification
+        $this->sendFarmSwitchNotification($user, $farm, $previousFarm);
 
         $currentRoute = $request->route()->getName();
 
        return redirect()->route('dashboard')->with('success', 'Anda telah beralih ke peternakan: ' . $farm->name);
+    }
+
+    private function sendFarmSwitchNotification($user, $newFarm, $previousFarm = null): void
+    {
+        try {
+            $message = "Pengguna beralih farm:\n";
+            if ($previousFarm) {
+                $message .= "• Dari: {$previousFarm->name}\n";
+            }
+            $message .= "• Ke: {$newFarm->name}";
+            if ($newFarm->owner) {
+                $message .= "\n• Pemilik: {$newFarm->owner}";
+            }
+
+            $notifiable = new class {
+                public function routeNotificationForTelegram() {
+                    return null;
+                }
+            };
+
+            \Illuminate\Support\Facades\Notification::send($notifiable, new \App\Notifications\GeneralTelegramNotification([
+                'type' => 'info',
+                'title' => '🔄 Beralih Farm',
+                'message' => $message,
+                'farm_name' => $newFarm->name,
+                'created_by' => $user->name,
+                'action_url' => url('/dashboard'),
+            ]));
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send farm switch Telegram notification: ' . $e->getMessage());
+        }
     }
     
     public function inviteMember(Request $request, Farm $farm)
