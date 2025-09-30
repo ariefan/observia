@@ -44,6 +44,7 @@
         "date-fns": "^4.1.0",
         "embla-carousel-autoplay": "^8.5.2",
         "embla-carousel-vue": "^8.6.0",
+        "html2canvas": "^1.4.1",
         "laravel-vite-plugin": "^1.0",
         "leaflet": "^1.9.4",
         "lucide-vue-next": "^0.511.0",

@@ -6,10 +6,90 @@ use App\Models\Livestock;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class PublicLivestockController extends Controller
 {
-    public function show(Livestock $livestock)
+    public function show(Livestock $livestock, Request $request)
+    {
+        // Check if context is specified (milk or weight)
+        $context = $request->input('context');
+
+        // If context is milk or weight, show the card view (Inertia)
+        if (in_array($context, ['milk', 'weight'])) {
+            return $this->showCardView($livestock, $context);
+        }
+
+        // Otherwise, show the general detailed view (Blade)
+        return $this->showDetailedView($livestock);
+    }
+
+    private function showCardView(Livestock $livestock, string $context)
+    {
+        // Load relationships
+        $livestock->load([
+            'breed.species',
+            'herd',
+            'farm.owner',
+        ]);
+
+        // Get current weight
+        $currentWeight = DB::table('livestock_weights')
+            ->where('livestock_id', $livestock->id)
+            ->orderBy('date', 'desc')
+            ->value('weight');
+
+        // Get milk production stats
+        $averageLitrePerDay = DB::table('livestock_milkings')
+            ->where('livestock_id', $livestock->id)
+            ->where('date', '>=', Carbon::now()->subMonths(1))
+            ->avg('milk_volume');
+
+        $totalVolume = DB::table('livestock_milkings')
+            ->where('livestock_id', $livestock->id)
+            ->sum('milk_volume');
+
+        // Calculate lactation days
+        $firstMilkingDate = DB::table('livestock_milkings')
+            ->where('livestock_id', $livestock->id)
+            ->min('date');
+
+        $lastMilkingDate = DB::table('livestock_milkings')
+            ->where('livestock_id', $livestock->id)
+            ->max('date');
+
+        $lactationDays = 0;
+        if ($firstMilkingDate && $lastMilkingDate) {
+            $lactationDays = Carbon::parse($firstMilkingDate)->diffInDays(Carbon::parse($lastMilkingDate)) + 1;
+        }
+
+        // Get rankings (you may need to adjust this based on your ranking logic)
+        $barnRank = null;
+        $nationalRank = null;
+        $totalNationalLivestock = Livestock::count();
+
+        $livestockDetail = [
+            'id' => (string)$livestock->id,
+            'name' => $livestock->name,
+            'aifarm_id' => $livestock->aifarm_id,
+            'photo' => $livestock->photo,
+            'species' => $livestock->breed->species->name ?? 'Unknown',
+            'average_litre_per_day' => round($averageLitrePerDay ?? 0, 2),
+            'total_volume' => round($totalVolume ?? 0, 2),
+            'lactation_days' => $lactationDays,
+            'current_weight' => round($currentWeight ?? 0, 2),
+            'national_rank' => $nationalRank,
+            'barn_rank' => $barnRank,
+            'total_national_livestock' => $totalNationalLivestock,
+        ];
+
+        return Inertia::render('PublicLivestock', [
+            'livestock' => $livestockDetail,
+            'context' => $context,
+        ]);
+    }
+
+    private function showDetailedView(Livestock $livestock)
     {
         // Load relationships
         $livestock->load([
@@ -57,7 +137,7 @@ class PublicLivestockController extends Controller
         if ($livestock->sex == 'F' && !empty($milkingHistory)) {
             $firstMilkingDate = collect($milkingHistory)->min('date');
             $lastMilkingDate = collect($milkingHistory)->max('date');
-            
+
             if ($firstMilkingDate && $lastMilkingDate) {
                 $lactationDays = Carbon::parse($firstMilkingDate)->diffInDays(Carbon::parse($lastMilkingDate)) + 1;
             }

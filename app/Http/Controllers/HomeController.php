@@ -9,6 +9,8 @@ use App\Models\FarmInvite;
 use App\Models\Livestock;
 use App\Models\LivestockMilking;
 use App\Models\LivestockWeight;
+use App\Models\HerdFeeding;
+use App\Models\Herd;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Traits\HasCurrentFarm;
@@ -40,16 +42,16 @@ class HomeController extends Controller
         return redirect()->route('home')->with('success', 'Anda telah logout ke peternakan. Pilih peternakan untuk login kembali.');
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $currentFarmId = Auth::user()->current_farm_id;
-        
+
         if (!$currentFarmId) {
             // Get farm invitations for current user even when no current farm
             $farmInvites = FarmInvite::where('email', Auth::user()->email)
                 ->with('farm')
                 ->get();
-                
+
             $data = [
                 'totalLivestock' => 0,
                 'todayMilkProduction' => 0,
@@ -72,21 +74,67 @@ class HomeController extends Controller
             ->with(['milkings', 'weights'])
             ->get();
 
-        // Calculate today's milk production
-        $today = Carbon::today();
-        $todayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
-            $query->where('farm_id', $currentFarmId);
-        })
-        ->whereDate('date', $today)
-        ->sum('milk_volume');
+        // Handle date/month filtering
+        $selectedDate = $request->input('date');
+        $selectedMonth = $request->input('month');
 
-        // Calculate yesterday's milk production for comparison
-        $yesterday = Carbon::yesterday();
-        $yesterdayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
-            $query->where('farm_id', $currentFarmId);
-        })
-        ->whereDate('date', $yesterday)
-        ->sum('milk_volume');
+        if ($selectedMonth) {
+            // Monthly view - aggregate data for the entire month
+            [$year, $month] = explode('-', $selectedMonth);
+            $startDate = Carbon::create($year, $month, 1)->startOfMonth();
+            $endDate = Carbon::create($year, $month, 1)->endOfMonth();
+
+            // Calculate milk production for selected month
+            $todayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereBetween('date', [$startDate, $endDate])
+            ->sum('milk_volume');
+
+            // Calculate previous month's milk production for comparison
+            $prevMonthStart = $startDate->copy()->subMonth()->startOfMonth();
+            $prevMonthEnd = $startDate->copy()->subMonth()->endOfMonth();
+            $yesterdayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereBetween('date', [$prevMonthStart, $prevMonthEnd])
+            ->sum('milk_volume');
+
+            $today = $startDate;
+            $yesterday = $prevMonthStart;
+        } elseif ($selectedDate) {
+            // Date view - show data for specific date
+            $today = Carbon::parse($selectedDate);
+            $yesterday = Carbon::parse($selectedDate)->subDay();
+
+            $todayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereDate('date', $today)
+            ->sum('milk_volume');
+
+            $yesterdayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereDate('date', $yesterday)
+            ->sum('milk_volume');
+        } else {
+            // Default - today's data
+            $today = Carbon::today();
+            $todayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereDate('date', $today)
+            ->sum('milk_volume');
+
+            // Calculate yesterday's milk production for comparison
+            $yesterday = Carbon::yesterday();
+            $yesterdayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereDate('date', $yesterday)
+            ->sum('milk_volume');
+        }
 
         // Calculate total milk production
         $totalMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
@@ -142,6 +190,63 @@ class HomeController extends Controller
             $weightTrend = 100;
         }
 
+        // Calculate feed amount based on date/month filter
+        $todayFeedAmount = 0;
+        $yesterdayFeedAmount = 0;
+
+        if ($selectedMonth) {
+            // Monthly view - aggregate feed data for the entire month
+            [$year, $month] = explode('-', $selectedMonth);
+            $startDate = Carbon::create($year, $month, 1)->startOfMonth();
+            $endDate = Carbon::create($year, $month, 1)->endOfMonth();
+
+            $todayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereBetween('date', [$startDate, $endDate])
+            ->sum('quantity');
+
+            // Previous month
+            $prevMonthStart = $startDate->copy()->subMonth()->startOfMonth();
+            $prevMonthEnd = $startDate->copy()->subMonth()->endOfMonth();
+            $yesterdayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereBetween('date', [$prevMonthStart, $prevMonthEnd])
+            ->sum('quantity');
+        } elseif ($selectedDate) {
+            // Date view - show data for specific date
+            $todayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereDate('date', $today)
+            ->sum('quantity');
+
+            $yesterdayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereDate('date', $yesterday)
+            ->sum('quantity');
+        } else {
+            // Default - today's data
+            $todayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereDate('date', $today)
+            ->sum('quantity');
+
+            $yesterdayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereDate('date', $yesterday)
+            ->sum('quantity');
+        }
+
+        // Calculate FCR (Feed Conversion Ratio)
+        // FCR = Feed Amount (kg) / Milk Production (liters)
+        $todayFCR = ($todayMilkProduction > 0) ? round($todayFeedAmount / $todayMilkProduction, 2) : 0;
+        $yesterdayFCR = ($yesterdayMilkProduction > 0) ? round($yesterdayFeedAmount / $yesterdayMilkProduction, 2) : 0;
+
         // Generate dynamic notification
         $notification = $this->generateNotification($todayMilkProduction, $milkTrend, $weightTrend, $livestocks->count());
 
@@ -157,6 +262,11 @@ class HomeController extends Controller
             'averageWeight' => $averageWeight,
             'milkProductionTrend' => $milkTrend !== null ? round($milkTrend, 1) : null,
             'weightTrend' => $weightTrend !== null ? round($weightTrend, 1) : null,
+            'todayFCR' => $todayFCR,
+            'yesterdayFCR' => $yesterdayFCR,
+            'todayFeedAmount' => round($todayFeedAmount, 2),
+            'yesterdayFeedAmount' => round($yesterdayFeedAmount, 2),
+            'yesterdayMilkProduction' => round($yesterdayMilkProduction, 2),
             'notification' => $notification,
             'farmInvites' => $farmInvites
         ];
@@ -193,12 +303,12 @@ class HomeController extends Controller
             // Profit scenario
             $emoji = '😊';
             $profitAmount = number_format($todayRevenue / 2, 0, ',', '.'); // Example: half of revenue as profit
-            $message = "Pertumbuhan peternakan mu dari seluruh populasi hari ini *UNTUNG Rp.{$profitAmount},-*\n\n_Catatan :_\nHarga susu hari ini = *Rp.18.000,-*";
+            $message = "Pertumbuhan peternakan mu dari seluruh populasi hari ini UNTUNG Rp.{$profitAmount},-\n\nCatatan:\nHarga susu hari ini = Rp.18.000,-";
         } else {
             // Loss scenario (when trend is negative, neutral, or no trend data)
             $emoji = '☹️';
             $lossAmount = number_format($todayRevenue / 4, 0, ',', '.'); // Example: quarter of revenue as loss
-            $message = "Pertumbuhan peternakan mu dari seluruh populasi hari ini *RUGI Rp.{$lossAmount},-*\n\n_Catatan :_\nHarga susu hari ini = *Rp.18.000,-*";
+            $message = "Pertumbuhan peternakan mu dari seluruh populasi hari ini RUGI Rp.{$lossAmount},-\n\nCatatan:\nHarga susu hari ini = Rp.18.000,-";
         }
 
         return [

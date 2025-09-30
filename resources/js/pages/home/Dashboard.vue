@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Rank from './Rank.vue';
 import Tips from './Tips.vue';
 import Guide from './Guide.vue';
@@ -15,6 +15,14 @@ import {
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 import RealtimeClock from '@/components/ui/realtime-clock/RealtimeClock.vue';
 
@@ -49,6 +57,36 @@ const props = defineProps<{
 }>();
 
 const isMonthView = ref(false);
+const selectedDate = ref(new Date().toISOString().split('T')[0]);
+const selectedMonth = ref(new Date().toISOString().slice(0, 7));
+const viewType = ref<'date' | 'month'>('date');
+
+const fetchStatsForDate = () => {
+    router.get('/dashboard', {
+        date: selectedDate.value
+    }, {
+        preserveState: true,
+        preserveScroll: true
+    });
+};
+
+const fetchStatsForMonth = () => {
+    router.get('/dashboard', {
+        month: selectedMonth.value
+    }, {
+        preserveState: true,
+        preserveScroll: true
+    });
+};
+
+// Watch for viewType changes and fetch data accordingly
+watch(viewType, (newType) => {
+    if (newType === 'date') {
+        fetchStatsForDate();
+    } else if (newType === 'month') {
+        fetchStatsForMonth();
+    }
+});
 
 const acceptInvite = (inviteId: number) => {
     router.post(`/farm-invites/${inviteId}/accept`);
@@ -60,6 +98,38 @@ const rejectInvite = (inviteId: number) => {
 
 const page = usePage<SharedData>();
 const auth = computed(() => page.props.auth);
+
+// Compute whether the selected date is today
+const isToday = computed(() => {
+    if (viewType.value === 'month') {
+        const today = new Date();
+        const currentMonth = today.toISOString().slice(0, 7);
+        return selectedMonth.value === currentMonth;
+    } else {
+        const today = new Date().toISOString().split('T')[0];
+        return selectedDate.value === today;
+    }
+});
+
+// Compute the display text based on view type and selection
+const dateDisplayText = computed(() => {
+    if (isToday.value) {
+        return 'hari ini';
+    }
+
+    if (viewType.value === 'month') {
+        const [year, month] = selectedMonth.value.split('-');
+        const date = new Date(parseInt(year), parseInt(month) - 1);
+        return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    } else {
+        const date = new Date(selectedDate.value + 'T00:00:00');
+        return date.toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+});
 </script>
 
 <template>
@@ -119,6 +189,39 @@ const auth = computed(() => page.props.auth);
                             </Alert>
                         </div>
 
+                        <!-- Date/Month Selection -->
+                        <div class="mb-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                            <div class="flex items-center gap-2">
+                                <Select v-model="viewType">
+                                    <SelectTrigger class="w-[140px] bg-white/90 dark:bg-zinc-800 text-gray-800 dark:text-white border-white/30 dark:border-zinc-700">
+                                        <SelectValue placeholder="Select view" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="date">Per Tanggal</SelectItem>
+                                        <SelectItem value="month">Per Bulan</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div v-if="viewType === 'date'" class="flex items-center gap-2">
+                                <Input
+                                    type="date"
+                                    v-model="selectedDate"
+                                    @change="fetchStatsForDate"
+                                    class="bg-white/90 dark:bg-zinc-800 text-gray-800 dark:text-white border-white/30 dark:border-zinc-700"
+                                />
+                            </div>
+
+                            <div v-if="viewType === 'month'" class="flex items-center gap-2">
+                                <Input
+                                    type="month"
+                                    v-model="selectedMonth"
+                                    @change="fetchStatsForMonth"
+                                    class="bg-white/90 dark:bg-zinc-800 text-gray-800 dark:text-white border-white/30 dark:border-zinc-700"
+                                />
+                            </div>
+                        </div>
+
                         <!-- Goat and Milk Stats -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 w-full">
                             <!-- Card 1: FCR -->
@@ -126,7 +229,7 @@ const auth = computed(() => page.props.auth);
                                 <CardHeader
                                     class="bg-orange-500 dark:bg-orange-200 text-white dark:text-black rounded-t-xl px-3 py-2 md:px-4">
                                     <CardTitle class="text-sm md:text-base font-medium">Feed Cost Ratio Seluruh Populasi
-                                        hari ini:</CardTitle>
+                                        {{ dateDisplayText }}:</CardTitle>
                                 </CardHeader>
                                 <CardContent
                                     class="bg-white dark:bg-zinc-800 dark:text-white text-orange-800 text-center py-4 md:py-6 rounded-b-xl">
@@ -134,7 +237,7 @@ const auth = computed(() => page.props.auth);
                                         {{ props.todayFCR || '-' }}
                                     </div>
                                     <div class="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                                        FCR di Peternakanmu hari ini
+                                        FCR di Peternakanmu {{ dateDisplayText }}
                                         <span v-if="props.todayFCR && props.yesterdayFCR"
                                             :class="props.todayFCR < props.yesterdayFCR ? 'text-green-600' : 'text-red-600'">
                                             {{ props.todayFCR < props.yesterdayFCR ? 'turun' : 'naik' }} dari hari
@@ -154,7 +257,7 @@ const auth = computed(() => page.props.auth);
                                 <CardHeader
                                     class="bg-cyan-500 dark:bg-cyan-200 text-white dark:text-black rounded-t-xl px-3 py-2 md:px-4">
                                     <CardTitle class="text-sm md:text-base font-medium">Produksi Susu Seluruh Populasi
-                                        hari ini:</CardTitle>
+                                        {{ dateDisplayText }}:</CardTitle>
                                 </CardHeader>
                                 <CardContent
                                     class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 md:py-6 rounded-b-xl">
@@ -163,12 +266,12 @@ const auth = computed(() => page.props.auth);
                                             class="text-lg font-normal">Liter</span>
                                     </div>
                                     <div class="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                                        Produksi susu seluruh ternakmu hari ini:<br>
+                                        Produksi susu seluruh ternakmu {{ dateDisplayText }}:<br>
                                         <span v-if="props.todayMilkProduction && props.yesterdayMilkProduction"
                                             :class="props.todayMilkProduction > props.yesterdayMilkProduction ? 'text-green-600' : 'text-red-600'">
                                             {{ Math.round(((props.todayMilkProduction - props.yesterdayMilkProduction) /
                                             props.yesterdayMilkProduction) * 100) }}%
-                                            {{ props.todayMilkProduction > props.yesterdayMilkProduction ? 'up' : 'down'
+                                            {{ props.todayMilkProduction > props.yesterdayMilkProduction ? '↑' : '↓'
                                             }} dari hari kemarin
                                             (total : {{ props.yesterdayMilkProduction }} Liter)
                                         </span>
@@ -184,7 +287,7 @@ const auth = computed(() => page.props.auth);
                                 <CardHeader
                                     class="bg-teal-500 dark:bg-teal-200 text-white dark:text-black rounded-t-xl px-3 py-2 md:px-4">
                                     <CardTitle class="text-sm md:text-base font-medium">Pemberian Pakan Seluruh Populasi
-                                        hari ini:</CardTitle>
+                                        {{ dateDisplayText }}:</CardTitle>
                                 </CardHeader>
                                 <CardContent
                                     class="bg-white dark:bg-zinc-800 dark:text-white text-teal-800 text-center py-4 md:py-6 rounded-b-xl">
@@ -193,12 +296,12 @@ const auth = computed(() => page.props.auth);
                                             class="text-lg font-normal">Kg</span>
                                     </div>
                                     <div class="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                                        Pemberian Pakan seluruh Populasi hari ini:<br>
+                                        Pemberian Pakan seluruh Populasi {{ dateDisplayText }}:<br>
                                         <span v-if="props.todayFeedAmount && props.yesterdayFeedAmount"
                                             :class="props.todayFeedAmount > props.yesterdayFeedAmount ? 'text-green-600' : 'text-red-600'">
                                             {{ Math.round(((props.todayFeedAmount - props.yesterdayFeedAmount) /
                                             props.yesterdayFeedAmount) * 100) }}%
-                                            {{ props.todayFeedAmount > props.yesterdayFeedAmount ? 'up' : 'down' }} dari
+                                            {{ props.todayFeedAmount > props.yesterdayFeedAmount ? '↑' : '↓' }} dari
                                             hari kemarin
                                             (total : {{ props.yesterdayFeedAmount }} Kg)
                                         </span>
