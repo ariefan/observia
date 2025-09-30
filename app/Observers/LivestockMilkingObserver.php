@@ -39,7 +39,7 @@ class LivestockMilkingObserver
     private function sendTelegramNotification(LivestockMilking $milking, string $event): void
     {
         try {
-            $milking->load('livestock', 'user');
+            $milking->load('livestock', 'user', 'audits');
 
             $livestock = $milking->livestock;
             $user = $milking->user ?? auth()->user();
@@ -51,8 +51,9 @@ class LivestockMilkingObserver
             $message = $this->formatMessage($milking, $event);
             $title = $this->getTitle($event);
 
-            // Create notification URL
-            $actionUrl = url("/livestocks/{$livestock->id}");
+            // Get the latest audit for this model
+            $audit = $milking->audits()->where('event', $event)->first();
+            $actionUrl = $audit ? url("/audits/{$audit->id}") : url("/livestocks/{$livestock->id}");
 
             // Create a dummy notifiable (will send to default chat)
             $notifiable = new class {
@@ -104,9 +105,9 @@ class LivestockMilkingObserver
     private function getTitle(string $event): string
     {
         return match ($event) {
-            'created' => '🥛 Produksi Susu Dicatat',
-            'updated' => '📝 Produksi Susu Diperbarui',
-            'deleted' => '🗑️ Produksi Susu Dihapus',
+            'created' => 'Produksi Susu Dicatat',
+            'updated' => 'Produksi Susu Diperbarui',
+            'deleted' => 'Produksi Susu Dihapus',
             default => 'Aktivitas Produksi Susu',
         };
     }

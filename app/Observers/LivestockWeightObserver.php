@@ -39,7 +39,7 @@ class LivestockWeightObserver
     private function sendTelegramNotification(LivestockWeight $weight, string $event): void
     {
         try {
-            $weight->load('livestock', 'user');
+            $weight->load('livestock', 'user', 'audits');
 
             $livestock = $weight->livestock;
             $user = $weight->user ?? auth()->user();
@@ -51,8 +51,9 @@ class LivestockWeightObserver
             $message = $this->formatMessage($weight, $event, $livestock);
             $title = $this->getTitle($event);
 
-            // Create notification URL
-            $actionUrl = url("/livestocks/{$livestock->id}");
+            // Get the latest audit for this model
+            $audit = $weight->audits()->where('event', $event)->first();
+            $actionUrl = $audit ? url("/audits/{$audit->id}") : url("/livestocks/{$livestock->id}");
 
             // Create a dummy notifiable (will send to default chat)
             $notifiable = new class {
@@ -111,9 +112,9 @@ class LivestockWeightObserver
     private function getTitle(string $event): string
     {
         return match ($event) {
-            'created' => '⚖️ Bobot Ternak Dicatat',
-            'updated' => '📝 Bobot Ternak Diperbarui',
-            'deleted' => '🗑️ Bobot Ternak Dihapus',
+            'created' => 'Bobot Ternak Dicatat',
+            'updated' => 'Bobot Ternak Diperbarui',
+            'deleted' => 'Bobot Ternak Dihapus',
             default => 'Aktivitas Bobot Ternak',
         };
     }

@@ -250,7 +250,7 @@ class FarmController extends Controller
 
             \Illuminate\Support\Facades\Notification::send($notifiable, new \App\Notifications\GeneralTelegramNotification([
                 'type' => 'info',
-                'title' => '🔄 Beralih Farm',
+                'title' => 'Beralih Farm',
                 'message' => $message,
                 'farm_name' => $newFarm->name,
                 'created_by' => $user->name,
