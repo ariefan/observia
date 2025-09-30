@@ -102,12 +102,12 @@ const getPhotoUrl = (livestock: LivestockRanking) => {
     return LivestockDefault;
 };
 
-const viewLivestock = (livestock: LivestockRanking) => {
+const viewLivestock = (livestock: LivestockRanking, rank: number) => {
     selectedLivestock.value = {
         ...livestock,
-        national_rank: Math.floor(Math.random() * 1000) + 1, // Mock data
-        barn_rank: Math.floor(Math.random() * 50) + 1, // Mock data
-        total_national_livestock: 10000
+        national_rank: null,
+        barn_rank: rank,
+        total_national_livestock: topRankings.value.weight_rankings.length
     };
     showDialog.value = true;
 };
@@ -120,9 +120,9 @@ const viewWeightRanking = (weightRanking: WeightRanking) => {
         photo: weightRanking.avatar || null,
         species: 'Kambing Etawa', // Default species for weight rankings
         current_weight: weightRanking.current_weight,
-        national_rank: Math.floor(Math.random() * 1000) + 1, // Mock data
+        national_rank: null,
         barn_rank: weightRanking.rank,
-        total_national_livestock: 10000
+        total_national_livestock: props.rankings.length
     };
     showDialog.value = true;
 };
@@ -217,7 +217,7 @@ onMounted(() => {
                                         <!-- 2nd Place -->
                                         <div v-if="topWeightLivestock[1]"
                                             class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                                            @click="viewLivestock(topWeightLivestock[1])">
+                                            @click="viewLivestock(topWeightLivestock[1], 2)">
                                             <Avatar class="border-2 border-primary mr-2" shape="circle">
                                                 <AvatarImage :src="getPhotoUrl(topWeightLivestock[1])"
                                                     :alt="topWeightLivestock[1].name" />
@@ -236,7 +236,7 @@ onMounted(() => {
                                         <!-- 1st Place -->
                                         <div v-if="topWeightLivestock[0]"
                                             class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                                            @click="viewLivestock(topWeightLivestock[0])">
+                                            @click="viewLivestock(topWeightLivestock[0], 1)">
                                             <Avatar class="border-2 border-primary mr-2" shape="circle">
                                                 <AvatarImage :src="getPhotoUrl(topWeightLivestock[0])"
                                                     :alt="topWeightLivestock[0].name" />
@@ -255,7 +255,7 @@ onMounted(() => {
                                         <!-- 3rd Place -->
                                         <div v-if="topWeightLivestock[2]"
                                             class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                                            @click="viewLivestock(topWeightLivestock[2])">
+                                            @click="viewLivestock(topWeightLivestock[2], 3)">
                                             <Avatar class="border-2 border-primary mr-2" shape="circle">
                                                 <AvatarImage :src="getPhotoUrl(topWeightLivestock[2])"
                                                     :alt="topWeightLivestock[2].name" />

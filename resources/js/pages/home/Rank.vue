@@ -58,12 +58,12 @@ const getPhotoUrl = (livestock: LivestockRanking) => {
 };
 
 // Navigate to livestock detail
-const viewLivestock = (livestock: LivestockRanking) => {
+const viewLivestock = (livestock: LivestockRanking, rank: number) => {
     selectedLivestock.value = {
         ...livestock,
-        national_rank: Math.floor(Math.random() * 1000) + 1, // Mock data
-        barn_rank: Math.floor(Math.random() * 50) + 1, // Mock data
-        total_national_livestock: 10000
+        national_rank: null,
+        barn_rank: rank,
+        total_national_livestock: rankings.value.milk_rankings.length
     };
     showDialog.value = true;
 };
@@ -134,7 +134,7 @@ onMounted(() => {
                     <!-- 2nd Place -->
                     <div v-if="topMilkProducers[1]"
                         class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                        @click="viewLivestock(topMilkProducers[1])">
+                        @click="viewLivestock(topMilkProducers[1], 2)">
                         <Avatar class="border-2 border-primary" shape="circle">
                             <AvatarImage :src="getPhotoUrl(topMilkProducers[1])" :alt="topMilkProducers[1].name" />
                             <AvatarFallback>{{ topMilkProducers[1].name.charAt(0).toUpperCase() }}</AvatarFallback>
@@ -151,7 +151,7 @@ onMounted(() => {
                     <!-- 1st Place -->
                     <div v-if="topMilkProducers[0]"
                         class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                        @click="viewLivestock(topMilkProducers[0])">
+                        @click="viewLivestock(topMilkProducers[0], 1)">
                         <Avatar class="border-2 border-primary" shape="circle">
                             <AvatarImage :src="getPhotoUrl(topMilkProducers[0])" :alt="topMilkProducers[0].name" />
                             <AvatarFallback>{{ topMilkProducers[0].name.charAt(0).toUpperCase() }}</AvatarFallback>
@@ -168,7 +168,7 @@ onMounted(() => {
                     <!-- 3rd Place -->
                     <div v-if="topMilkProducers[2]"
                         class="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                        @click="viewLivestock(topMilkProducers[2])">
+                        @click="viewLivestock(topMilkProducers[2], 3)">
                         <Avatar class="border-2 border-primary" shape="circle">
                             <AvatarImage :src="getPhotoUrl(topMilkProducers[2])" :alt="topMilkProducers[2].name" />
                             <AvatarFallback>{{ topMilkProducers[2].name.charAt(0).toUpperCase() }}</AvatarFallback>
