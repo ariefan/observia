@@ -33,7 +33,7 @@ class ProduktivitasController extends Controller
                 'livestock' => function ($query) {
                     $query->with([
                         'herd:id,name',
-                        'farm:id,name,image',
+                        'farm:id,name',
                     ]);
                 }
             ])
@@ -100,7 +100,7 @@ class ProduktivitasController extends Controller
                 'livestock' => function ($query) {
                     $query->with([
                         'herd:id,name',
-                        'farm:id,name,image',
+                        'farm:id,name',
                     ]);
                 }
             ])
@@ -133,7 +133,6 @@ class ProduktivitasController extends Controller
                     'weight_unit' => 'kg',
                     'farm' => $livestock->farm ? [
                         'name' => $livestock->farm->name,
-                        'image' => $livestock->farm->image,
                     ] : null,
                 ];
             })

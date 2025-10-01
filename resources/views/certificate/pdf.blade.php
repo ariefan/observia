@@ -46,13 +46,7 @@
             width: auto;
             margin-bottom: 5px;
         }
-        .farm-name {
-            font-size: 11px;
-            font-weight: bold;
-            color: #374151;
-            max-width: 150px;
-            margin-left: auto;
-        }
+
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -71,6 +65,12 @@
         .farm-info {
             font-size: 14px;
             color: #888;
+        }
+        .farm-name-header {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 5px;
         }
         .section {
             margin-bottom: 25px;
@@ -147,25 +147,12 @@
         <div class="logo-center">
             <div class="title">STUDBOOK</div>
             <div class="subtitle">{{ $livestock->tag_id }} - {{ $livestock->name }}</div>
+            @if($farm)
+                <div class="farm-name-header">{{ $farm->name }}</div>
+            @endif
         </div>
         <div class="logo-right">
-            @if($farm)
-                @if($farm->image)
-                    @php
-                        $farmLogoPath = public_path('storage/' . $farm->image);
-                        $farmLogoBase64 = null;
-                        if (file_exists($farmLogoPath)) {
-                            $imageData = file_get_contents($farmLogoPath);
-                            $imageType = pathinfo($farmLogoPath, PATHINFO_EXTENSION);
-                            $farmLogoBase64 = 'data:image/' . $imageType . ';base64,' . base64_encode($imageData);
-                        }
-                    @endphp
-                    @if($farmLogoBase64)
-                        <img src="{{ $farmLogoBase64 }}" alt="Farm Logo" class="farm-logo"><br>
-                    @endif
-                @endif
-                <div class="farm-name">{{ $farm->name }}</div>
-            @endif
+            {{-- This space is now empty --}}
         </div>
     </div>
 

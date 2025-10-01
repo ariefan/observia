@@ -45,9 +45,10 @@
             margin-bottom: 5px;
         }
         .farm-name {
-            font-size: 11px;
+            font-size: 16px;
             font-weight: bold;
-            color: #374151;
+            color: #333;
+            margin-top: 5px;
         }
         .header {
             text-align: center;
@@ -145,6 +146,13 @@
     </style>
 </head>
 <body>
+    @php
+        $user = auth()->user();
+        $farm = null;
+        if ($user && $user->current_farm_id) {
+            $farm = \App\Models\Farm::find($user->current_farm_id);
+        }
+    @endphp
     <!-- Logo Header -->
     <div class="logo-header">
         <div class="logo-left">
@@ -163,34 +171,12 @@
         </div>
         <div class="logo-center">
             <div class="title">{{ $data['title'] }}</div>
-        </div>
-        <div class="logo-right">
-            @php
-                $user = auth()->user();
-                $farm = null;
-
-                // Try to get farm through current_farm_id relationship
-                if ($user && $user->current_farm_id) {
-                    $farm = \App\Models\Farm::find($user->current_farm_id);
-                }
-            @endphp
             @if($farm)
-                @if($farm->image)
-                    @php
-                        $farmLogoPath = public_path('storage/' . $farm->image);
-                        $farmLogoBase64 = null;
-                        if (file_exists($farmLogoPath)) {
-                            $imageData = file_get_contents($farmLogoPath);
-                            $imageType = pathinfo($farmLogoPath, PATHINFO_EXTENSION);
-                            $farmLogoBase64 = 'data:image/' . $imageType . ';base64,' . base64_encode($imageData);
-                        }
-                    @endphp
-                    @if($farmLogoBase64)
-                        <img src="{{ $farmLogoBase64 }}" alt="Farm Logo" class="farm-logo"><br>
-                    @endif
-                @endif
                 <div class="farm-name">{{ $farm->name }}</div>
             @endif
+        </div>
+        <div class="logo-right">
+            {{-- This space is now empty --}}
         </div>
     </div>
 
@@ -203,10 +189,6 @@
         <div class="info-row">
             <span class="label">Dibuat:</span>
             {{ now()->format('d M Y H:i:s') }}
-        </div>
-        <div class="info-row">
-            <span class="label">Jenis Laporan:</span>
-            {{ $report->display_name }}
         </div>
         @if($report->filters && isset($report->filters['livestock_id']))
         <div class="info-row">
@@ -299,9 +281,9 @@
                 <div class="section-title">Statistik Produksi</div>
                 <div class="info-section">
                     @php
-                        $totalVolume = $data['data']->sum('total_volume');
-                        $avgVolume = $data['data']->avg('total_volume');
-                        $maxVolume = $data['data']->max('total_volume');
+                        $totalVolume = $data['data']->sum('Volume Susu');
+                        $avgVolume = $data['data']->avg('Volume Susu');
+                        $maxVolume = $data['data']->max('Volume Susu');
                         $recordCount = count($data['data']);
                     @endphp
                     <div class="info-row">
@@ -317,8 +299,8 @@
                         {{ number_format($maxVolume, 2) }} liter
                     </div>
                     <div class="info-row">
-                        <span class="label">Jumlah Record:</span>
-                        {{ $recordCount }} hari
+                        <span class="label">Jumlah Data:</span>
+                        {{ $recordCount }}
                     </div>
                 </div>
             </div>

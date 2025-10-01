@@ -219,7 +219,7 @@ class ReportController extends Controller
 
                 return [
                     'title' => 'Ringkasan Ternak',
-                    'period' => $startDate . ' - ' . $endDate,
+                    'period' => \Carbon\Carbon::parse($startDate)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($endDate)->format('d M Y'),
                     'data' => $livestocks->map(function ($livestock, $index) {
                         return [
                             'No' => $index + 1,
@@ -243,7 +243,7 @@ class ReportController extends Controller
 
                 return [
                     'title' => 'Laporan Pemberian Pakan',
-                    'period' => $startDate . ' - ' . $endDate,
+                    'period' => \Carbon\Carbon::parse($startDate)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($endDate)->format('d M Y'),
                     'data' => $feedings->map(function ($feeding, $index) {
                         return [
                             'No' => $index + 1,
@@ -270,7 +270,7 @@ class ReportController extends Controller
 
                 return [
                     'title' => 'Laporan Produksi Susu',
-                    'period' => $startDate . ' - ' . $endDate,
+                    'period' => \Carbon\Carbon::parse($startDate)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($endDate)->format('d M Y'),
                     'data' => $milkings->map(function ($milking, $index) {
                         return [
                             'No' => $index + 1,
@@ -296,7 +296,7 @@ class ReportController extends Controller
 
                 return [
                     'title' => 'Laporan Perkembangan Bobot',
-                    'period' => $startDate . ' - ' . $endDate,
+                    'period' => \Carbon\Carbon::parse($startDate)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($endDate)->format('d M Y'),
                     'data' => $weights->map(function ($weight, $index) {
                         return [
                             'No' => $index + 1,
@@ -310,7 +310,7 @@ class ReportController extends Controller
             default:
                 return [
                     'title' => 'Laporan ' . ucfirst($type),
-                    'period' => $startDate . ' - ' . $endDate,
+                    'period' => \Carbon\Carbon::parse($startDate)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($endDate)->format('d M Y'),
                     'data' => [],
                 ];
         }
