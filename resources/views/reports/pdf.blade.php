@@ -391,7 +391,7 @@
     <div class="footer">
         <div class="footer-left">
             <!-- {{ now()->format('d M Y H:i') }} -->
-              Laporan diperbarui otomatis oleh Sistem Aifarm tanggal {{ now()->format('d/m/Y') }} jam {{ now()->format('H:i:s') }}<br>Dibuat oleh {{ auth()->user()->name ?? 'System' }}
+              Laporan diperbarui otomatis oleh Sistem Aifarm ({{ now()->format('d/m/Y') }} {{ now()->format('H:i:s') }})<br>Dibuat oleh {{ auth()->user()->name ?? 'System' }}
         </div>
         <div class="footer-right">
             Halaman <span class="pagenum"></span>
