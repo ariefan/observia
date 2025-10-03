@@ -365,8 +365,8 @@
 
     <!-- Footer -->
     <div class="footer">
-        <p>Laporan ini dibuat secara otomatis dengan aplikasi Aifarm</p>
-        <p>tanggal {{ now()->format('d M Y H:i:s') }} oleh {{ auth()->user()->name ?? 'System' }}</p>
+        <p>Laporan diperbarui otomatis oleh aplikasi Aifarm
+        tanggal {{ now()->format('d M Y') }} jam {{ now()->format('d M Y H:i:s') }} ~ Dibuat oleh {{ auth()->user()->name ?? 'System' }}</p>
     </div>
 </body>
 </html>
