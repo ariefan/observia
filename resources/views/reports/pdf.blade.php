@@ -239,7 +239,12 @@
                         $avgVolume = $data['data']->avg('Volume Susu');
                         $maxVolume = $data['data']->max('Volume Susu');
                         $recordCount = count($data['data']);
+                        $livestockCount = $data['data']->unique('ID Ternak')->count();
                     @endphp
+                    <div class="info-row">
+                        <span class="label">Jumlah Ternak:</span>
+                        {{ $livestockCount }} ekor
+                    </div>
                     <div class="info-row">
                         <span class="label">Total Produksi:</span>
                         {{ number_format($totalVolume, 2) }} liter
@@ -305,7 +310,21 @@
                         @endphp
                         <tr>
                             @foreach($headers as $header)
-                                <td>{{ $itemArray[$header] ?? '-' }}</td>
+                                <td>
+                                    @if ($header === 'Tanggal')
+                                        {{ \Carbon\Carbon::parse($itemArray[$header])->format('d M Y') }}
+                                    @elseif ($header === 'Sesi')
+                                        @if ($itemArray[$header] === 'morning')
+                                            Pagi
+                                        @elseif ($itemArray[$header] === 'afternoon')
+                                            Sore
+                                        @else
+                                            {{ $itemArray[$header] }}
+                                        @endif
+                                    @else
+                                        {{ $itemArray[$header] ?? '-' }}
+                                    @endif
+                                </td>
                             @endforeach
                         </tr>
                     @endforeach
