@@ -202,12 +202,85 @@
             {{ count($data['data']) }}
         </div>
         @endif
+
+        <!-- Report Type Specific Content -->
+        @switch($report->type)
+            @case('livestock-summary')
+                @if(!empty($data['data']) && count($data['data']) > 0)
+                    @php
+                        $totalAnimals = count($data['data']);
+                        $maleCount = $data['data']->where('gender', 'male')->count();
+                        $femaleCount = $data['data']->where('gender', 'female')->count();
+                        $activeCount = $data['data']->where('status', 'active')->count();
+                    @endphp
+                    <div class="info-row">
+                        <span class="label">Total Ternak:</span>
+                        {{ $totalAnimals }} ekor
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Jantan:</span>
+                        {{ $maleCount }} ekor ({{ $totalAnimals > 0 ? round($maleCount/$totalAnimals*100, 1) : 0 }}%)
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Betina:</span>
+                        {{ $femaleCount }} ekor ({{ $totalAnimals > 0 ? round($femaleCount/$totalAnimals*100, 1) : 0 }}%)
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Status Aktif:</span>
+                        {{ $activeCount }} ekor ({{ $totalAnimals > 0 ? round($activeCount/$totalAnimals*100, 1) : 0 }}%)
+                    </div>
+                @endif
+                @break
+
+            @case('milking-report')
+                @if(!empty($data['data']) && count($data['data']) > 0)
+                    @php
+                        $totalVolume = $data['data']->sum('Volume Susu');
+                        $avgVolume = $data['data']->avg('Volume Susu');
+                        $maxVolume = $data['data']->max('Volume Susu');
+                        $recordCount = count($data['data']);
+                    @endphp
+                    <div class="info-row">
+                        <span class="label">Total Produksi:</span>
+                        {{ number_format($totalVolume, 2) }} liter
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Rata-rata Harian:</span>
+                        {{ number_format($avgVolume, 2) }} liter
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Produksi Tertinggi:</span>
+                        {{ number_format($maxVolume, 2) }} liter
+                    </div>
+                @endif
+                @break
+
+            @case('feeding-report')
+                @if(!empty($data['data']) && count($data['data']) > 0)
+                    @php
+                        $totalFeedings = count($data['data']);
+                        $uniqueFeeds = $data['data']->unique('feed')->count();
+                        $totalQuantity = $data['data']->sum('quantity');
+                    @endphp
+                    <div class="info-row">
+                        <span class="label">Total Pemberian:</span>
+                        {{ $totalFeedings }} kali
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Jenis Pakan:</span>
+                        {{ $uniqueFeeds }} jenis
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Total Kuantitas:</span>
+                        {{ number_format($totalQuantity, 2) }}
+                    </div>
+                @endif
+            @break
+        @endswitch
     </div>
 
     <!-- Main Content -->
     <div class="content-section">
-        <div class="section-title">Data {{ $data['title'] }}</div>
-        
         @if(empty($data['data']) || count($data['data']) == 0)
             <div class="no-data">
                 Tidak ada data untuk periode {{ $data['period'] }}
@@ -241,103 +314,9 @@
         @endif
     </div>
 
-    <!-- Report Type Specific Content -->
-    @switch($report->type)
-        @case('livestock-summary')
-            @if(!empty($data['data']) && count($data['data']) > 0)
-            <div class="content-section">
-                <div class="section-title">Ringkasan Statistik</div>
-                <div class="info-section">
-                    @php
-                        $totalAnimals = count($data['data']);
-                        $maleCount = $data['data']->where('gender', 'male')->count();
-                        $femaleCount = $data['data']->where('gender', 'female')->count();
-                        $activeCount = $data['data']->where('status', 'active')->count();
-                    @endphp
-                    <div class="info-row">
-                        <span class="label">Total Ternak:</span>
-                        {{ $totalAnimals }} ekor
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Jantan:</span>
-                        {{ $maleCount }} ekor ({{ $totalAnimals > 0 ? round($maleCount/$totalAnimals*100, 1) : 0 }}%)
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Betina:</span>
-                        {{ $femaleCount }} ekor ({{ $totalAnimals > 0 ? round($femaleCount/$totalAnimals*100, 1) : 0 }}%)
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Status Aktif:</span>
-                        {{ $activeCount }} ekor ({{ $totalAnimals > 0 ? round($activeCount/$totalAnimals*100, 1) : 0 }}%)
-                    </div>
-                </div>
-            </div>
-            @endif
-            @break
-
-        @case('milking-report')
-            @if(!empty($data['data']) && count($data['data']) > 0)
-            <div class="content-section">
-                <div class="section-title">Statistik Produksi</div>
-                <div class="info-section">
-                    @php
-                        $totalVolume = $data['data']->sum('Volume Susu');
-                        $avgVolume = $data['data']->avg('Volume Susu');
-                        $maxVolume = $data['data']->max('Volume Susu');
-                        $recordCount = count($data['data']);
-                    @endphp
-                    <div class="info-row">
-                        <span class="label">Total Produksi:</span>
-                        {{ number_format($totalVolume, 2) }} liter
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Rata-rata Harian:</span>
-                        {{ number_format($avgVolume, 2) }} liter
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Produksi Tertinggi:</span>
-                        {{ number_format($maxVolume, 2) }} liter
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Jumlah Data:</span>
-                        {{ $recordCount }}
-                    </div>
-                </div>
-            </div>
-            @endif
-            @break
-
-        @case('feeding-report')
-            @if(!empty($data['data']) && count($data['data']) > 0)
-            <div class="content-section">
-                <div class="section-title">Ringkasan Pemberian Pakan</div>
-                <div class="info-section">
-                    @php
-                        $totalFeedings = count($data['data']);
-                        $uniqueFeeds = $data['data']->unique('feed')->count();
-                        $totalQuantity = $data['data']->sum('quantity');
-                    @endphp
-                    <div class="info-row">
-                        <span class="label">Total Pemberian:</span>
-                        {{ $totalFeedings }} kali
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Jenis Pakan:</span>
-                        {{ $uniqueFeeds }} jenis
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Total Kuantitas:</span>
-                        {{ number_format($totalQuantity, 2) }}
-                    </div>
-                </div>
-            </div>
-            @endif
-            @break
-    @endswitch
-
     <!-- Footer -->
     <div class="footer">
-        <p>Laporan ini dibuat secara otomatis oleh Sistem Manajemen Peternakan</p>
+        <p>Laporan ini dibuat secara otomatis oleh PT Aifarm Teknologi Agrikultur</p>
         <p>Dibuat pada {{ now()->format('d M Y H:i:s') }} oleh {{ auth()->user()->name ?? 'System' }}</p>
     </div>
 </body>
