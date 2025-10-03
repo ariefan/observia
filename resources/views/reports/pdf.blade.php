@@ -120,12 +120,30 @@
             padding: 40px;
         }
         .footer {
-            margin-top: 40px;
-            padding-top: 20px;
+            position: fixed;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 40px;
             border-top: 1px solid #e2e8f0;
-            text-align: center;
             font-size: 10px;
             color: #6b7280;
+            display: table;
+            width: 100%;
+            padding: 10px 20px;
+        }
+        .footer-left {
+            display: table-cell;
+            text-align: left;
+            width: 50%;
+        }
+        .footer-right {
+            display: table-cell;
+            text-align: right;
+            width: 50%;
+        }
+        .pagenum:before {
+            content: counter(page);
         }
         .summary-stats {
             display: flex;
@@ -188,20 +206,10 @@
 
     <!-- Report Information -->
     <div class="info-section">
-        <div class="info-row">
-            <span class="label">Dibuat:</span>
-            {{ now()->format('d M Y H:i:s') }}
-        </div>
         @if($report->filters && isset($report->filters['livestock_id']))
         <div class="info-row">
-            <span class="label">Filter Ternak:</span>
+            <span class="label">Filter Ternak</span>
             ID {{ $report->filters['livestock_id'] }}
-        </div>
-        @endif
-        @if(!empty($data['data']) && count($data['data']) > 0)
-        <div class="info-row">
-            <span class="label">Total data:</span>
-            {{ count($data['data']) }}
         </div>
         @endif
 
@@ -216,19 +224,19 @@
                         $activeCount = $data['data']->where('Status', 'active')->count();
                     @endphp
                     <div class="info-row">
-                        <span class="label">Total Ternak:</span>
+                        <span class="label">Total Ternak</span>
                         {{ $totalAnimals }} ekor
                     </div>
                     <div class="info-row">
-                        <span class="label">Jantan:</span>
+                        <span class="label">Jantan</span>
                         {{ $maleCount }} ekor ({{ $totalAnimals > 0 ? round($maleCount/$totalAnimals*100, 1) : 0 }}%)
                     </div>
                     <div class="info-row">
-                        <span class="label">Betina:</span>
+                        <span class="label">Betina</span>
                         {{ $femaleCount }} ekor ({{ $totalAnimals > 0 ? round($femaleCount/$totalAnimals*100, 1) : 0 }}%)
                     </div>
                     <div class="info-row">
-                        <span class="label">Status Aktif:</span>
+                        <span class="label">Status Aktif</span>
                         {{ $activeCount }} ekor ({{ $totalAnimals > 0 ? round($activeCount/$totalAnimals*100, 1) : 0 }}%)
                     </div>
                 @endif
@@ -264,27 +272,27 @@
                             ->max();
                     @endphp
                     <div class="info-row">
-                        <span class="label">Jumlah Ternak:</span>
+                        <span class="label">Jumlah Ternak</span>
                         {{ $livestockCount }} ekor
                     </div>
                     <div class="info-row">
-                        <span class="label">Jumlah Hari:</span>
+                        <span class="label">Jumlah Hari</span>
                         {{ $uniqueDays }} hari
                     </div>
                     <div class="info-row">
-                        <span class="label">Total Produksi:</span>
+                        <span class="label">Total Produksi</span>
                         {{ number_format($totalVolume, 2) }} liter
                     </div>
                     <div class="info-row">
-                        <span class="label">Rata-rata Harian:</span>
+                        <span class="label">Rata-rata Harian</span>
                         {{ number_format($avgDailyVolume, 2) }} liter
                     </div>
                     <div class="info-row">
-                        <span class="label">Rata-rata Harian Ternak:</span>
+                        <span class="label">Rata-rata Harian Ternak</span>
                         {{ number_format($avgDailyPerLivestock, 2) }} liter
                     </div>
                     <div class="info-row">
-                        <span class="label">Produksi Ternak Harian Tertinggi:</span>
+                        <span class="label">Produksi Ternak Harian Tertinggi</span>
                         {{ number_format($maxDailyPerLivestock ?? 0, 2) }} liter
                     </div>
                 @endif
@@ -298,15 +306,15 @@
                         $totalQuantity = $data['data']->sum('Jumlah');
                     @endphp
                     <div class="info-row">
-                        <span class="label">Total Pemberian:</span>
+                        <span class="label">Total Pemberian</span>
                         {{ $totalFeedings }} kali
                     </div>
                     <div class="info-row">
-                        <span class="label">Jenis Pakan:</span>
+                        <span class="label">Jenis Pakan</span>
                         {{ $uniqueFeeds }} jenis
                     </div>
                     <div class="info-row">
-                        <span class="label">Total Kuantitas:</span>
+                        <span class="label">Total Kuantitas</span>
                         {{ number_format($totalQuantity, 2) }}
                     </div>
                 @endif
@@ -365,8 +373,12 @@
 
     <!-- Footer -->
     <div class="footer">
-        <p>Laporan diperbarui otomatis oleh aplikasi Aifarm
-        tanggal {{ now()->format('d M Y') }} jam {{ now()->format('d M Y H:i:s') }} ~ Dibuat oleh {{ auth()->user()->name ?? 'System' }}</p>
+        <div class="footer-left">
+            Dibuat: {{ now()->format('d M Y H:i') }} oleh {{ auth()->user()->name ?? 'System' }}
+        </div>
+        <div class="footer-right">
+            Halaman <span class="pagenum"></span>
+        </div>
     </div>
 </body>
 </html>
