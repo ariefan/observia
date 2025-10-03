@@ -209,9 +209,9 @@
                 @if(!empty($data['data']) && count($data['data']) > 0)
                     @php
                         $totalAnimals = count($data['data']);
-                        $maleCount = $data['data']->where('gender', 'male')->count();
-                        $femaleCount = $data['data']->where('gender', 'female')->count();
-                        $activeCount = $data['data']->where('status', 'active')->count();
+                        $maleCount = $data['data']->where('Jenis Kelamin', 'male')->count();
+                        $femaleCount = $data['data']->where('Jenis Kelamin', 'female')->count();
+                        $activeCount = $data['data']->where('Status', 'active')->count();
                     @endphp
                     <div class="info-row">
                         <span class="label">Total Ternak:</span>
@@ -240,15 +240,17 @@
                         $recordCount = count($data['data']);
                         $livestockCount = $data['data']->unique('Ternak')->count();
 
-                        // Calculate average per day (not per session)
-                        $dailyTotals = $data['data']->groupBy('Tanggal')->map(function($records) {
-                            return $records->sum('Volume Susu');
-                        });
-                        $avgDailyVolume = $dailyTotals->avg();
+                        // Calculate number of days and average per day
+                        $uniqueDays = $data['data']->unique('Tanggal')->count();
+                        $avgDailyVolume = $uniqueDays > 0 ? $totalVolume / $uniqueDays : 0;
                     @endphp
                     <div class="info-row">
                         <span class="label">Jumlah Ternak:</span>
                         {{ $livestockCount }} ekor
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Jumlah Hari:</span>
+                        {{ $uniqueDays }} hari
                     </div>
                     <div class="info-row">
                         <span class="label">Total Produksi:</span>
@@ -269,8 +271,8 @@
                 @if(!empty($data['data']) && count($data['data']) > 0)
                     @php
                         $totalFeedings = count($data['data']);
-                        $uniqueFeeds = $data['data']->unique('feed')->count();
-                        $totalQuantity = $data['data']->sum('quantity');
+                        $uniqueFeeds = $data['data']->unique('Ransum')->count();
+                        $totalQuantity = $data['data']->sum('Jumlah');
                     @endphp
                     <div class="info-row">
                         <span class="label">Total Pemberian:</span>
