@@ -121,26 +121,37 @@
         }
         .footer {
             position: fixed;
-            bottom: -10px;
+            bottom: -40px;
             left: 0;
             right: 0;
-            height: 40px;
+            height: 50px;
             border-top: 1px solid #e2e8f0;
             font-size: 10px;
             color: #6b7280;
             display: table;
             width: 100%;
-            padding: 10px 20px;
+            padding: 15px 0;
         }
         .footer-left {
             display: table-cell;
             text-align: left;
             width: 50%;
+            vertical-align: middle;
+            padding-left: 0px;
         }
         .footer-right {
             display: table-cell;
             text-align: right;
             width: 50%;
+            vertical-align: middle;
+            padding-right: 0px;
+        }
+        .report-end {
+            margin-top: 40px;
+            padding: 20px;
+            text-align: center;
+            font-size: 10px;
+            color: #6b7280;
         }
         .pagenum:before {
             content: counter(page);
@@ -371,10 +382,15 @@
         @endif
     </div>
 
+    <!-- Report End Info -->
+    <div class="report-end">
+        Laporan diperbarui otomatis oleh Sistem Aifarm tanggal {{ now()->format('d/m/Y') }} jam {{ now()->format('H:i:s') }} ~ Dibuat oleh {{ auth()->user()->name ?? 'System' }}
+    </div>
+
     <!-- Footer -->
     <div class="footer">
         <div class="footer-left">
-            Dibuat: {{ now()->format('d M Y H:i') }} oleh {{ auth()->user()->name ?? 'System' }}
+            {{ now()->format('d M Y H:i') }}
         </div>
         <div class="footer-right">
             Halaman <span class="pagenum"></span>
