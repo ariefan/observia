@@ -266,6 +266,8 @@ class ReportController extends Controller
                         return $query->where('livestock_id', $livestockId);
                     })
                     ->with('livestock')
+                    ->orderBy('date', 'asc')
+                    ->orderBy('livestock_id', 'asc')
                     ->get();
 
                 return [

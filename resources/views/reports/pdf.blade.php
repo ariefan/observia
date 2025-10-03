@@ -45,9 +45,14 @@
             margin-bottom: 5px;
         }
         .farm-name {
-            font-size: 16px;
+            font-size: 20px;
             font-weight: bold;
             color: #333;
+            margin-top: 5px;
+        }
+        .period {
+            font-size: 12px;
+            color: #666;
             margin-top: 5px;
         }
         .header {
@@ -76,7 +81,7 @@
         .label {
             font-weight: bold;
             display: inline-block;
-            width: 120px;
+            width: 220px;
         }
         .content-section {
             margin-bottom: 20px;
@@ -173,6 +178,7 @@
             <div class="title">{{ $data['title'] }}</div>
             @if($farm)
                 <div class="farm-name">{{ $farm->name }}</div>
+                <div class="period">{{ $data['period'] }}</div>
             @endif
         </div>
         <div class="logo-right">
@@ -182,10 +188,6 @@
 
     <!-- Report Information -->
     <div class="info-section">
-        <div class="info-row">
-            <span class="label">Periode:</span>
-            {{ $data['period'] }}
-        </div>
         <div class="info-row">
             <span class="label">Dibuat:</span>
             {{ now()->format('d M Y H:i:s') }}
@@ -245,6 +247,11 @@
                         // Calculate average per day: total volume / number of days
                         $avgDailyVolume = $uniqueDays > 0 ? $totalVolume / $uniqueDays : 0;
 
+                        // Calculate average daily production per livestock
+                        $avgDailyPerLivestock = ($uniqueDays > 0 && $livestockCount > 0)
+                            ? $totalVolume / ($uniqueDays * $livestockCount)
+                            : 0;
+
                         // Calculate highest daily production per livestock
                         // Group by livestock and date, sum the volume, then get the maximum
                         $maxDailyPerLivestock = $data['data']
@@ -271,6 +278,10 @@
                     <div class="info-row">
                         <span class="label">Rata-rata Harian:</span>
                         {{ number_format($avgDailyVolume, 2) }} liter
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Rata-rata Harian Ternak:</span>
+                        {{ number_format($avgDailyPerLivestock, 2) }} liter
                     </div>
                     <div class="info-row">
                         <span class="label">Produksi Ternak Harian Tertinggi:</span>
@@ -354,8 +365,8 @@
 
     <!-- Footer -->
     <div class="footer">
-        <p>Laporan ini dibuat secara otomatis oleh PT Aifarm Teknologi Agrikultur</p>
-        <p>Dibuat pada {{ now()->format('d M Y H:i:s') }} oleh {{ auth()->user()->name ?? 'System' }}</p>
+        <p>Laporan ini dibuat secara otomatis dengan aplikasi Aifarm</p>
+        <p>tanggal {{ now()->format('d M Y H:i:s') }} oleh {{ auth()->user()->name ?? 'System' }}</p>
     </div>
 </body>
 </html>
