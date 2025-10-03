@@ -236,13 +236,25 @@
                 @if(!empty($data['data']) && count($data['data']) > 0)
                     @php
                         $totalVolume = $data['data']->sum('Volume Susu');
-                        $maxVolume = $data['data']->max('Volume Susu');
                         $recordCount = count($data['data']);
                         $livestockCount = $data['data']->unique('Ternak')->count();
 
-                        // Calculate number of days and average per day
+                        // Calculate number of days
                         $uniqueDays = $data['data']->unique('Tanggal')->count();
+
+                        // Calculate average per day: total volume / number of days
                         $avgDailyVolume = $uniqueDays > 0 ? $totalVolume / $uniqueDays : 0;
+
+                        // Calculate highest daily production per livestock
+                        // Group by livestock and date, sum the volume, then get the maximum
+                        $maxDailyPerLivestock = $data['data']
+                            ->groupBy(function($item) {
+                                return $item['Ternak'] . '|' . $item['Tanggal'];
+                            })
+                            ->map(function($group) {
+                                return $group->sum('Volume Susu');
+                            })
+                            ->max();
                     @endphp
                     <div class="info-row">
                         <span class="label">Jumlah Ternak:</span>
@@ -261,8 +273,8 @@
                         {{ number_format($avgDailyVolume, 2) }} liter
                     </div>
                     <div class="info-row">
-                        <span class="label">Produksi Tertinggi:</span>
-                        {{ number_format($maxVolume, 2) }} liter
+                        <span class="label">Produksi Ternak Harian Tertinggi:</span>
+                        {{ number_format($maxDailyPerLivestock ?? 0, 2) }} liter
                     </div>
                 @endif
                 @break
