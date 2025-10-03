@@ -296,14 +296,14 @@
                     </div>
                     <div class="info-row">
                         <span class="label">Rata-rata Harian</span>
-                        {{ number_format($avgDailyVolume, 2) }} liter
+                        {{ number_format($avgDailyVolume, 2) }} liter/hari
                     </div>
                     <div class="info-row">
                         <span class="label">Rata-rata Harian Ternak</span>
-                        {{ number_format($avgDailyPerLivestock, 2) }} liter
+                        {{ number_format($avgDailyPerLivestock, 2) }} liter/hari
                     </div>
                     <div class="info-row">
-                        <span class="label">Produksi Ternak Harian Tertinggi</span>
+                        <span class="label">Produksi Susu Harian Tertinggi</span>
                         {{ number_format($maxDailyPerLivestock ?? 0, 2) }} liter
                     </div>
                 @endif
@@ -384,13 +384,14 @@
 
     <!-- Report End Info -->
     <div class="report-end">
-        Laporan diperbarui otomatis oleh Sistem Aifarm tanggal {{ now()->format('d/m/Y') }} jam {{ now()->format('H:i:s') }} ~ Dibuat oleh {{ auth()->user()->name ?? 'System' }}
+        <!-- Laporan diperbarui otomatis oleh Sistem Aifarm tanggal {{ now()->format('d/m/Y') }} jam {{ now()->format('H:i:s') }} ~ Dibuat oleh {{ auth()->user()->name ?? 'System' }} -->
     </div>
 
     <!-- Footer -->
     <div class="footer">
         <div class="footer-left">
-            {{ now()->format('d M Y H:i') }}
+            <!-- {{ now()->format('d M Y H:i') }} -->
+              Laporan diperbarui otomatis oleh Sistem Aifarm tanggal {{ now()->format('d/m/Y') }} jam {{ now()->format('H:i:s') }} ~ Dibuat oleh {{ auth()->user()->name ?? 'System' }}
         </div>
         <div class="footer-right">
             Halaman <span class="pagenum"></span>
