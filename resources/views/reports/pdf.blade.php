@@ -236,10 +236,15 @@
                 @if(!empty($data['data']) && count($data['data']) > 0)
                     @php
                         $totalVolume = $data['data']->sum('Volume Susu');
-                        $avgVolume = $data['data']->avg('Volume Susu');
                         $maxVolume = $data['data']->max('Volume Susu');
                         $recordCount = count($data['data']);
-                        $livestockCount = $data['data']->unique('ID Ternak')->count();
+                        $livestockCount = $data['data']->unique('Ternak')->count();
+
+                        // Calculate average per day (not per session)
+                        $dailyTotals = $data['data']->groupBy('Tanggal')->map(function($records) {
+                            return $records->sum('Volume Susu');
+                        });
+                        $avgDailyVolume = $dailyTotals->avg();
                     @endphp
                     <div class="info-row">
                         <span class="label">Jumlah Ternak:</span>
@@ -251,7 +256,7 @@
                     </div>
                     <div class="info-row">
                         <span class="label">Rata-rata Harian:</span>
-                        {{ number_format($avgVolume, 2) }} liter
+                        {{ number_format($avgDailyVolume, 2) }} liter
                     </div>
                     <div class="info-row">
                         <span class="label">Produksi Tertinggi:</span>
