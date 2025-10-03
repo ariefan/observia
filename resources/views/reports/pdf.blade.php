@@ -135,14 +135,14 @@
         .footer-left {
             display: table-cell;
             text-align: left;
-            width: 50%;
+            width: 65%;
             vertical-align: middle;
             padding-left: 0px;
         }
         .footer-right {
             display: table-cell;
             text-align: right;
-            width: 50%;
+            width: 35%;
             vertical-align: middle;
             padding-right: 0px;
         }
@@ -391,7 +391,7 @@
     <div class="footer">
         <div class="footer-left">
             <!-- {{ now()->format('d M Y H:i') }} -->
-              Laporan diperbarui otomatis oleh Sistem Aifarm tanggal {{ now()->format('d/m/Y') }} jam {{ now()->format('H:i:s') }} ~ Dibuat oleh {{ auth()->user()->name ?? 'System' }}
+              Laporan diperbarui otomatis oleh Sistem Aifarm tanggal {{ now()->format('d/m/Y') }} jam {{ now()->format('H:i:s') }}<br>Dibuat oleh {{ auth()->user()->name ?? 'System' }}
         </div>
         <div class="footer-right">
             Halaman <span class="pagenum"></span>
