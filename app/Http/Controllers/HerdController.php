@@ -105,8 +105,8 @@ class HerdController extends Controller
             ->get();
 
         return response()->json($herds);
-    }    
-    
+    }
+
     public function feeding()
     {
         return Inertia::render('herds/Feeding', [
@@ -130,17 +130,17 @@ class HerdController extends Controller
         $herd = Herd::find($validated['herd_id']);
         $ration = Ration::with('rationItems')->find($validated['ration_id']);
 
-        // Check if feeding already exists for this herd, date, and session
-        $existingFeeding = $herd->feedings()
-            ->where('date', $validated['date'])
-            ->where('session', $validated['session'])
-            ->first();
+        // // Check if feeding already exists for this herd, date, and session
+        // $existingFeeding = $herd->feedings()
+        //     ->where('date', $validated['date'])
+        //     ->where('session', $validated['session'])
+        //     ->first();
 
-        if ($existingFeeding) {
-            return back()->withErrors([
-                'session' => 'Data pakan untuk sesi ' . $validated['session'] . ' pada tanggal ini sudah ada. Setiap sesi hanya boleh dilakukan sekali per hari.'
-            ]);
-        }
+        // if ($existingFeeding) {
+        //     return back()->withErrors([
+        //         'session' => 'Data pakan untuk sesi ' . $validated['session'] . ' pada tanggal ini sudah ada. Setiap sesi hanya boleh dilakukan sekali per hari.'
+        //     ]);
+        // }
 
         // Check if ration has sufficient quantity
         $totalAvailableQuantity = $ration->rationItems->sum('quantity');
@@ -174,7 +174,7 @@ class HerdController extends Controller
     private function deductRationQuantity($ration, $feedingQuantity)
     {
         $totalRationQuantity = $ration->rationItems->sum('quantity');
-        
+
         if ($totalRationQuantity <= 0) {
             return; // Prevent division by zero
         }

@@ -137,15 +137,16 @@ const dateDisplayText = computed(() => {
     <Head title="Dashboard" />
 
     <AppLayout>
-        <div class="w-full max-w-7xl mx-auto flex h-full flex-1 flex-col gap-4 p-2 md:p-4 overflow-x-hidden">
-            <div class="min-h-screen pb-20 md:pb-0 w-full">
-                <Card class="bg-primary text-white">
-                    <CardHeader class="pt-3 pb-2 px-3 md:pt-4 md:px-6">
-                        <CardTitle class="flex justify-between items-center">
-                            <div class="text-base md:text-lg lg:text-xl">
+        <main
+            class="mx-auto flex min-h-full w-full max-w-7xl flex-1 flex-col gap-4 overflow-x-hidden p-4 pb-24 sm:pb-12 lg:pb-8">
+                <Card class="bg-primary text-white shadow-lg">
+                    <CardHeader class="space-y-3 px-3 pt-4 pb-2 sm:px-6 sm:pb-3">
+                        <CardTitle class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="text-base font-semibold md:text-lg lg:text-xl">
                                 Hi, {{ auth.user.name }}
                             </div>
-                            <div class="flex items-center gap-3 md:gap-4">
+                            <div
+                                class="flex w-full items-center justify-between gap-3 md:gap-4 sm:w-auto sm:justify-end">
                                 <div class="text-xs md:text-sm lg:text-base xl:text-lg">
                                     <RealtimeClock class="text-white" />
                                 </div>
@@ -153,18 +154,18 @@ const dateDisplayText = computed(() => {
                         </CardTitle>
                     </CardHeader>
 
-                    <CardContent class="px-3 md:px-6">
+                    <CardContent class="space-y-4 px-3 pb-4 sm:px-6">
                         <!-- Notification Banner -->
                         <div
-                            class="flex items-center space-x-2 md:space-x-4 bg-teal-800 rounded-xl p-2 md:p-3 mb-3 md:mb-4">
-                            <div class="text-lg md:text-xl">{{ props.notification?.emoji || '😊' }}</div>
-                            <p class="text-sm md:text-base">
+                            class="flex flex-col gap-2 rounded-xl bg-teal-800 p-3 text-left sm:flex-row sm:items-center sm:gap-4 md:p-4">
+                            <div class="text-xl md:text-2xl">{{ props.notification?.emoji || '😊' }}</div>
+                            <p class="text-sm leading-relaxed md:text-base">
                                 {{ props.notification?.message || 'Selamat datang di dashboard peternakan Anda!' }}
                             </p>
                         </div>
 
                         <!-- Farm Invitation Alerts -->
-                        <div v-if="props.farmInvites && props.farmInvites.length > 0" class="space-y-3 mb-4">
+                        <div v-if="props.farmInvites && props.farmInvites.length > 0" class="space-y-3">
                             <Alert v-for="invite in props.farmInvites" :key="invite.id" variant="info"
                                 class="bg-teal-50 dark:bg-teal-900/20">
                                 <AlertTitle class="text-teal-800 dark:text-teal-200">
@@ -176,12 +177,12 @@ const dateDisplayText = computed(() => {
                                         }}</strong>
                                         sebagai <strong>{{ invite.role }}</strong>.
                                     </p>
-                                    <div class="flex gap-2">
-                                        <Button @click="acceptInvite(invite.id)" size="sm">
+                                    <div class="flex flex-col gap-2 sm:flex-row sm:gap-3">
+                                        <Button @click="acceptInvite(invite.id)" size="sm" class="w-full sm:w-auto">
                                             Terima
                                         </Button>
                                         <Button @click="rejectInvite(invite.id)" size="sm" variant="outline"
-                                            class="text-red-600 border-red-300 hover:bg-red-50">
+                                            class="w-full sm:w-auto border-red-300 text-red-600 hover:bg-red-50">
                                             Tolak
                                         </Button>
                                     </div>
@@ -190,10 +191,11 @@ const dateDisplayText = computed(() => {
                         </div>
 
                         <!-- Date/Month Selection -->
-                        <div class="mb-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                            <div class="flex items-center gap-2">
+                        <div class="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                            <div class="flex w-full items-center gap-2 sm:w-auto">
                                 <Select v-model="viewType">
-                                    <SelectTrigger class="w-[140px] bg-white/90 dark:bg-zinc-800 text-gray-800 dark:text-white border-white/30 dark:border-zinc-700">
+                                    <SelectTrigger
+                                        class="w-full border-white/30 bg-white/90 text-gray-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white sm:w-[160px]">
                                         <SelectValue placeholder="Select view" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -203,51 +205,54 @@ const dateDisplayText = computed(() => {
                                 </Select>
                             </div>
 
-                            <div v-if="viewType === 'date'" class="flex items-center gap-2">
+                            <div v-if="viewType === 'date'" class="flex w-full items-center gap-2 sm:w-auto">
                                 <Input
                                     type="date"
                                     v-model="selectedDate"
                                     @change="fetchStatsForDate"
-                                    class="bg-white/90 dark:bg-zinc-800 text-gray-800 dark:text-white border-white/30 dark:border-zinc-700"
+                                    class="w-full border-white/30 bg-white/90 text-gray-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                                 />
                             </div>
 
-                            <div v-if="viewType === 'month'" class="flex items-center gap-2">
+                            <div v-if="viewType === 'month'" class="flex w-full items-center gap-2 sm:w-auto">
                                 <Input
                                     type="month"
                                     v-model="selectedMonth"
                                     @change="fetchStatsForMonth"
-                                    class="bg-white/90 dark:bg-zinc-800 text-gray-800 dark:text-white border-white/30 dark:border-zinc-700"
+                                    class="w-full border-white/30 bg-white/90 text-gray-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                                 />
                             </div>
                         </div>
 
                         <!-- Goat and Milk Stats -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 w-full">
+                        <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 md:gap-4">
                             <!-- Card 1: FCR -->
                             <Card class="rounded-xl md:rounded-2xl">
                                 <CardHeader
-                                    class="bg-orange-500 dark:bg-orange-200 text-white dark:text-black rounded-t-xl px-3 py-2 md:px-4">
-                                    <CardTitle class="text-sm md:text-base font-medium">Feed Cost Ratio Seluruh Populasi
-                                        {{ dateDisplayText }}:</CardTitle>
+                                    class="rounded-t-xl bg-orange-500 px-3 py-2 text-white dark:bg-orange-200 dark:text-black md:px-4">
+                                    <CardTitle class="text-sm font-medium md:text-base">
+                                        Feed Cost Ratio Seluruh Populasi {{ dateDisplayText }}:
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent
-                                    class="bg-white dark:bg-zinc-800 dark:text-white text-orange-800 text-center py-4 md:py-6 rounded-b-xl">
-                                    <div class="text-4xl md:text-6xl font-bold mb-2">
+                                    class="rounded-b-xl bg-white py-4 text-center text-orange-800 dark:bg-zinc-800 dark:text-white md:py-6">
+                                    <div class="mb-2 text-3xl font-bold md:text-5xl">
                                         {{ props.todayFCR || '-' }}
                                     </div>
-                                    <div class="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                                    <div class="text-xs text-gray-600 dark:text-gray-300 md:text-sm">
                                         FCR di Peternakanmu {{ dateDisplayText }}
                                         <span v-if="props.todayFCR && props.yesterdayFCR"
                                             :class="props.todayFCR < props.yesterdayFCR ? 'text-green-600' : 'text-red-600'">
                                             {{ props.todayFCR < props.yesterdayFCR ? 'turun' : 'naik' }} dari hari
-                                                kemarin ({{ props.yesterdayFCR }}) </span>
-                                                <span v-else-if="props.yesterdayFCR">
-                                                    dari hari kemarin ({{ props.yesterdayFCR }})
-                                                </span>
-                                                <span v-else>
-                                                    -
-                                                </span>
+                                            kemarin
+                                            ({{ props.yesterdayFCR }})
+                                        </span>
+                                        <span v-else-if="props.yesterdayFCR">
+                                            dari hari kemarin ({{ props.yesterdayFCR }})
+                                        </span>
+                                        <span v-else>
+                                            -
+                                        </span>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -255,22 +260,25 @@ const dateDisplayText = computed(() => {
                             <!-- Card 2: Milk Production -->
                             <Card class="rounded-xl md:rounded-2xl">
                                 <CardHeader
-                                    class="bg-cyan-500 dark:bg-cyan-200 text-white dark:text-black rounded-t-xl px-3 py-2 md:px-4">
-                                    <CardTitle class="text-sm md:text-base font-medium">Produksi Susu Seluruh Populasi
-                                        {{ dateDisplayText }}:</CardTitle>
+                                    class="rounded-t-xl bg-cyan-500 px-3 py-2 text-white dark:bg-cyan-200 dark:text-black md:px-4">
+                                    <CardTitle class="text-sm font-medium md:text-base">
+                                        Produksi Susu Seluruh Populasi {{ dateDisplayText }}:
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent
-                                    class="bg-white dark:bg-zinc-800 dark:text-white text-cyan-800 text-center py-4 md:py-6 rounded-b-xl">
-                                    <div class="text-4xl md:text-6xl font-bold mb-2">
-                                        {{ props.todayMilkProduction || '-' }} <span v-if="props.todayMilkProduction"
-                                            class="text-lg font-normal">Liter</span>
+                                    class="rounded-b-xl bg-white py-4 text-center text-cyan-800 dark:bg-zinc-800 dark:text-white md:py-6">
+                                    <div class="mb-2 text-3xl font-bold md:text-5xl">
+                                        {{ props.todayMilkProduction || '-' }}
+                                        <span v-if="props.todayMilkProduction" class="text-base font-normal md:text-lg">
+                                            Liter
+                                        </span>
                                     </div>
-                                    <div class="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                                    <div class="text-xs text-gray-600 dark:text-gray-300 md:text-sm">
                                         Produksi susu seluruh ternakmu {{ dateDisplayText }}:<br>
                                         <span v-if="props.todayMilkProduction && props.yesterdayMilkProduction"
                                             :class="props.todayMilkProduction > props.yesterdayMilkProduction ? 'text-green-600' : 'text-red-600'">
                                             {{ Math.round(((props.todayMilkProduction - props.yesterdayMilkProduction) /
-                                            props.yesterdayMilkProduction) * 100) }}%
+                                                props.yesterdayMilkProduction) * 100) }}%
                                             {{ props.todayMilkProduction > props.yesterdayMilkProduction ? '↑' : '↓'
                                             }} dari hari kemarin
                                             (total : {{ props.yesterdayMilkProduction }} Liter)
@@ -285,22 +293,25 @@ const dateDisplayText = computed(() => {
                             <!-- Card 3: Feed Amount -->
                             <Card class="rounded-xl md:rounded-2xl">
                                 <CardHeader
-                                    class="bg-teal-500 dark:bg-teal-200 text-white dark:text-black rounded-t-xl px-3 py-2 md:px-4">
-                                    <CardTitle class="text-sm md:text-base font-medium">Pemberian Pakan Seluruh Populasi
-                                        {{ dateDisplayText }}:</CardTitle>
+                                    class="rounded-t-xl bg-teal-500 px-3 py-2 text-white dark:bg-teal-200 dark:text-black md:px-4">
+                                    <CardTitle class="text-sm font-medium md:text-base">
+                                        Pemberian Pakan Seluruh Populasi {{ dateDisplayText }}:
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent
-                                    class="bg-white dark:bg-zinc-800 dark:text-white text-teal-800 text-center py-4 md:py-6 rounded-b-xl">
-                                    <div class="text-4xl md:text-6xl font-bold mb-2">
-                                        {{ props.todayFeedAmount || '-' }} <span v-if="props.todayFeedAmount"
-                                            class="text-lg font-normal">Kg</span>
+                                    class="rounded-b-xl bg-white py-4 text-center text-teal-800 dark:bg-zinc-800 dark:text-white md:py-6">
+                                    <div class="mb-2 text-3xl font-bold md:text-5xl">
+                                        {{ props.todayFeedAmount || '-' }}
+                                        <span v-if="props.todayFeedAmount" class="text-base font-normal md:text-lg">
+                                            Kg
+                                        </span>
                                     </div>
-                                    <div class="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                                    <div class="text-xs text-gray-600 dark:text-gray-300 md:text-sm">
                                         Pemberian Pakan seluruh Populasi {{ dateDisplayText }}:<br>
                                         <span v-if="props.todayFeedAmount && props.yesterdayFeedAmount"
                                             :class="props.todayFeedAmount > props.yesterdayFeedAmount ? 'text-green-600' : 'text-red-600'">
                                             {{ Math.round(((props.todayFeedAmount - props.yesterdayFeedAmount) /
-                                            props.yesterdayFeedAmount) * 100) }}%
+                                                props.yesterdayFeedAmount) * 100) }}%
                                             {{ props.todayFeedAmount > props.yesterdayFeedAmount ? '↑' : '↓' }} dari
                                             hari kemarin
                                             (total : {{ props.yesterdayFeedAmount }} Kg)
@@ -312,22 +323,20 @@ const dateDisplayText = computed(() => {
                                 </CardContent>
                             </Card>
                         </div>
-
                     </CardContent>
                 </Card>
 
-                <div class="relative flex-1 mt-4 md:mt-6 w-full hidden">
+                <section class="relative hidden w-full flex-1 sm:block">
                     <Guide />
-                </div>
+                </section>
 
-                <div class="relative flex-1 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-6 w-full">
+                <section class="relative grid w-full flex-1 grid-cols-1 gap-4 md:grid-cols-2">
                     <Rank />
-                </div>
+                </section>
 
-                <div class="relative flex-1 mt-4 md:mt-6 w-full">
+                <section class="relative w-full flex-1">
                     <Tips />
-                </div>
-            </div>
-        </div>
+                </section>
+        </main>
     </AppLayout>
 </template>
