@@ -12,14 +12,26 @@ class SpeciesSeeder extends Seeder
      */
     public function run(): void
     {
-        Species::truncate();
-        Species::create(['name' => 'Domba', 'code' => 'OVIS', 'binomial_nomenclature' => 'Ovis aries']);
-        Species::create(['name' => 'Kambing', 'code' => 'CAPRA', 'binomial_nomenclature' => 'Capra hircus']);
-        // Species::create(['name' => 'Kelinci', 'code' => '', 'binomial_nomenclature' => 'Oryctolagus cuniculus']);
-        // Species::create(['name' => 'Kerbau', 'code' => '', 'binomial_nomenclature' => 'Bubalus bubalis']);
-        // Species::create(['name' => 'Kuda', 'code' => '', 'binomial_nomenclature' => 'Equus ferus']);
-        // Species::create(['name' => 'Sapi', 'code' => '', 'binomial_nomenclature' => 'Bos taurus']);
-        // Species::create(['name' => 'Tikus', 'code' => '', 'binomial_nomenclature' => 'Mus musculus']);
-        // Species::create(['name' => 'Lainnya', 'code' => '', 'binomial_nomenclature' => null]);
+        // Use updateOrCreate to avoid duplicating existing data
+        Species::updateOrCreate(
+            ['code' => 'OVIS'],
+            ['name' => 'Domba', 'binomial_nomenclature' => 'Ovis aries']
+        );
+        Species::updateOrCreate(
+            ['code' => 'CAPRA'],
+            ['name' => 'Kambing', 'binomial_nomenclature' => 'Capra hircus']
+        );
+        Species::updateOrCreate(
+            ['code' => 'BOS'],
+            ['name' => 'Sapi', 'binomial_nomenclature' => 'Bos taurus']
+        );
+        Species::updateOrCreate(
+            ['code' => 'BUBALUS'],
+            ['name' => 'Kerbau', 'binomial_nomenclature' => 'Bubalus bubalis']
+        );
+        // Species::updateOrCreate(['code' => 'ORYCTO'], ['name' => 'Kelinci', 'binomial_nomenclature' => 'Oryctolagus cuniculus']);
+        // Species::updateOrCreate(['code' => 'EQUUS'], ['name' => 'Kuda', 'binomial_nomenclature' => 'Equus ferus']);
+        // Species::updateOrCreate(['code' => 'MUS'], ['name' => 'Tikus', 'binomial_nomenclature' => 'Mus musculus']);
+        // Species::updateOrCreate(['code' => 'OTHER'], ['name' => 'Lainnya', 'binomial_nomenclature' => null]);
     }
 }
