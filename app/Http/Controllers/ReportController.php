@@ -7,6 +7,8 @@ use App\Models\Livestock;
 use App\Models\HerdFeeding;
 use App\Models\LivestockMilking;
 use App\Models\LivestockWeight;
+use App\Models\MilkBatch;
+use App\Models\CheeseProduction;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -66,7 +68,7 @@ class ReportController extends Controller
     public function generate(Request $request): JsonResponse
     {
         $request->validate([
-            'type' => 'required|string|in:livestock-summary,feeding-report,milking-report,weight-report,health-report,productivity-report,financial-report,breeding-report',
+            'type' => 'required|string|in:livestock-summary,feeding-report,milking-report,weight-report,health-report,productivity-report,financial-report,breeding-report,milk-collection-summary,quality-summary,cheese-production-summary,farm-performance',
             'format' => 'required|string|in:pdf,excel,csv',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
@@ -309,6 +311,127 @@ class ReportController extends Controller
                     }),
                 ];
 
+            case 'milk-collection-summary':
+                $batches = MilkBatch::where('farm_id', $farmId)
+                    ->whereBetween('collection_date', [$startDate, $endDate])
+                    ->with(['farm:id,name', 'collectedBy:id,name'])
+                    ->orderBy('collection_date', 'desc')
+                    ->get();
+
+                return [
+                    'title' => 'Ringkasan Koleksi Susu',
+                    'period' => \Carbon\Carbon::parse($startDate)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($endDate)->format('d M Y'),
+                    'data' => $batches->map(function ($batch, $index) {
+                        return [
+                            'No' => $index + 1,
+                            'Kode Batch' => $batch->batch_code,
+                            'Tanggal Koleksi' => $batch->collection_date,
+                            'Sesi' => $batch->session ?? 'T/A',
+                            'Volume (L)' => $batch->total_volume,
+                            'Grade' => $batch->quality_grade ?? 'Belum Diuji',
+                            'Status' => $batch->status,
+                            'Dikumpulkan Oleh' => $batch->collectedBy->name ?? 'T/A',
+                        ];
+                    }),
+                ];
+
+            case 'quality-summary':
+                $batches = MilkBatch::where('farm_id', $farmId)
+                    ->whereBetween('collection_date', [$startDate, $endDate])
+                    ->whereNotNull('quality_grade')
+                    ->with(['farm:id,name'])
+                    ->orderBy('quality_tested_at', 'desc')
+                    ->get();
+
+                return [
+                    'title' => 'Ringkasan Kualitas Susu',
+                    'period' => \Carbon\Carbon::parse($startDate)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($endDate)->format('d M Y'),
+                    'data' => $batches->map(function ($batch, $index) {
+                        $qualityData = $batch->quality_data ?? [];
+                        return [
+                            'No' => $index + 1,
+                            'Kode Batch' => $batch->batch_code,
+                            'Tanggal' => $batch->collection_date,
+                            'Grade' => $batch->quality_grade,
+                            'pH' => $qualityData['pH'] ?? 'T/A',
+                            'Fat %' => $qualityData['fat_percentage'] ?? 'T/A',
+                            'Protein %' => $qualityData['protein_percentage'] ?? 'T/A',
+                            'Bacteria (CFU/ml)' => $qualityData['bacteria_count'] ?? 'T/A',
+                            'Status' => $batch->status,
+                        ];
+                    }),
+                ];
+
+            case 'cheese-production-summary':
+                $productions = CheeseProduction::where('farm_id', $farmId)
+                    ->whereBetween('production_date', [$startDate, $endDate])
+                    ->with(['producedBy:id,name'])
+                    ->orderBy('production_date', 'desc')
+                    ->get();
+
+                return [
+                    'title' => 'Ringkasan Produksi Keju',
+                    'period' => \Carbon\Carbon::parse($startDate)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($endDate)->format('d M Y'),
+                    'data' => $productions->map(function ($prod, $index) {
+                        return [
+                            'No' => $index + 1,
+                            'Kode Batch' => $prod->batch_code,
+                            'Tipe Keju' => $prod->cheese_type,
+                            'Tanggal Produksi' => $prod->production_date,
+                            'Volume Susu (L)' => $prod->total_milk_volume,
+                            'Berat Keju (kg)' => $prod->cheese_weight_kg ?? 'T/A',
+                            'Yield %' => $prod->yield_percentage ?? 'T/A',
+                            'Target Aging (hari)' => $prod->aging_target_days ?? 'T/A',
+                            'Status' => $prod->status,
+                            'Diproduksi Oleh' => $prod->producedBy->name ?? 'T/A',
+                        ];
+                    }),
+                ];
+
+            case 'farm-performance':
+                // Get all milk batches for all farms in the period
+                $batches = MilkBatch::with('farm:id,name')
+                    ->whereBetween('collection_date', [$startDate, $endDate])
+                    ->whereNotNull('quality_grade')
+                    ->get();
+
+                $farmStats = $batches->groupBy('farm_id')->map(function ($farmBatches, $farmId) {
+                    $totalVolume = $farmBatches->sum('total_volume');
+                    $gradeA = $farmBatches->where('quality_grade', 'A')->sum('total_volume');
+                    $gradeB = $farmBatches->where('quality_grade', 'B')->sum('total_volume');
+                    $gradeC = $farmBatches->where('quality_grade', 'C')->sum('total_volume');
+                    $rejected = $farmBatches->where('quality_grade', 'Reject')->sum('total_volume');
+
+                    return [
+                        'farm_name' => $farmBatches->first()->farm->name ?? 'Unknown',
+                        'total_volume' => $totalVolume,
+                        'grade_a' => $gradeA,
+                        'grade_b' => $gradeB,
+                        'grade_c' => $gradeC,
+                        'rejected' => $rejected,
+                        'batch_count' => $farmBatches->count(),
+                        'avg_volume' => round($totalVolume / $farmBatches->count(), 2),
+                    ];
+                })->sortByDesc('total_volume')->values();
+
+                return [
+                    'title' => 'Performa Peternak',
+                    'period' => \Carbon\Carbon::parse($startDate)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($endDate)->format('d M Y'),
+                    'data' => $farmStats->map(function ($stat, $index) {
+                        return [
+                            'No' => $index + 1,
+                            'Nama Farm' => $stat['farm_name'],
+                            'Total Volume (L)' => $stat['total_volume'],
+                            'Grade A (L)' => $stat['grade_a'],
+                            'Grade B (L)' => $stat['grade_b'],
+                            'Grade C (L)' => $stat['grade_c'],
+                            'Ditolak (L)' => $stat['rejected'],
+                            'Jumlah Batch' => $stat['batch_count'],
+                            'Rata-rata/Batch (L)' => $stat['avg_volume'],
+                        ];
+                    }),
+                ];
+
             default:
                 return [
                     'title' => 'Laporan ' . ucfirst($type),
@@ -434,6 +557,10 @@ class ReportController extends Controller
             'productivity-report' => 'Laporan_Produktivitas',
             'financial-report' => 'Laporan_Keuangan',
             'breeding-report' => 'Laporan_Perkawinan',
+            'milk-collection-summary' => 'Ringkasan_Koleksi_Susu',
+            'quality-summary' => 'Ringkasan_Kualitas_Susu',
+            'cheese-production-summary' => 'Ringkasan_Produksi_Keju',
+            'farm-performance' => 'Performa_Peternak',
         ];
 
         $name = $typeNames[$type] ?? $type;

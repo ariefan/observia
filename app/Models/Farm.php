@@ -29,10 +29,15 @@ class Farm extends Model
         'city_id',
         'latlong',
         'user_id',
+        'farm_type',
+        'milk_pricing',
+        'milk_supplier_info',
     ];
 
     protected $casts = [
         'latlong' => 'array',
+        'milk_pricing' => 'array',
+        'milk_supplier_info' => 'array',
     ];  
     
     /**
@@ -94,6 +99,30 @@ class Farm extends Model
     public function rations()
     {
         return $this->hasMany(Ration::class);
+    }
+
+    /**
+     * Get the milk batches for the farm.
+     */
+    public function milkBatches()
+    {
+        return $this->hasMany(MilkBatch::class);
+    }
+
+    /**
+     * Get the cheese productions for the farm.
+     */
+    public function cheeseProductions()
+    {
+        return $this->hasMany(CheeseProduction::class);
+    }
+
+    /**
+     * Get the milk payments for the farm.
+     */
+    public function milkPayments()
+    {
+        return $this->hasMany(MilkPayment::class);
     }
 
     /**

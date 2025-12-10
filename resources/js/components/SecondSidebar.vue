@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { History, LogIn, Database, FileText, ClipboardPlus, Package, PackageOpen, TrendingUp, ArrowLeftRight, Settings } from 'lucide-vue-next';
+import { History, LogIn, Database, FileText, ClipboardPlus, Package, PackageOpen, TrendingUp, ArrowLeftRight, Settings, Milk, Microscope, BarChart3, Cake, Wallet } from 'lucide-vue-next';
 import { IconFileText, IconHorse, IconLock, IconDna, IconBug, IconFileAnalytics, IconStethoscope } from '@tabler/icons-vue';
 import type { SharedData } from '@/types';
 
@@ -62,6 +62,41 @@ const navigationItems = [
     title: 'Transaksi Barang',
     route: 'inventory.transactions.index',
     icon: ArrowLeftRight,
+  },
+  // Milk Supply Chain section separator
+  {
+    separator: true,
+    title: 'Rantai Pasok Susu'
+  },
+  {
+    title: 'Dashboard Supply Chain',
+    route: 'supply-chain.dashboard',
+    icon: TrendingUp,
+  },
+  {
+    title: 'Koleksi Batch Susu',
+    route: 'milk-batches.index',
+    icon: Milk,
+  },
+  {
+    title: 'Quality Control',
+    route: 'quality-control.index',
+    icon: Microscope,
+  },
+  {
+    title: 'Riwayat Grading',
+    route: 'quality-control.history',
+    icon: BarChart3,
+  },
+  {
+    title: 'Produksi Keju',
+    route: 'cheese-productions.index',
+    icon: Cake,
+  },
+  {
+    title: 'Pembayaran Susu',
+    route: 'payments.finance',
+    icon: Wallet,
   },
   // Super user only items
   ...(page.props.auth.user?.is_super_user

@@ -26,6 +26,11 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TelegramBotController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\MilkBatchController;
+use App\Http\Controllers\QualityControlController;
+use App\Http\Controllers\CheeseProductionController;
+use App\Http\Controllers\MilkPaymentController;
+use App\Http\Controllers\SupplyChainDashboardController;
 
 Route::get('/', function () {
     // return Inertia::render('Welcome');
@@ -219,6 +224,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/test-ai-message', [TelegramBotController::class, 'sendTestAiMessage'])->name('test-ai-message');
     });
 
+    // Supply Chain Dashboard
+    Route::get('/supply-chain/dashboard', [SupplyChainDashboardController::class, 'index'])->name('supply-chain.dashboard');
+
+    // Milk Supply Chain Routes
+    Route::prefix('milk-batches')->name('milk-batches.')->group(function () {
+        Route::put('/{milkBatch}/receiving', [MilkBatchController::class, 'updateReceiving'])->name('receiving');
+        Route::put('/{milkBatch}/quality-test', [MilkBatchController::class, 'updateQualityTest'])->name('quality-test');
+    });
+
+    // Quality Control Routes
+    Route::prefix('quality-control')->name('quality-control.')->group(function () {
+        Route::get('/', [QualityControlController::class, 'index'])->name('index');
+        Route::get('/{milkBatch}/receive', [QualityControlController::class, 'receiveForm'])->name('receive-form');
+        Route::post('/{milkBatch}/receive', [QualityControlController::class, 'receive'])->name('receive');
+        Route::get('/{milkBatch}/test', [QualityControlController::class, 'testForm'])->name('test-form');
+        Route::post('/{milkBatch}/test', [QualityControlController::class, 'storeTest'])->name('test');
+        Route::get('/history', [QualityControlController::class, 'gradingHistory'])->name('history');
+    });
+
+    // Cheese Production Routes
+    Route::prefix('cheese-productions')->name('cheese-productions.')->group(function () {
+        Route::get('/{cheeseProduction}/aging', [CheeseProductionController::class, 'agingTracker'])->name('aging');
+        Route::post('/{cheeseProduction}/aging-note', [CheeseProductionController::class, 'updateAgingNote'])->name('aging-note');
+        Route::post('/{cheeseProduction}/complete-aging', [CheeseProductionController::class, 'completeAging'])->name('complete-aging');
+    });
+
+    // Milk Payment Routes
+    Route::prefix('payments')->name('payments.')->group(function () {
+        Route::get('/finance', [MilkPaymentController::class, 'financeIndex'])->name('finance');
+        Route::get('/farmer', [MilkPaymentController::class, 'farmerIndex'])->name('farmer');
+        Route::get('/calculate', [MilkPaymentController::class, 'calculateForm'])->name('calculate');
+        Route::post('/calculate', [MilkPaymentController::class, 'calculate'])->name('calculate.store');
+        Route::post('/{payment}/approve', [MilkPaymentController::class, 'approve'])->name('approve');
+        Route::post('/{payment}/mark-paid', [MilkPaymentController::class, 'markAsPaid'])->name('mark-paid');
+        Route::get('/{payment}', [MilkPaymentController::class, 'show'])->name('show');
+    });
+
     Route::resources([
         'farms' => FarmController::class,
         'livestocks' => LivestockController::class,
@@ -227,6 +269,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'rations' => RationController::class,
         'feeds' => FeedController::class,
         'health-records' => LivestockHealthRecordController::class,
+        'milk-batches' => MilkBatchController::class,
+        'cheese-productions' => CheeseProductionController::class,
     ]);
     
     // Route::get('/livestocks/photo/{path}', [LivestockController::class, 'showPhoto'])->where('path', '.*')->name('livestocks.photo');
