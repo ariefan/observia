@@ -110,9 +110,11 @@ class MilkBatchController extends Controller
         $collectionDate = $request->get('collection_date', Carbon::today()->format('Y-m-d'));
         $session = $request->get('session', 'morning');
 
-        $availableMilkings = LivestockMilking::with(['livestock:id,name,ear_tag'])
-            ->where('farm_id', $currentFarmId)
-            ->whereDate('milking_date', $collectionDate)
+        $availableMilkings = LivestockMilking::with(['livestock:id,name,ear_tag,farm_id'])
+            ->whereHas('livestock', function ($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->whereDate('date', $collectionDate)
             ->where('session', $session)
             // Not already in a batch (check JSON array)
             ->whereRaw("id NOT IN (
@@ -120,7 +122,7 @@ class MilkBatchController extends Controller
                 FROM milk_batches
                 WHERE source_livestock_milking_ids IS NOT NULL
             )")
-            ->orderBy('milking_time')
+            ->orderBy('time')
             ->get();
 
         $estimatedVolume = $availableMilkings->sum('milk_volume');
