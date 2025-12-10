@@ -129,7 +129,7 @@ class CheeseProductionController extends Controller
             ->orWhere('name', 'ILIKE', '%Keju%')
             ->first();
 
-        $cheeseTypes = [];
+        $cheeseTypes = collect([]);
         if ($cheeseCategory) {
             $cheeseTypes = InventoryItem::where('category_id', $cheeseCategory->id)
                 ->where('farm_id', $currentFarmId)
