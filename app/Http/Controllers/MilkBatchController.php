@@ -118,7 +118,7 @@ class MilkBatchController extends Controller
             ->where('session', $session)
             // Not already in a batch (check JSON array)
             ->whereRaw("id NOT IN (
-                SELECT DISTINCT jsonb_array_elements_text(source_livestock_milking_ids)::bigint
+                SELECT DISTINCT jsonb_array_elements_text(source_livestock_milking_ids::jsonb)::bigint
                 FROM milk_batches
                 WHERE source_livestock_milking_ids IS NOT NULL
             )")

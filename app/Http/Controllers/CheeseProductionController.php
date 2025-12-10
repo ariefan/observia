@@ -115,7 +115,7 @@ class CheeseProductionController extends Controller
             ->where('status', 'approved')
             // Not already used in production (check JSON array)
             ->whereRaw("id NOT IN (
-                SELECT DISTINCT jsonb_array_elements_text(milk_batch_ids)::bigint
+                SELECT DISTINCT jsonb_array_elements_text(milk_batch_ids::jsonb)::bigint
                 FROM cheese_productions
                 WHERE milk_batch_ids IS NOT NULL
             )")
