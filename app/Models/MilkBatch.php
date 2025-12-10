@@ -6,6 +6,7 @@ use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class MilkBatch extends Model
 {
@@ -72,6 +73,16 @@ class MilkBatch extends Model
     public function qualityTestedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'quality_tested_by_user_id');
+    }
+
+    /**
+     * Get cheese productions that use this milk batch.
+     * This is a custom relationship since CheeseProduction stores batch IDs in a JSON array.
+     */
+    public function cheeseProductions(): Builder
+    {
+        return CheeseProduction::query()
+            ->whereRaw("milk_batch_ids::jsonb @> ?::jsonb", [json_encode([$this->id])]);
     }
 
     protected function getAuditMetadata(): array

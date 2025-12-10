@@ -113,7 +113,12 @@ class CheeseProductionController extends Controller
         $availableBatches = MilkBatch::with(['farm:id,name'])
             ->where('farm_id', $currentFarmId)
             ->where('status', 'approved')
-            ->whereDoesntHave('cheeseProductions') // Not already used
+            // Not already used in production (check JSON array)
+            ->whereRaw("id NOT IN (
+                SELECT DISTINCT jsonb_array_elements_text(milk_batch_ids)::bigint
+                FROM cheese_productions
+                WHERE milk_batch_ids IS NOT NULL
+            )")
             ->orderBy('quality_grade')
             ->orderBy('collection_date', 'desc')
             ->get();

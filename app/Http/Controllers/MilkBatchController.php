@@ -114,7 +114,12 @@ class MilkBatchController extends Controller
             ->where('farm_id', $currentFarmId)
             ->whereDate('milking_date', $collectionDate)
             ->where('session', $session)
-            ->whereDoesntHave('milkBatches') // Not already in a batch
+            // Not already in a batch (check JSON array)
+            ->whereRaw("id NOT IN (
+                SELECT DISTINCT jsonb_array_elements_text(source_livestock_milking_ids)::bigint
+                FROM milk_batches
+                WHERE source_livestock_milking_ids IS NOT NULL
+            )")
             ->orderBy('milking_time')
             ->get();
 
