@@ -46,7 +46,7 @@ class CheeseProductionController extends Controller
 
         // Search by batch code or cheese type
         if ($request->filled('search')) {
-            $search = $request->get('search');
+            $search = escapeLike($request->get('search'));
             $query->where(function ($q) use ($search) {
                 $q->where('batch_code', 'ILIKE', "%{$search}%")
                   ->orWhere('cheese_type', 'ILIKE', "%{$search}%");

@@ -57,11 +57,6 @@ class User extends Authenticatable
             'is_super_user' => 'boolean',
         ];
     }
-    
-    // public function farms()
-    // {
-    //     return $this->belongsToMany(Farm::class);
-    // }
 
     public function farms()
     {

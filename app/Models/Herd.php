@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\Auditable;
 
 class Herd extends Model
@@ -19,17 +21,22 @@ class Herd extends Model
 
     protected $appends = ['current_capacity'];
 
-    public function livestocks()
+    public function farm(): BelongsTo
+    {
+        return $this->belongsTo(Farm::class);
+    }
+
+    public function livestocks(): HasMany
     {
         return $this->hasMany(Livestock::class);
     }
 
-    public function getCurrentCapacityAttribute()
+    public function getCurrentCapacityAttribute(): int
     {
         return $this->livestocks()->count();
     }
 
-    public function feedings()
+    public function feedings(): HasMany
     {
         return $this->hasMany(HerdFeeding::class);
     }

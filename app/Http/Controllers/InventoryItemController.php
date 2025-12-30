@@ -31,7 +31,7 @@ class InventoryItemController extends Controller
 
         // Search by name or brand
         if ($request->filled('search')) {
-            $search = $request->get('search');
+            $search = escapeLike($request->get('search'));
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'ILIKE', "%{$search}%")
                   ->orWhere('brand', 'ILIKE', "%{$search}%")

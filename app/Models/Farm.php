@@ -38,16 +38,11 @@ class Farm extends Model
         'latlong' => 'array',
         'milk_pricing' => 'array',
         'milk_supplier_info' => 'array',
-    ];  
-    
+    ];
+
     /**
      * The users that belong to the farm.
      */
-    // public function users()
-    // {
-    //     return $this->belongsToMany(User::class, 'farm_user', 'farm_id', 'user_id');
-    // }
-
     public function users()
     {
         return $this->belongsToMany(User::class)
@@ -177,9 +172,8 @@ class Farm extends Model
                     'description' => $medicine['description'],
                     'sku' => $medicine['sku'],
                     'minimum_stock' => 1,
-                    'current_stock' => 0, // Start with 0 stock
+                    'current_stock' => 0,
                     'track_expiry' => true,
-                    'track_batch' => false,
                     'is_active' => true,
                 ]);
             }

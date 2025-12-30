@@ -46,7 +46,7 @@ class MilkBatchController extends Controller
 
         // Search by batch code
         if ($request->filled('search')) {
-            $search = $request->get('search');
+            $search = escapeLike($request->get('search'));
             $query->where('batch_code', 'ILIKE', "%{$search}%");
         }
 

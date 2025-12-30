@@ -1,5 +1,16 @@
 <?php
 
+if (!function_exists('escapeLike')) {
+    /**
+     * Escape special characters for use in a LIKE query.
+     * This prevents SQL wildcards (%, _) in user input from affecting the query.
+     */
+    function escapeLike(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
+    }
+}
+
 if (!function_exists('generateAifarmId')) {
     function generateAifarmId(): string {
         $alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
