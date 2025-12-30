@@ -8,6 +8,8 @@ use App\Models\InventoryItem;
 use App\Models\InventoryCategory;
 use App\Models\InventoryTransaction;
 use App\Models\InventoryBatch;
+use App\Models\Farm;
+use App\Notifications\FarmProductionNotification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -85,8 +87,8 @@ class CheeseProductionService
                 $this->createOrUpdateInventoryItem($production, $farmId);
             }
 
-            // TODO: Send notification about new production
-            // $this->sendProductionNotification($production);
+            // Send notification about new production
+            $this->sendProductionNotification($production);
 
             return $production;
         });
@@ -129,6 +131,9 @@ class CheeseProductionService
             ]
         );
 
+        // Find Kilogram unit for cheese weight
+        $kgUnit = \App\Models\InventoryUnit::where('name', 'Kilogram')->first();
+
         // Find or create inventory item for this cheese type
         $inventoryItem = InventoryItem::firstOrCreate(
             [
@@ -138,11 +143,10 @@ class CheeseProductionService
             ],
             [
                 'description' => "Keju {$production->cheese_type} produksi sendiri",
-                'unit_id' => 1, // Assuming kg unit exists
+                'unit_id' => $kgUnit?->id ?? 2, // Kilogram unit
                 'current_stock' => 0,
                 'minimum_stock' => 1,
                 'track_expiry' => true,
-                'track_batch' => true,
                 'is_active' => true,
             ]
         );
@@ -172,9 +176,9 @@ class CheeseProductionService
         $inventoryBatch = InventoryBatch::create([
             'inventory_item_id' => $inventoryItem->id,
             'batch_number' => $production->batch_code,
-            'quantity' => $production->cheese_weight_kg,
-            'remaining_quantity' => $production->cheese_weight_kg,
-            'production_date' => $production->production_date,
+            'original_quantity' => $production->cheese_weight_kg,
+            'current_quantity' => $production->cheese_weight_kg,
+            'manufacture_date' => $production->production_date,
             'expiry_date' => $expiryDate,
             'supplier' => 'Produksi Sendiri',
             'notes' => "Keju {$production->cheese_type}, aging {$production->aging_target_days} hari",
@@ -237,5 +241,27 @@ class CheeseProductionService
             'by_cheese_type' => $byCheeseType,
             'by_status' => $productions->groupBy('status')->map->count(),
         ];
+    }
+
+    /**
+     * Send notification about new cheese production.
+     */
+    private function sendProductionNotification(CheeseProduction $production): void
+    {
+        try {
+            $farm = Farm::find($production->farm_id);
+            if ($farm && $farm->owner && $production->cheese_weight_kg) {
+                $farm->owner->notify(
+                    FarmProductionNotification::cheeseProduction(
+                        $production->batch_code,
+                        $production->cheese_type,
+                        $production->cheese_weight_kg,
+                        $farm->name
+                    )
+                );
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send cheese production notification: ' . $e->getMessage());
+        }
     }
 }

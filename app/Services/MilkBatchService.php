@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\MilkBatch;
 use App\Models\LivestockMilking;
 use App\Models\Setting;
+use App\Models\Farm;
+use App\Notifications\FarmProductionNotification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -44,8 +46,8 @@ class MilkBatchService
                 'status' => 'collected',
             ]);
 
-            // TODO: Send notification to farm owner about new collection
-            // $this->sendCollectionNotification($batch);
+            // Send notification to farm owner about new collection
+            $this->sendCollectionNotification($batch);
 
             return $batch;
         });
@@ -91,8 +93,8 @@ class MilkBatchService
             'rejection_reason' => $rejectionReason,
         ]);
 
-        // TODO: Send notification about batch status
-        // $this->sendStatusNotification($batch);
+        // Send notification about batch status
+        $this->sendStatusNotification($batch);
 
         return $batch->fresh();
     }
@@ -123,8 +125,8 @@ class MilkBatchService
             'rejection_reason' => $batch->rejection_reason ?? $rejectionReason,
         ]);
 
-        // TODO: Send notification about quality test results
-        // $this->sendQualityTestNotification($batch);
+        // Send notification about quality test results
+        $this->sendQualityTestNotification($batch);
 
         return $batch->fresh();
     }
@@ -278,5 +280,70 @@ class MilkBatchService
             'count' => $milkings->count(),
             'unique_livestock' => $milkings->pluck('livestock_id')->unique()->count(),
         ];
+    }
+
+    /**
+     * Send notification about new milk collection.
+     */
+    private function sendCollectionNotification(MilkBatch $batch): void
+    {
+        try {
+            $farm = Farm::find($batch->farm_id);
+            if ($farm && $farm->owner) {
+                $farm->owner->notify(
+                    FarmProductionNotification::milkCollection(
+                        $batch->batch_code,
+                        $batch->total_volume,
+                        $farm->name
+                    )
+                );
+            }
+        } catch (\Exception $e) {
+            // Log but don't fail the main operation
+            \Log::warning('Failed to send milk collection notification: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Send notification about batch status change.
+     */
+    private function sendStatusNotification(MilkBatch $batch): void
+    {
+        try {
+            $farm = Farm::find($batch->farm_id);
+            if ($farm && $farm->owner) {
+                $farm->owner->notify(
+                    FarmProductionNotification::milkBatchStatus(
+                        $batch->batch_code,
+                        $batch->status,
+                        $farm->name,
+                        $batch->rejection_reason
+                    )
+                );
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send milk batch status notification: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Send notification about quality test results.
+     */
+    private function sendQualityTestNotification(MilkBatch $batch): void
+    {
+        try {
+            $farm = Farm::find($batch->farm_id);
+            if ($farm && $farm->owner) {
+                $farm->owner->notify(
+                    FarmProductionNotification::qualityTest(
+                        $batch->batch_code,
+                        $batch->quality_grade,
+                        $farm->name
+                    )
+                );
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send quality test notification: ' . $e->getMessage());
+        }
     }
 }

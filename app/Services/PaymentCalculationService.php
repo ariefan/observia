@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\MilkPayment;
 use App\Models\MilkBatch;
 use App\Models\Farm;
+use App\Notifications\FarmProductionNotification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -105,8 +106,8 @@ class PaymentCalculationService
                 'notes' => $notes,
             ]);
 
-            // TODO: Send notification to farm owner
-            // $this->sendPaymentNotification($payment);
+            // Send notification to farm owner
+            $this->sendPaymentNotification($payment);
 
             return $payment;
         });
@@ -184,5 +185,27 @@ class PaymentCalculationService
             'payment_count' => $payments->count(),
             'monthly_data' => array_values($monthlyData),
         ];
+    }
+
+    /**
+     * Send notification about new payment.
+     */
+    private function sendPaymentNotification(MilkPayment $payment): void
+    {
+        try {
+            $farm = Farm::find($payment->farm_id);
+            if ($farm && $farm->owner) {
+                $farm->owner->notify(
+                    FarmProductionNotification::paymentCreated(
+                        $payment->payment_period_start,
+                        $payment->payment_period_end,
+                        $payment->net_amount,
+                        $farm->name
+                    )
+                );
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send payment notification: ' . $e->getMessage());
+        }
     }
 }

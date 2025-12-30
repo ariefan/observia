@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\InventoryItem;
 use App\Models\InventoryCategory;
 use App\Models\InventoryUnit;
+use App\Models\InventoryBatch;
+use App\Models\InventoryTransaction;
 use App\Traits\HasCurrentFarm;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -40,8 +42,15 @@ class InventoryController extends Controller
             ->where('is_active', true)
             ->count();
 
-        // Get items expiring soon (within 30 days) - placeholder for now
-        $expiringCount = 0; // TODO: Calculate from batches
+        // Get items expiring soon (within 30 days)
+        $expiringCount = InventoryBatch::whereHas('inventoryItem', function ($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->where('is_active', true)
+            ->where('current_quantity', '>', 0)
+            ->whereNotNull('expiry_date')
+            ->whereBetween('expiry_date', [now(), now()->addDays(30)])
+            ->count();
 
         return Inertia::render('Inventory/Index', [
             'inventoryItems' => $inventoryItems,
@@ -85,15 +94,45 @@ class InventoryController extends Controller
             $query->where('farm_id', $currentFarmId)->where('is_active', true);
         }])->get();
 
+        // Get expiring items count (within 30 days)
+        $expiringItems = InventoryBatch::whereHas('inventoryItem', function ($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->where('is_active', true)
+            ->where('current_quantity', '>', 0)
+            ->whereNotNull('expiry_date')
+            ->whereBetween('expiry_date', [now(), now()->addDays(30)])
+            ->count();
+
+        // Get recent transactions (last 10)
+        $recentTransactions = InventoryTransaction::with(['inventoryItem', 'user'])
+            ->whereHas('inventoryItem', function ($query) use ($currentFarmId) {
+                $query->where('farm_id', $currentFarmId);
+            })
+            ->orderBy('transaction_date', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($transaction) {
+                return [
+                    'id' => $transaction->id,
+                    'item_name' => $transaction->inventoryItem->name ?? 'Unknown',
+                    'type' => $transaction->type,
+                    'quantity' => $transaction->quantity,
+                    'user_name' => $transaction->user->name ?? 'System',
+                    'transaction_date' => $transaction->transaction_date,
+                    'notes' => $transaction->notes,
+                ];
+            });
+
         return Inertia::render('Inventory/Dashboard', [
             'stats' => [
                 'totalItems' => $totalItems,
                 'lowStockItems' => $lowStockItems,
-                'expiringItems' => 0, // TODO: Calculate from batches
+                'expiringItems' => $expiringItems,
                 'totalValue' => $totalValue,
             ],
             'categories' => $categoryStats,
-            'recentTransactions' => [], // TODO: Get recent transactions
+            'recentTransactions' => $recentTransactions,
         ]);
     }
 }
