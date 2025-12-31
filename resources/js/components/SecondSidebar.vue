@@ -22,7 +22,7 @@ import {
 } from 'lucide-vue-next';
 import { IconFileText, IconHorse, IconLock, IconDna, IconBug, IconFileAnalytics, IconStethoscope } from '@tabler/icons-vue';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import type { SharedData } from '@/types';
+import type { SharedData, Permissions } from '@/types';
 
 interface Props {
   currentRoute?: string;
@@ -32,13 +32,26 @@ defineProps<Props>();
 
 const page = usePage<SharedData>();
 
-// Check if user has admin/owner/finance role for finance-related items
-const hasFinanceAccess = computed(() => {
-  if (page.props.auth.user?.is_super_user) return true;
-  const currentFarm = page.props.auth.user?.currentFarm;
-  if (!currentFarm) return false;
-  return ['admin', 'owner', 'finance'].includes(currentFarm.role ?? '');
+// Get permissions from backend (consistent with useNavigation)
+const permissions = computed<Permissions>(() => {
+  return page.props.auth.permissions ?? {
+    isSuperUser: false,
+    canAccessFinance: false,
+    canModifyFinance: false,
+    canAccessOperations: false,
+    canModifyOperations: false,
+    canManageMembers: false,
+    canAccessSettings: false,
+    isViewOnly: true,
+  };
 });
+
+// Use consistent permission checks from backend
+const hasFinanceAccess = computed(() => permissions.value.canAccessFinance);
+const canAccessOperations = computed(() => permissions.value.canAccessOperations);
+const canAccessSettings = computed(() => permissions.value.canAccessSettings);
+const isSuperUser = computed(() => permissions.value.isSuperUser);
+const isViewOnly = computed(() => permissions.value.isViewOnly);
 
 // Track which sections are open (default open for commonly used sections)
 const openSections = ref({
@@ -49,44 +62,56 @@ const openSections = ref({
   superUser: false,
 });
 
-// Core data navigation items
-const coreDataItems = [
-  {
-    title: 'Laporan',
-    href: '/laporan',
-    icon: IconFileAnalytics,
-  },
-  {
-    title: 'Pakan',
-    route: 'rations.index',
-    icon: IconFileText,
-  },
-  {
-    title: 'Catatan Kesehatan',
-    route: 'health-records.index',
-    icon: IconStethoscope,
-  },
-  {
-    title: 'Kandang',
-    route: 'herds.index',
-    icon: IconHorse,
-  },
-  {
-    title: 'Manajemen Peternakan',
-    route: 'farms.index',
-    icon: Building2,
-  },
-  {
-    title: 'Riwayat Login',
-    route: 'login-logs.index',
-    icon: IconLock,
-  },
-  {
-    title: 'Jejak Audit',
-    route: 'audits.index',
-    icon: History,
-  },
-];
+// Core data navigation items - filtered by permissions
+const coreDataItems = computed(() => {
+  const items = [
+    {
+      title: 'Laporan',
+      href: '/laporan',
+      icon: IconFileAnalytics,
+    },
+    {
+      title: 'Kandang',
+      route: 'herds.index',
+      icon: IconHorse,
+    },
+    {
+      title: 'Manajemen Peternakan',
+      route: 'farms.index',
+      icon: Building2,
+    },
+  ];
+
+  // Operational items - only for users who can access operations (not investors)
+  if (canAccessOperations.value) {
+    items.splice(1, 0, {
+      title: 'Pakan',
+      route: 'rations.index',
+      icon: IconFileText,
+    });
+    items.splice(2, 0, {
+      title: 'Catatan Kesehatan',
+      route: 'health-records.index',
+      icon: IconStethoscope,
+    });
+  }
+
+  // Admin items - login logs and audit trails
+  if (canAccessSettings.value || isSuperUser.value) {
+    items.push({
+      title: 'Riwayat Login',
+      route: 'login-logs.index',
+      icon: IconLock,
+    });
+    items.push({
+      title: 'Jejak Audit',
+      route: 'audits.index',
+      icon: History,
+    });
+  }
+
+  return items;
+});
 
 // Content navigation items (accessible to all authenticated users)
 const contentItems = [
@@ -102,24 +127,29 @@ const contentItems = [
   },
 ];
 
-// Inventory navigation items
-const inventoryItems = [
-  {
-    title: 'Dashboard Inventaris',
-    route: 'inventory.dashboard',
-    icon: TrendingUp,
-  },
-  {
-    title: 'Stok Barang',
-    route: 'inventory.items.index',
-    icon: PackageOpen,
-  },
-  {
-    title: 'Transaksi Barang',
-    route: 'inventory.transactions.index',
-    icon: ArrowLeftRight,
-  },
-];
+// Inventory navigation items - only for operational users
+const inventoryItems = computed(() => {
+  // Investors don't see inventory (view-only)
+  if (isViewOnly.value) return [];
+
+  return [
+    {
+      title: 'Dashboard Inventaris',
+      route: 'inventory.dashboard',
+      icon: TrendingUp,
+    },
+    {
+      title: 'Stok Barang',
+      route: 'inventory.items.index',
+      icon: PackageOpen,
+    },
+    {
+      title: 'Transaksi Barang',
+      route: 'inventory.transactions.index',
+      icon: ArrowLeftRight,
+    },
+  ];
+});
 
 // Milk Supply Chain navigation items - filtered based on role
 const supplyChainItems = computed(() => {
@@ -286,8 +316,8 @@ const getItemHref = (item: { href?: string; route?: string }) => {
         </CollapsibleContent>
       </Collapsible>
 
-      <!-- Inventory Section -->
-      <Collapsible v-model:open="openSections.inventory" class="group">
+      <!-- Inventory Section - Hidden for investors (view-only) -->
+      <Collapsible v-if="inventoryItems.length > 0" v-model:open="openSections.inventory" class="group">
         <CollapsibleTrigger class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-sm font-semibold text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900 transition-colors">
           <span>Inventaris</span>
           <ChevronDown class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': openSections.inventory }" />
@@ -334,8 +364,8 @@ const getItemHref = (item: { href?: string; route?: string }) => {
         </CollapsibleContent>
       </Collapsible>
 
-      <!-- Super User Section -->
-      <Collapsible v-if="page.props.auth.user?.is_super_user" v-model:open="openSections.superUser" class="group">
+      <!-- Super User Section - Only visible to super users -->
+      <Collapsible v-if="isSuperUser" v-model:open="openSections.superUser" class="group">
         <CollapsibleTrigger class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-sm font-semibold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900 transition-colors">
           <span>Super User</span>
           <ChevronDown class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': openSections.superUser }" />

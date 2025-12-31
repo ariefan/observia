@@ -6,20 +6,20 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckFinanceAccess
+class CheckSettingsAccess
 {
     /**
      * Handle an incoming request.
-     * Allows access to users who can access finance features.
+     * Allows access to users who can access settings.
      *
      * Access granted to:
      * - Super users (global access)
      * - Farm owners
      * - Farm admins
-     * - Farm investors (view-only)
      *
      * Denied to:
-     * - Farmers (they can only see their own payment info)
+     * - Farmers
+     * - Investors
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -29,13 +29,11 @@ class CheckFinanceAccess
             return redirect()->route('login');
         }
 
-        // Use the User model's helper method
-        if ($user->canAccessFinance()) {
+        if ($user->canAccessSettings()) {
             return $next($request);
         }
 
-        // No access - redirect to farmer view
-        return redirect()->route('payments.farmer')
-            ->with('error', 'Anda tidak memiliki akses ke halaman keuangan.');
+        return redirect()->route('dashboard')
+            ->with('error', 'Anda tidak memiliki akses ke pengaturan.');
     }
 }

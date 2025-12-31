@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\FarmRole;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -40,6 +41,7 @@ class HandleInertiaRequests extends Middleware
 
         $user = $request->user();
         $userFarms = collect();
+        $permissions = $this->getDefaultPermissions();
 
         if ($user) {
             $user->load([
@@ -48,7 +50,7 @@ class HandleInertiaRequests extends Middleware
                 }
             ]);
 
-            if ($user->is_super_user) {
+            if ($user->isSuperUser()) {
                 // Super users can see all farms
                 $userFarms = \App\Models\Farm::select('id', 'name', 'picture')->get();
             } else {
@@ -63,11 +65,16 @@ class HandleInertiaRequests extends Middleware
                 $pivot = $user->farms->firstWhere('id', $user->current_farm_id)?->pivot;
                 $role = $pivot?->role;
 
-                // Inject role directly into currentFarm object
+                // Inject role and role label directly into currentFarm object
                 if ($user->relationLoaded('currentFarm') && $user->currentFarm) {
                     $user->currentFarm->setAttribute('role', $role);
+                    $farmRole = FarmRole::fromString($role);
+                    $user->currentFarm->setAttribute('role_label', $farmRole?->label() ?? $role);
                 }
             }
+
+            // Build permissions object for frontend
+            $permissions = $this->buildPermissions($user);
         }
 
         return [
@@ -77,11 +84,47 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user,
                 'farms' => $userFarms,
+                'permissions' => $permissions,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            'farmRoles' => FarmRole::options(),
+        ];
+    }
+
+    /**
+     * Build permissions object for the authenticated user
+     */
+    private function buildPermissions($user): array
+    {
+        return [
+            'isSuperUser' => $user->isSuperUser(),
+            'canAccessFinance' => $user->canAccessFinance(),
+            'canModifyFinance' => $user->canModifyFinance(),
+            'canAccessOperations' => $user->canAccessOperations(),
+            'canModifyOperations' => $user->canModifyOperations(),
+            'canManageMembers' => $user->canManageMembers(),
+            'canAccessSettings' => $user->canAccessSettings(),
+            'isViewOnly' => $user->isViewOnly(),
+        ];
+    }
+
+    /**
+     * Get default permissions for unauthenticated users
+     */
+    private function getDefaultPermissions(): array
+    {
+        return [
+            'isSuperUser' => false,
+            'canAccessFinance' => false,
+            'canModifyFinance' => false,
+            'canAccessOperations' => false,
+            'canModifyOperations' => false,
+            'canManageMembers' => false,
+            'canAccessSettings' => false,
+            'isViewOnly' => false,
         ];
     }
 }

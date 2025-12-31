@@ -2,6 +2,9 @@
 
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\CheckFinanceAccess;
+use App\Http\Middleware\CheckSuperUser;
+use App\Http\Middleware\CheckOperationsAccess;
+use App\Http\Middleware\CheckSettingsAccess;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,9 +23,12 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        // Register middleware aliases
+        // Register middleware aliases for role-based access control
         $middleware->alias([
-            'finance.access' => CheckFinanceAccess::class,
+            'super.user' => CheckSuperUser::class,           // Super user only
+            'finance.access' => CheckFinanceAccess::class,   // Owner, Admin, Investor
+            'operations.access' => CheckOperationsAccess::class, // Owner, Admin, Farmer
+            'settings.access' => CheckSettingsAccess::class, // Owner, Admin
         ]);
 
         // Exclude Telegram webhook from CSRF protection

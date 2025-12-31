@@ -24,6 +24,15 @@ export interface BreadcrumbItem {
 
 export type BreadcrumbItemType = BreadcrumbItem;
 
+// Farm Role types
+export type FarmRoleValue = 'owner' | 'admin' | 'farmer' | 'investor';
+
+export interface FarmRoleOption {
+    value: FarmRoleValue;
+    label: string;
+    description: string;
+}
+
 // User types
 export interface User {
     id: number;
@@ -44,7 +53,20 @@ export interface Farm {
     name: string;
     picture?: string | null;
     users_count?: number;
-    role?: string;
+    role?: FarmRoleValue | string;
+    role_label?: string;
+}
+
+// Permission types - matches what HandleInertiaRequests sends
+export interface Permissions {
+    isSuperUser: boolean;
+    canAccessFinance: boolean;
+    canModifyFinance: boolean;
+    canAccessOperations: boolean;
+    canModifyOperations: boolean;
+    canManageMembers: boolean;
+    canAccessSettings: boolean;
+    isViewOnly: boolean;
 }
 
 // Flash message types
@@ -63,8 +85,10 @@ export interface SharedData {
     auth: {
         user: User | null;
         farms: Farm[];
+        permissions: Permissions;
     };
     flash: FlashMessages;
+    farmRoles: FarmRoleOption[];
 }
 
 // Livestock types

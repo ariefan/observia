@@ -1,6 +1,6 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import type { NavItem, NavGroup, SharedData } from '@/types';
+import type { NavItem, SharedData, Permissions } from '@/types';
 import {
     LayoutGrid,
     Home,
@@ -10,34 +10,66 @@ import {
     Layers,
     CreditCard,
     Settings,
+    BarChart3,
 } from 'lucide-vue-next';
 import { IconFileText, IconHorse } from '@tabler/icons-vue';
 
 /**
  * Centralized navigation composable
  * Single source of truth for all navigation items across the application
+ *
+ * Uses permissions from backend (HandleInertiaRequests) for consistency
  */
 export function useNavigation() {
     const page = usePage<SharedData>();
 
     const back = () => window.history.back();
 
+    // Get permissions from backend
+    const permissions = computed<Permissions>(() => {
+        return page.props.auth.permissions ?? {
+            isSuperUser: false,
+            canAccessFinance: false,
+            canModifyFinance: false,
+            canAccessOperations: false,
+            canModifyOperations: false,
+            canManageMembers: false,
+            canAccessSettings: false,
+            isViewOnly: false,
+        };
+    });
+
     // Check if user has farm context
     const hasFarmContext = computed(() => {
-        return page.props.auth.farms && page.props.auth.user?.current_farm_id;
+        return !!(page.props.auth.farms?.length && page.props.auth.user?.current_farm_id);
     });
 
-    // Check if user is super user
-    const isSuperUser = computed(() => {
-        return page.props.auth.user?.is_super_user ?? false;
+    // Check if user is super user (from permissions)
+    const isSuperUser = computed(() => permissions.value.isSuperUser);
+
+    // Check if user can access operations (owner, admin, farmer)
+    const canAccessOperations = computed(() => permissions.value.canAccessOperations);
+
+    // Check if user can access finance (owner, admin, investor)
+    const canAccessFinance = computed(() => permissions.value.canAccessFinance);
+
+    // Check if user can modify finance (owner, admin)
+    const canModifyFinance = computed(() => permissions.value.canModifyFinance);
+
+    // Check if user can access settings (owner, admin)
+    const canAccessSettings = computed(() => permissions.value.canAccessSettings);
+
+    // Check if user is view only (investor)
+    const isViewOnly = computed(() => permissions.value.isViewOnly);
+
+    // Get current farm role
+    const currentFarmRole = computed(() => {
+        return page.props.auth.user?.currentFarm?.role ?? null;
     });
 
-    // Check if user has admin access (super user or admin/owner/finance role)
-    const hasAdminAccess = computed(() => {
-        if (isSuperUser.value) return true;
-        const currentFarm = page.props.auth.user?.currentFarm;
-        if (!currentFarm) return false;
-        return ['admin', 'owner', 'finance'].includes(currentFarm.role ?? '');
+    // Get current farm role label
+    const currentFarmRoleLabel = computed(() => {
+        return page.props.auth.user?.currentFarm?.role_label ?? null;
     });
 
     /**
@@ -63,35 +95,52 @@ export function useNavigation() {
             );
         }
 
-        // Farm-dependent items
+        // Farm-dependent items - Dashboard always visible if has farm context
         if (hasFarmContext.value) {
-            items.push(
-                {
-                    title: 'Dashboard',
-                    href: '/dashboard',
-                    icon: LayoutGrid,
-                },
-                {
-                    title: 'Populasi',
-                    href: '/livestocks',
-                    icon: IconHorse,
-                },
-                {
-                    title: 'Produktivitas',
-                    href: '/productivity',
-                    icon: TrendingUp,
-                },
-                {
-                    title: 'Kesehatan',
-                    href: '/health-records',
-                    icon: Heart,
-                },
-                {
+            items.push({
+                title: 'Dashboard',
+                href: '/dashboard',
+                icon: LayoutGrid,
+            });
+
+            // Operational items - only for users who can access operations (not investors)
+            if (canAccessOperations.value) {
+                items.push(
+                    {
+                        title: 'Populasi',
+                        href: '/livestocks',
+                        icon: IconHorse,
+                    },
+                    {
+                        title: 'Produktivitas',
+                        href: '/productivity',
+                        icon: TrendingUp,
+                    },
+                    {
+                        title: 'Kesehatan',
+                        href: '/health-records',
+                        icon: Heart,
+                    }
+                );
+            }
+
+            // Finance items - visible to users with finance access
+            if (canAccessFinance.value) {
+                items.push({
+                    title: 'Keuangan',
+                    href: '/payments/finance',
+                    icon: CreditCard,
+                });
+            }
+
+            // Transaksi - for operational users
+            if (canAccessOperations.value) {
+                items.push({
                     title: 'Transaksi',
                     href: '/transaksi/paket-layanan',
                     icon: CreditCard,
-                }
-            );
+                });
+            }
         }
 
         // Data menu - available for super users or users with farm context
@@ -103,8 +152,8 @@ export function useNavigation() {
             });
         }
 
-        // Settings - for admin users
-        if (hasAdminAccess.value) {
+        // Settings - for users with settings access (owner, admin, super user)
+        if (canAccessSettings.value) {
             items.push({
                 title: 'Pengaturan',
                 href: '/admin/settings',
@@ -141,28 +190,36 @@ export function useNavigation() {
         }
 
         if (hasFarmContext.value) {
-            items.push(
-                {
-                    title: 'Dashboard',
-                    href: '/dashboard',
-                    icon: LayoutGrid,
-                },
-                {
-                    title: 'Populasi',
-                    href: '/livestocks',
-                    icon: IconHorse,
-                },
-                {
-                    title: 'Produktivitas',
-                    href: '/productivity',
-                    icon: TrendingUp,
-                },
-                {
-                    title: 'Kesehatan',
-                    href: '/health-records',
-                    icon: Heart,
-                }
-            );
+            items.push({
+                title: 'Dashboard',
+                href: '/dashboard',
+                icon: LayoutGrid,
+            });
+
+            // Only show operational items if user can access operations
+            if (canAccessOperations.value) {
+                items.push(
+                    {
+                        title: 'Populasi',
+                        href: '/livestocks',
+                        icon: IconHorse,
+                    },
+                    {
+                        title: 'Produktivitas',
+                        href: '/productivity',
+                        icon: TrendingUp,
+                    }
+                );
+            }
+
+            // Finance for investors and admins
+            if (canAccessFinance.value) {
+                items.push({
+                    title: 'Keuangan',
+                    href: '/payments/finance',
+                    icon: BarChart3,
+                });
+            }
         }
 
         if (isSuperUser.value || hasFarmContext.value) {
@@ -208,9 +265,16 @@ export function useNavigation() {
 
     return {
         back,
+        permissions,
         hasFarmContext,
         isSuperUser,
-        hasAdminAccess,
+        canAccessOperations,
+        canAccessFinance,
+        canModifyFinance,
+        canAccessSettings,
+        isViewOnly,
+        currentFarmRole,
+        currentFarmRoleLabel,
         mainNavItems,
         mobileNavItems,
         isActiveRoute,
