@@ -3,76 +3,15 @@ import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, } from '@/components/ui/sidebar';
-import type { NavItem } from '@/types';
-import { Link, usePage } from '@inertiajs/vue3';
-import { LayoutGrid, Home, Folder, BookOpen, Shield, History, LogIn, TrendingUp, Bell, FileText, Settings, Heart, FolderOpen, Layers, CreditCard } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
+import { Folder, BookOpen } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSidebar } from '@/components/ui/sidebar/utils';
-import type { SharedData } from '@/types';
-import { IconFileText, IconHorse } from '@tabler/icons-vue';
+import { useNavigation } from '@/composables/useNavigation';
+import type { NavItem } from '@/types';
 
-const page = usePage<SharedData>();
-
-const mainNavItems: NavItem[] = [
-    // Add Super Dashboard for superusers at the top
-    ...(page.props.auth.user?.is_super_user
-        ? [{
-            title: 'Super Dashboard',
-            href: '/super-dashboard',
-            icon: Shield,
-        },
-        {
-            title: 'Manajemen Konten',
-            href: '/content-management',
-            icon: Layers,
-        }]
-        : []
-    ),
-    // Farm-dependent menu items (require current_farm_id)
-    ...(page.props.auth.farms && page.props.auth.user.current_farm_id
-        ? [{
-            title: 'Dashboard',
-            href: '/dashboard',
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Populasi',
-            href: '/livestocks',
-            icon: IconHorse,
-        },
-        {
-            title: 'Produktivitas',
-            href: '/productivity',
-            icon: TrendingUp,
-        },
-        {
-            title: 'Transaksi',
-            href: '/transaksi/paket-layanan',
-            icon: CreditCard,
-        },
-        ]
-        : []
-    ),
-    // Data menu - available for super users without farm context, or regular users with farm context
-    ...(page.props.auth.user?.is_super_user || (page.props.auth.farms && page.props.auth.user.current_farm_id)
-        ? [{
-            title: 'Data',
-            href: '/laporan',
-            icon: IconFileText,
-        }]
-        : []
-    ),
-    // Home menu for users without farm context (non-super users)
-    ...(!page.props.auth.user?.is_super_user && (!page.props.auth.farms || !page.props.auth.user.current_farm_id)
-        ? [{
-            title: 'Home',
-            href: '/home',
-            icon: Home,
-        }]
-        : []
-    ),
-];
+const { mainNavItems } = useNavigation();
 
 const footerNavItems: NavItem[] = [
     {

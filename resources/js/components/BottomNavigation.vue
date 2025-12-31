@@ -1,79 +1,11 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import type { NavItem, SharedData } from '@/types';
-import { LayoutGrid, Home, Shield, TrendingUp, Heart } from 'lucide-vue-next';
-import { IconFileText, IconHorse } from '@tabler/icons-vue';
+import { Link } from '@inertiajs/vue3';
+import { useNavigation } from '@/composables/useNavigation';
 import { computed } from 'vue';
 
-const page = usePage<SharedData>();
+const { mobileNavItems, isActiveRoute } = useNavigation();
 
-// Same navigation logic as AppSidebar
-const mainNavItems = computed<NavItem[]>(() => {
-    const items: NavItem[] = [];
-
-    if (page.props.auth.user?.is_super_user) {
-        items.push({
-            title: 'Super Dashboard',
-            href: '/super-dashboard',
-            icon: Shield,
-        });
-    }
-
-    if (page.props.auth.farms && page.props.auth.user?.current_farm_id) {
-        items.push(
-            {
-                title: 'Dashboard',
-                href: '/dashboard',
-                icon: LayoutGrid,
-            },
-            {
-                title: 'Populasi',
-                href: '/livestocks',
-                icon: IconHorse,
-            },
-            {
-                title: 'Produktivitas',
-                href: '/productivity',
-                icon: TrendingUp,
-            },
-            {
-                title: 'Kesehatan',
-                href: '/health-records',
-                icon: Heart,
-            },
-        );
-    }
-
-    if (
-        page.props.auth.user?.is_super_user ||
-        (page.props.auth.farms && page.props.auth.user?.current_farm_id)
-    ) {
-        items.push({
-            title: 'Data',
-            href: '/rations',
-            icon: IconFileText,
-        });
-    }
-
-    if (
-        !page.props.auth.user?.is_super_user &&
-        (!page.props.auth.farms || !page.props.auth.user?.current_farm_id)
-    ) {
-        items.push({
-            title: 'Home',
-            href: '/home',
-            icon: Home,
-        });
-    }
-
-    return items;
-});
-
-const hasOverflowItems = computed(() => mainNavItems.value.length > 5);
-
-const isActiveRoute = (href: string) => {
-    return page.url === href || page.url.startsWith(href.replace(/\/$/, ''));
-};
+const hasOverflowItems = computed(() => mobileNavItems.value.length > 5);
 </script>
 
 <template>
@@ -88,7 +20,7 @@ const isActiveRoute = (href: string) => {
                 ]"
             >
                 <Link
-                    v-for="item in mainNavItems"
+                    v-for="item in mobileNavItems"
                     :key="item.title"
                     :href="item.href"
                     :class="[
@@ -99,6 +31,7 @@ const isActiveRoute = (href: string) => {
                         hasOverflowItems ? 'flex-none basis-20 snap-center' : 'flex-1'
                     ]"
                     :aria-current="isActiveRoute(item.href) ? 'page' : undefined"
+                    :aria-label="item.title"
                 >
                     <component :is="item.icon" class="h-5 w-5 shrink-0" />
                     <span class="truncate text-[11px] font-medium leading-tight">
