@@ -27,13 +27,16 @@ class RationController extends Controller
     {
         $month = request('month');
         $year = request('year');
+        $currentFarmId = $this->getCurrentFarmId();
 
+        // Rations are typically few per farm, no pagination needed
         $rations = Ration::with('rationItems')
-            ->where('farm_id', $this->getCurrentFarmId())
+            ->where('farm_id', $currentFarmId)
             ->get();
 
+        // History rations with pagination
         $historyRationsQuery = HistoryRation::with('historyRationItems')
-            ->where('farm_id', $this->getCurrentFarmId());
+            ->where('farm_id', $currentFarmId);
 
         if ($month) {
             $historyRationsQuery->whereMonth('created_at', $month);
@@ -44,13 +47,15 @@ class RationController extends Controller
 
         $historyRations = $historyRationsQuery
             ->orderBy('history_rations.created_at', 'desc')
-            ->get();
+            ->paginate(20, ['*'], 'history_page')
+            ->withQueryString();
 
-        // Get herd feedings for the current farm
+        // Get herd IDs for this farm (optimized - single query)
+        $farmHerdIds = Herd::where('farm_id', $currentFarmId)->pluck('id');
+
+        // Get herd feedings with pagination (optimized - no whereHas)
         $herdFeedingsQuery = HerdFeeding::with(['herd.livestocks', 'ration'])
-            ->whereHas('herd', function ($query) {
-                $query->where('farm_id', $this->getCurrentFarmId());
-            });
+            ->whereIn('herd_id', $farmHerdIds);
 
         if ($month) {
             $herdFeedingsQuery->whereMonth('date', $month);
@@ -62,16 +67,19 @@ class RationController extends Controller
         $herdFeedings = $herdFeedingsQuery
             ->orderBy('date', 'desc')
             ->orderBy('time', 'desc')
-            ->get()
-            ->map(function ($feeding) {
-                $feeding->livestock_count = $feeding->herd && $feeding->herd->livestocks ? $feeding->herd->livestocks->count() : 1;
-                return $feeding;
-            });
+            ->paginate(20, ['*'], 'feeding_page')
+            ->withQueryString();
 
-        // Get feeding leftovers for the current farm
+        // Add livestock count to each feeding
+        $herdFeedings->getCollection()->transform(function ($feeding) {
+            $feeding->livestock_count = $feeding->herd && $feeding->herd->livestocks ? $feeding->herd->livestocks->count() : 1;
+            return $feeding;
+        });
+
+        // Get feeding leftovers with pagination (optimized)
         $feedingLeftoversQuery = FeedingLeftover::with(['feeding.herd', 'feeding.ration'])
-            ->whereHas('feeding.herd', function ($query) {
-                $query->where('farm_id', $this->getCurrentFarmId());
+            ->whereHas('feeding', function ($query) use ($farmHerdIds) {
+                $query->whereIn('herd_id', $farmHerdIds);
             });
 
         if ($month) {
@@ -84,7 +92,8 @@ class RationController extends Controller
         $feedingLeftovers = $feedingLeftoversQuery
             ->orderBy('date', 'desc')
             ->orderBy('time', 'desc')
-            ->get();
+            ->paginate(20, ['*'], 'leftover_page')
+            ->withQueryString();
 
         return Inertia::render('Rations/Index', [
             'rations' => $rations,
@@ -327,7 +336,7 @@ class RationController extends Controller
             ->where('farm_id', $this->getCurrentFarmId())
             ->when($id, fn ($q) => $q->where('id', $id))
             ->when(!$id && $query, function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%");
+                $q->where('name', 'like', '%' . escapeLike($query) . '%');
             })
             ->with('rationItems')
             ->select('id', 'name')

@@ -252,12 +252,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Milk Payment Routes
     Route::prefix('payments')->name('payments.')->group(function () {
-        Route::get('/finance', [MilkPaymentController::class, 'financeIndex'])->name('finance');
+        // Finance routes - require admin/owner/finance role
+        Route::middleware('finance.access')->group(function () {
+            Route::get('/finance', [MilkPaymentController::class, 'financeIndex'])->name('finance');
+            Route::get('/calculate', [MilkPaymentController::class, 'calculateForm'])->name('calculate');
+            Route::post('/calculate', [MilkPaymentController::class, 'calculate'])->name('calculate.store');
+            Route::post('/{payment}/approve', [MilkPaymentController::class, 'approve'])->name('approve');
+            Route::post('/{payment}/mark-paid', [MilkPaymentController::class, 'markAsPaid'])->name('mark-paid');
+        });
+
+        // Farmer routes - accessible to all authenticated users
         Route::get('/farmer', [MilkPaymentController::class, 'farmerIndex'])->name('farmer');
-        Route::get('/calculate', [MilkPaymentController::class, 'calculateForm'])->name('calculate');
-        Route::post('/calculate', [MilkPaymentController::class, 'calculate'])->name('calculate.store');
-        Route::post('/{payment}/approve', [MilkPaymentController::class, 'approve'])->name('approve');
-        Route::post('/{payment}/mark-paid', [MilkPaymentController::class, 'markAsPaid'])->name('mark-paid');
         Route::get('/{payment}', [MilkPaymentController::class, 'show'])->name('show');
     });
 

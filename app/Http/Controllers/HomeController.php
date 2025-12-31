@@ -12,6 +12,7 @@ use App\Models\LivestockWeight;
 use App\Models\HerdFeeding;
 use App\Models\Herd;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Traits\HasCurrentFarm;
 
@@ -35,7 +36,7 @@ class HomeController extends Controller
         $data = ['farmInvites' => $farmInvites];
         return Inertia::render('home/Home', $data);
     }
-    
+
     public function farmLogout(Request $request)
     {
         auth()->user()->update(['current_farm_id' => null]);
@@ -68,11 +69,15 @@ class HomeController extends Controller
             return Inertia::render('home/Dashboard', $data);
         }
 
-        // Get all active livestock in current farm (excluding ended livestock)
-        $livestocks = Livestock::where('farm_id', $currentFarmId)
+        // Get active livestock IDs for this farm (single query, reused throughout)
+        $activeLivestockIds = Livestock::where('farm_id', $currentFarmId)
             ->whereDoesntHave('endings')
-            ->with(['milkings', 'weights'])
-            ->get();
+            ->pluck('id');
+
+        $totalLivestock = $activeLivestockIds->count();
+
+        // Get herd IDs for this farm (for feed queries)
+        $farmHerdIds = Herd::where('farm_id', $currentFarmId)->pluck('id');
 
         // Handle date/month filtering
         $selectedDate = $request->input('date');
@@ -83,177 +88,104 @@ class HomeController extends Controller
             $selectedMonth = Carbon::now()->format('Y-m');
         }
 
+        // Determine date ranges based on filter
         if ($selectedMonth) {
-            // Monthly view - aggregate data for the entire month
             [$year, $month] = explode('-', $selectedMonth);
-            $startDate = Carbon::create($year, $month, 1)->startOfMonth();
-            $endDate = Carbon::create($year, $month, 1)->endOfMonth();
-
-            // Calculate milk production for selected month
-            $todayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereBetween('date', [$startDate, $endDate])
-            ->sum('milk_volume');
-
-            // Calculate previous month's milk production for comparison
-            $prevMonthStart = $startDate->copy()->subMonth()->startOfMonth();
-            $prevMonthEnd = $startDate->copy()->subMonth()->endOfMonth();
-            $yesterdayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereBetween('date', [$prevMonthStart, $prevMonthEnd])
-            ->sum('milk_volume');
-
-            $today = $startDate;
-            $yesterday = $prevMonthStart;
+            $currentStart = Carbon::create($year, $month, 1)->startOfMonth();
+            $currentEnd = Carbon::create($year, $month, 1)->endOfMonth();
+            $previousStart = $currentStart->copy()->subMonth()->startOfMonth();
+            $previousEnd = $currentStart->copy()->subMonth()->endOfMonth();
+            $isMonthly = true;
         } elseif ($selectedDate) {
-            // Date view - show data for specific date
-            $today = Carbon::parse($selectedDate);
-            $yesterday = Carbon::parse($selectedDate)->subDay();
-
-            $todayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereDate('date', $today)
-            ->sum('milk_volume');
-
-            $yesterdayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereDate('date', $yesterday)
-            ->sum('milk_volume');
+            $currentStart = Carbon::parse($selectedDate)->startOfDay();
+            $currentEnd = Carbon::parse($selectedDate)->endOfDay();
+            $previousStart = Carbon::parse($selectedDate)->subDay()->startOfDay();
+            $previousEnd = Carbon::parse($selectedDate)->subDay()->endOfDay();
+            $isMonthly = false;
         } else {
-            // Default - today's data
-            $today = Carbon::today();
-            $todayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereDate('date', $today)
-            ->sum('milk_volume');
-
-            // Calculate yesterday's milk production for comparison
-            $yesterday = Carbon::yesterday();
-            $yesterdayMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereDate('date', $yesterday)
-            ->sum('milk_volume');
+            $currentStart = Carbon::today()->startOfDay();
+            $currentEnd = Carbon::today()->endOfDay();
+            $previousStart = Carbon::yesterday()->startOfDay();
+            $previousEnd = Carbon::yesterday()->endOfDay();
+            $isMonthly = false;
         }
 
-        // Calculate total milk production
-        $totalMilkProduction = LivestockMilking::whereHas('livestock', function($query) use ($currentFarmId) {
-            $query->where('farm_id', $currentFarmId);
-        })->sum('milk_volume');
+        // Single optimized query for milk production stats
+        $milkStats = LivestockMilking::whereIn('livestock_id', $activeLivestockIds)
+            ->selectRaw("
+                SUM(CASE WHEN date BETWEEN ? AND ? THEN milk_volume ELSE 0 END) as current_production,
+                SUM(CASE WHEN date BETWEEN ? AND ? THEN milk_volume ELSE 0 END) as previous_production,
+                SUM(milk_volume) as total_production
+            ", [$currentStart, $currentEnd, $previousStart, $previousEnd])
+            ->first();
+
+        $todayMilkProduction = $milkStats->current_production ?? 0;
+        $yesterdayMilkProduction = $milkStats->previous_production ?? 0;
+        $totalMilkProduction = $milkStats->total_production ?? 0;
 
         // Calculate milk production trend
         $milkTrend = null;
         if ($yesterdayMilkProduction > 0) {
             $milkTrend = (($todayMilkProduction - $yesterdayMilkProduction) / $yesterdayMilkProduction) * 100;
-        } elseif ($todayMilkProduction > 0 && $yesterdayMilkProduction == 0) {
-            // If there's production today but none yesterday, show as 100% increase
+        } elseif ($todayMilkProduction > 0) {
             $milkTrend = 100;
         }
 
-        // Calculate average weight of all livestock
-        $totalWeight = 0;
-        $weightCount = 0;
-        foreach ($livestocks as $livestock) {
-            $latestWeight = $livestock->weights()->orderByDesc('date')->first();
-            if ($latestWeight) {
-                $totalWeight += $latestWeight->weight;
-                $weightCount++;
-            } elseif ($livestock->weight) {
-                $totalWeight += $livestock->weight;
-                $weightCount++;
-            }
-        }
-        $averageWeight = $weightCount > 0 ? round($totalWeight / $weightCount, 2) : 0;
+        // Optimized average weight calculation using subquery for latest weights
+        $avgWeightResult = DB::table('livestock_weights as lw1')
+            ->join(DB::raw('(SELECT livestock_id, MAX(date) as max_date FROM livestock_weights GROUP BY livestock_id) as lw2'), function($join) {
+                $join->on('lw1.livestock_id', '=', 'lw2.livestock_id')
+                     ->on('lw1.date', '=', 'lw2.max_date');
+            })
+            ->whereIn('lw1.livestock_id', $activeLivestockIds)
+            ->avg('lw1.weight');
 
-        // Calculate weight trend (this week vs last week)
+        // Fallback to initial weights if no weight records
+        if (!$avgWeightResult) {
+            $avgWeightResult = Livestock::whereIn('id', $activeLivestockIds)
+                ->whereNotNull('weight')
+                ->avg('weight');
+        }
+        $averageWeight = round($avgWeightResult ?? 0, 2);
+
+        // Optimized weight trend calculation (this week vs last week)
         $thisWeekStart = Carbon::now()->startOfWeek();
         $lastWeekStart = Carbon::now()->subWeek()->startOfWeek();
-        
-        $thisWeekWeights = LivestockWeight::whereHas('livestock', function($query) use ($currentFarmId) {
-            $query->where('farm_id', $currentFarmId);
-        })
-        ->where('date', '>=', $thisWeekStart)
-        ->avg('weight');
 
-        $lastWeekWeights = LivestockWeight::whereHas('livestock', function($query) use ($currentFarmId) {
-            $query->where('farm_id', $currentFarmId);
-        })
-        ->where('date', '>=', $lastWeekStart)
-        ->where('date', '<', $thisWeekStart)
-        ->avg('weight');
+        $weightTrendStats = LivestockWeight::whereIn('livestock_id', $activeLivestockIds)
+            ->selectRaw("
+                AVG(CASE WHEN date >= ? THEN weight END) as this_week_avg,
+                AVG(CASE WHEN date >= ? AND date < ? THEN weight END) as last_week_avg
+            ", [$thisWeekStart, $lastWeekStart, $thisWeekStart])
+            ->first();
+
+        $thisWeekWeights = $weightTrendStats->this_week_avg;
+        $lastWeekWeights = $weightTrendStats->last_week_avg;
 
         $weightTrend = null;
         if ($lastWeekWeights > 0 && $thisWeekWeights > 0) {
             $weightTrend = (($thisWeekWeights - $lastWeekWeights) / $lastWeekWeights) * 100;
-        } elseif ($thisWeekWeights > 0 && ($lastWeekWeights == 0 || $lastWeekWeights === null)) {
-            // If there's weight data this week but none last week, show as positive trend
+        } elseif ($thisWeekWeights > 0) {
             $weightTrend = 100;
         }
 
-        // Calculate feed amount based on date/month filter
-        $todayFeedAmount = 0;
-        $yesterdayFeedAmount = 0;
+        // Optimized feed amount calculation
+        $feedStats = HerdFeeding::whereIn('herd_id', $farmHerdIds)
+            ->selectRaw("
+                SUM(CASE WHEN date BETWEEN ? AND ? THEN quantity ELSE 0 END) as current_feed,
+                SUM(CASE WHEN date BETWEEN ? AND ? THEN quantity ELSE 0 END) as previous_feed
+            ", [$currentStart, $currentEnd, $previousStart, $previousEnd])
+            ->first();
 
-        if ($selectedMonth) {
-            // Monthly view - aggregate feed data for the entire month
-            [$year, $month] = explode('-', $selectedMonth);
-            $startDate = Carbon::create($year, $month, 1)->startOfMonth();
-            $endDate = Carbon::create($year, $month, 1)->endOfMonth();
-
-            $todayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereBetween('date', [$startDate, $endDate])
-            ->sum('quantity');
-
-            // Previous month
-            $prevMonthStart = $startDate->copy()->subMonth()->startOfMonth();
-            $prevMonthEnd = $startDate->copy()->subMonth()->endOfMonth();
-            $yesterdayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereBetween('date', [$prevMonthStart, $prevMonthEnd])
-            ->sum('quantity');
-        } elseif ($selectedDate) {
-            // Date view - show data for specific date
-            $todayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereDate('date', $today)
-            ->sum('quantity');
-
-            $yesterdayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereDate('date', $yesterday)
-            ->sum('quantity');
-        } else {
-            // Default - today's data
-            $todayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereDate('date', $today)
-            ->sum('quantity');
-
-            $yesterdayFeedAmount = HerdFeeding::whereHas('herd', function($query) use ($currentFarmId) {
-                $query->where('farm_id', $currentFarmId);
-            })
-            ->whereDate('date', $yesterday)
-            ->sum('quantity');
-        }
+        $todayFeedAmount = $feedStats->current_feed ?? 0;
+        $yesterdayFeedAmount = $feedStats->previous_feed ?? 0;
 
         // Calculate FCR (Feed Conversion Ratio)
-        // FCR = Feed Amount (kg) / Milk Production (liters)
         $todayFCR = ($todayMilkProduction > 0) ? round($todayFeedAmount / $todayMilkProduction, 2) : 0;
         $yesterdayFCR = ($yesterdayMilkProduction > 0) ? round($yesterdayFeedAmount / $yesterdayMilkProduction, 2) : 0;
 
         // Generate dynamic notification
-        $notification = $this->generateNotification($todayMilkProduction, $milkTrend, $weightTrend, $livestocks->count());
+        $notification = $this->generateNotification($todayMilkProduction, $milkTrend, $weightTrend, $totalLivestock);
 
         // Get farm invitations for current user
         $farmInvites = FarmInvite::where('email', Auth::user()->email)
@@ -261,7 +193,7 @@ class HomeController extends Controller
             ->get();
 
         $data = [
-            'totalLivestock' => $livestocks->count(),
+            'totalLivestock' => $totalLivestock,
             'todayMilkProduction' => round($todayMilkProduction, 2),
             'totalMilkProduction' => round($totalMilkProduction, 2),
             'averageWeight' => $averageWeight,
