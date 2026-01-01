@@ -203,6 +203,12 @@ const supplyChainItems = computed(() => {
 // Super user only items
 const superUserItems = [
   {
+    title: 'Manajemen Billing',
+    route: 'admin.billing.index',
+    icon: Wallet,
+    description: 'Kelola paket & langganan',
+  },
+  {
     title: 'Spesies',
     route: 'species.index',
     icon: IconDna,

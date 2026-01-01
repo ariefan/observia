@@ -146,9 +146,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/productivity/weight', [ProduktivitasController::class, 'bobot'])->name('productivity.weight');
 
     // Transaksi Routes
-    Route::get('/transaksi/paket-layanan', [TransaksiController::class, 'paketLayanan'])->name('transaksi.paket-layanan');
-    Route::get('/transaksi/tagihan', [TransaksiController::class, 'tagihan'])->name('transaksi.tagihan');
-    Route::get('/transaksi/riwayat-pembayaran', [TransaksiController::class, 'riwayatPembayaran'])->name('transaksi.riwayat-pembayaran');
+    Route::prefix('transaksi')->name('transaksi.')->group(function () {
+        Route::get('/paket-layanan', [TransaksiController::class, 'paketLayanan'])->name('paket-layanan');
+        Route::get('/tagihan', [TransaksiController::class, 'tagihan'])->name('tagihan');
+        Route::get('/riwayat-pembayaran', [TransaksiController::class, 'riwayatPembayaran'])->name('riwayat-pembayaran');
+        Route::post('/subscribe', [TransaksiController::class, 'subscribe'])->name('subscribe');
+        Route::post('/invoices/{invoice}/pay', [TransaksiController::class, 'payInvoice'])->name('invoices.pay');
+        Route::post('/cancel-subscription', [TransaksiController::class, 'cancelSubscription'])->name('cancel-subscription');
+        Route::post('/toggle-auto-renew', [TransaksiController::class, 'toggleAutoRenew'])->name('toggle-auto-renew');
+    });
 
     // Report Routes
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.api');
@@ -197,6 +203,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'admin.settings.destroy',
     ]);
     Route::post('/admin/settings/bulk-update', [SettingController::class, 'bulkUpdate'])->name('admin.settings.bulk-update');
+
+    // Admin Billing Routes (Super User Only)
+    Route::prefix('admin/billing')->name('admin.billing.')->group(function () {
+        Route::get('/', [App\Http\Controllers\AdminBillingController::class, 'index'])->name('index');
+        Route::get('/plans', [App\Http\Controllers\AdminBillingController::class, 'plans'])->name('plans');
+        Route::post('/plans', [App\Http\Controllers\AdminBillingController::class, 'storePlan'])->name('plans.store');
+        Route::put('/plans/{plan}', [App\Http\Controllers\AdminBillingController::class, 'updatePlan'])->name('plans.update');
+        Route::delete('/plans/{plan}', [App\Http\Controllers\AdminBillingController::class, 'destroyPlan'])->name('plans.destroy');
+        Route::post('/plans/{plan}/toggle-visibility', [App\Http\Controllers\AdminBillingController::class, 'togglePlanVisibility'])->name('plans.toggle-visibility');
+        Route::get('/subscriptions', [App\Http\Controllers\AdminBillingController::class, 'subscriptions'])->name('subscriptions');
+        Route::get('/invoices', [App\Http\Controllers\AdminBillingController::class, 'invoices'])->name('invoices');
+        Route::post('/invoices/{invoice}/mark-paid', [App\Http\Controllers\AdminBillingController::class, 'markInvoicePaid'])->name('invoices.mark-paid');
+        Route::post('/invoices/{invoice}/cancel', [App\Http\Controllers\AdminBillingController::class, 'cancelInvoice'])->name('invoices.cancel');
+    });
 
     // Backup Routes (Super User Only)
     Route::prefix('admin/backup')->name('admin.backup.')->group(function () {

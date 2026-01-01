@@ -30,7 +30,9 @@
       "Bash(sed:*)",
       "Bash(ssh:*)",
       "Bash(git commit:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(xargs cat:*)"
     ],
     "deny": [],
     "additionalDirectories": [

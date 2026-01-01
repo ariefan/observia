@@ -121,6 +121,47 @@ class Farm extends Model
     }
 
     /**
+     * Get all subscriptions for the farm.
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(FarmSubscription::class);
+    }
+
+    /**
+     * Get the active subscription for the farm.
+     */
+    public function activeSubscription()
+    {
+        return $this->hasOne(FarmSubscription::class)->where('status', 'active')->latest();
+    }
+
+    /**
+     * Get all subscription invoices for the farm.
+     */
+    public function subscriptionInvoices()
+    {
+        return $this->hasMany(SubscriptionInvoice::class);
+    }
+
+    /**
+     * Check if farm has an active subscription.
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return $this->subscriptions()->active()->exists();
+    }
+
+    /**
+     * Get the current subscription plan.
+     */
+    public function getCurrentPlan(): ?SubscriptionPlan
+    {
+        $subscription = $this->activeSubscription;
+        return $subscription?->plan;
+    }
+
+    /**
      * Create default medicine inventory items for this farm.
      */
     public function createDefaultMedicines(): void
