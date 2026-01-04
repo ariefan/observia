@@ -1,18 +1,8 @@
-import { computed } from 'vue';
+import type { NavItem, Permissions, SharedData } from '@/types';
 import { usePage } from '@inertiajs/vue3';
-import type { NavItem, SharedData, Permissions } from '@/types';
-import {
-    LayoutGrid,
-    Home,
-    Shield,
-    TrendingUp,
-    Heart,
-    Layers,
-    CreditCard,
-    Settings,
-    BarChart3,
-} from 'lucide-vue-next';
 import { IconFileText, IconHorse } from '@tabler/icons-vue';
+import { BarChart3, CreditCard, Heart, Home, LayoutGrid, Shield, TrendingUp } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 /**
  * Centralized navigation composable
@@ -27,16 +17,18 @@ export function useNavigation() {
 
     // Get permissions from backend
     const permissions = computed<Permissions>(() => {
-        return page.props.auth.permissions ?? {
-            isSuperUser: false,
-            canAccessFinance: false,
-            canModifyFinance: false,
-            canAccessOperations: false,
-            canModifyOperations: false,
-            canManageMembers: false,
-            canAccessSettings: false,
-            isViewOnly: false,
-        };
+        return (
+            page.props.auth.permissions ?? {
+                isSuperUser: false,
+                canAccessFinance: false,
+                canModifyFinance: false,
+                canAccessOperations: false,
+                canModifyOperations: false,
+                canManageMembers: false,
+                canAccessSettings: false,
+                isViewOnly: false,
+            }
+        );
     });
 
     // Check if user has farm context
@@ -81,18 +73,11 @@ export function useNavigation() {
 
         // Super user items
         if (isSuperUser.value) {
-            items.push(
-                {
-                    title: 'Super Dashboard',
-                    href: '/super-dashboard',
-                    icon: Shield,
-                },
-                {
-                    title: 'Manajemen Konten',
-                    href: '/content-management',
-                    icon: Layers,
-                }
-            );
+            items.push({
+                title: 'Super Dashboard',
+                href: '/super-dashboard',
+                icon: Shield,
+            });
         }
 
         // Farm-dependent items - Dashboard always visible if has farm context
@@ -120,17 +105,8 @@ export function useNavigation() {
                         title: 'Kesehatan',
                         href: '/health-records',
                         icon: Heart,
-                    }
+                    },
                 );
-            }
-
-            // Finance items - visible to users with finance access
-            if (canAccessFinance.value) {
-                items.push({
-                    title: 'Keuangan',
-                    href: '/payments/finance',
-                    icon: CreditCard,
-                });
             }
 
             // Transaksi - for operational users
@@ -149,15 +125,6 @@ export function useNavigation() {
                 title: 'Data',
                 href: '/laporan',
                 icon: IconFileText,
-            });
-        }
-
-        // Settings - for users with settings access (owner, admin, super user)
-        if (canAccessSettings.value) {
-            items.push({
-                title: 'Pengaturan',
-                href: '/admin/settings',
-                icon: Settings,
             });
         }
 
@@ -208,7 +175,7 @@ export function useNavigation() {
                         title: 'Produktivitas',
                         href: '/productivity',
                         icon: TrendingUp,
-                    }
+                    },
                 );
             }
 
