@@ -110,7 +110,7 @@ class MilkBatchController extends Controller
         $collectionDate = $request->get('collection_date', Carbon::today()->format('Y-m-d'));
         $session = $request->get('session', 'morning');
 
-        $availableMilkings = LivestockMilking::with(['livestock:id,name,ear_tag,farm_id'])
+        $availableMilkings = LivestockMilking::with(['livestock:id,name,tag_id,farm_id'])
             ->whereHas('livestock', function ($query) use ($currentFarmId) {
                 $query->where('farm_id', $currentFarmId);
             })
@@ -194,7 +194,7 @@ class MilkBatchController extends Controller
         // Get source milking records for traceability
         $sourceMilkings = [];
         if ($batch->source_livestock_milking_ids) {
-            $sourceMilkings = LivestockMilking::with(['livestock:id,name,ear_tag'])
+            $sourceMilkings = LivestockMilking::with(['livestock:id,name,tag_id'])
                 ->whereIn('id', $batch->source_livestock_milking_ids)
                 ->get();
         }

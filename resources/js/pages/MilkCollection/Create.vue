@@ -17,7 +17,7 @@ interface LivestockMilking {
   livestock: {
     id: number;
     name: string;
-    ear_tag: string;
+    tag_id: string;
   };
   milk_volume: number;
   milking_time: string;
@@ -258,7 +258,7 @@ const formatSession = (session: string) => {
                       :key="milking.id"
                       class="border-b hover:bg-muted/30"
                     >
-                      <td class="p-2 font-mono text-xs">{{ milking.livestock.ear_tag }}</td>
+                      <td class="p-2 font-mono text-xs">{{ milking.livestock.tag_id }}</td>
                       <td class="p-2">{{ milking.livestock.name }}</td>
                       <td class="p-2 text-right font-semibold">{{ milking.milk_volume }}</td>
                       <td class="p-2 text-xs text-muted-foreground">
