@@ -39,7 +39,9 @@ class MilkBatchController extends Controller
 
         $query = MilkBatch::with([
             'farm:id,name',
+            'destinationFarm:id,name',
             'collectedBy:id,name',
+            'courier:id,name',
             'receivedBy:id,name',
             'qualityTestedBy:id,name'
         ])->where('farm_id', $currentFarmId);
@@ -81,6 +83,19 @@ class MilkBatchController extends Controller
         // Calculate stats for current month
         $stats = $this->calculateStats($currentFarmId);
 
+        // Get available destination farms
+        $destinationFarms = Farm::where('id', '!=', $currentFarmId)
+            ->where(function ($query) {
+                $query->where('farm_type', 'processing')
+                    ->orWhere('farm_type', 'both');
+            })
+            ->get(['id', 'name', 'address']);
+
+        // Get users for courier selection (from current farm)
+        $availableCouriers = Farm::find($currentFarmId)
+            ->users()
+            ->get(['id', 'name', 'email']);
+
         return Inertia::render('MilkCollection/Index', [
             'batches' => $batches,
             'filters' => [
@@ -92,6 +107,8 @@ class MilkBatchController extends Controller
                 'session' => $request->get('session'),
             ],
             'stats' => $stats,
+            'destinationFarms' => $destinationFarms,
+            'availableCouriers' => $availableCouriers,
         ]);
     }
 
@@ -314,5 +331,105 @@ class MilkBatchController extends Controller
             ->count();
 
         return round(($gradeCount / $total) * 100, 2);
+    }
+
+    /**
+     * Dispatch batch for transportation to destination factory.
+     */
+    public function dispatch(Request $request, string $id)
+    {
+        $currentFarmId = $this->getCurrentFarmId();
+        $batch = MilkBatch::findOrFail($id);
+
+        // Verify the batch belongs to the current farm
+        if ($batch->farm_id !== $currentFarmId) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'destination_farm_id' => 'required|exists:farms,id',
+            'courier_user_id' => 'nullable|exists:users,id',
+            'courier_name' => 'required_without:courier_user_id|string|max:100',
+            'courier_phone' => 'nullable|string|max:20',
+            'vehicle_number' => 'nullable|string|max:50',
+            'expected_delivery_at' => 'nullable|date',
+            'transport_notes' => 'nullable|string|max:1000',
+        ]);
+
+        // Generate tracking number if not exists
+        if (!$batch->tracking_number) {
+            $validated['tracking_number'] = 'TRK-' . strtoupper(uniqid());
+        }
+
+        $validated['transport_status'] = 'dispatched';
+        $validated['dispatched_at'] = now();
+        $validated['status'] = 'in_transit';
+
+        $batch->update($validated);
+
+        return redirect()->route('milk-batches.show', $batch->id)
+            ->with('success', 'Batch berhasil dikirim. Tracking: ' . $batch->tracking_number);
+    }
+
+    /**
+     * Update transport status.
+     */
+    public function updateTransportStatus(Request $request, string $id)
+    {
+        $batch = MilkBatch::findOrFail($id);
+
+        $validated = $request->validate([
+            'transport_status' => 'required|in:dispatched,in_transit,delivered,returned',
+            'transport_notes' => 'nullable|string|max:1000',
+            'current_location' => 'nullable|string|max:200',
+        ]);
+
+        // Update metadata with location history
+        $metadata = $batch->metadata ?? [];
+        $metadata['location_history'] = $metadata['location_history'] ?? [];
+        $metadata['location_history'][] = [
+            'timestamp' => now()->toISOString(),
+            'status' => $validated['transport_status'],
+            'location' => $validated['current_location'] ?? null,
+            'notes' => $validated['transport_notes'] ?? null,
+        ];
+
+        $batch->update([
+            'transport_status' => $validated['transport_status'],
+            'transport_notes' => $validated['transport_notes'] ?? $batch->transport_notes,
+            'metadata' => $metadata,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status transportasi berhasil diperbarui',
+            'batch' => $batch->fresh(['destinationFarm', 'courier']),
+        ]);
+    }
+
+    /**
+     * Confirm delivery at destination.
+     */
+    public function confirmDelivery(Request $request, string $id)
+    {
+        $batch = MilkBatch::findOrFail($id);
+
+        $validated = $request->validate([
+            'delivered_at' => 'nullable|date',
+            'delivery_notes' => 'nullable|string|max:1000',
+            'received_by_user_id' => 'nullable|exists:users,id',
+        ]);
+
+        $batch->update([
+            'transport_status' => 'delivered',
+            'delivered_at' => $validated['delivered_at'] ?? now(),
+            'delivery_notes' => $validated['delivery_notes'] ?? null,
+            'received_by_user_id' => $validated['received_by_user_id'] ?? null,
+            'received_at' => now(),
+            'status' => 'received',
+        ]);
+
+        return redirect()->route('milk-batches.show', $batch->id)
+            ->with('success', 'Pengiriman berhasil dikonfirmasi');
     }
 }

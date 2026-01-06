@@ -14,13 +14,22 @@ class MilkBatch extends Model
 
     protected $fillable = [
         'batch_code',
+        'tracking_number',
         'farm_id',
+        'destination_farm_id',
         'collection_date',
         'session',
         'total_volume',
         'source_livestock_milking_ids',
         'collected_by_user_id',
+        'courier_user_id',
+        'courier_name',
+        'courier_phone',
+        'vehicle_number',
         'collected_at',
+        'dispatched_at',
+        'delivered_at',
+        'expected_delivery_at',
         'estimated_volume',
         'actual_volume',
         'variance_percentage',
@@ -28,6 +37,8 @@ class MilkBatch extends Model
         'transport_temp_delivery',
         'transport_duration_minutes',
         'transport_notes',
+        'transport_photos',
+        'delivery_notes',
         'received_by_user_id',
         'received_at',
         'visual_check',
@@ -38,6 +49,7 @@ class MilkBatch extends Model
         'quality_grade',
         'quality_notes',
         'status',
+        'transport_status',
         'rejection_reason',
         'metadata',
     ];
@@ -45,10 +57,14 @@ class MilkBatch extends Model
     protected $casts = [
         'collection_date' => 'date',
         'collected_at' => 'datetime',
+        'dispatched_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'expected_delivery_at' => 'datetime',
         'received_at' => 'datetime',
         'quality_tested_at' => 'datetime',
         'source_livestock_milking_ids' => 'array',
         'quality_data' => 'array',
+        'transport_photos' => 'array',
         'metadata' => 'array',
     ];
 
@@ -60,9 +76,19 @@ class MilkBatch extends Model
         return $this->belongsTo(Farm::class);
     }
 
+    public function destinationFarm(): BelongsTo
+    {
+        return $this->belongsTo(Farm::class, 'destination_farm_id');
+    }
+
     public function collectedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'collected_by_user_id');
+    }
+
+    public function courier(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'courier_user_id');
     }
 
     public function receivedBy(): BelongsTo

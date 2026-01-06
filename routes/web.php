@@ -251,6 +251,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('milk-batches')->name('milk-batches.')->group(function () {
         Route::put('/{milkBatch}/receiving', [MilkBatchController::class, 'updateReceiving'])->name('receiving');
         Route::put('/{milkBatch}/quality-test', [MilkBatchController::class, 'updateQualityTest'])->name('quality-test');
+
+        // Transportation routes
+        Route::post('/{milkBatch}/dispatch', [MilkBatchController::class, 'dispatch'])->name('dispatch');
+        Route::put('/{milkBatch}/transport-status', [MilkBatchController::class, 'updateTransportStatus'])->name('transport-status');
+        Route::post('/{milkBatch}/confirm-delivery', [MilkBatchController::class, 'confirmDelivery'])->name('confirm-delivery');
     });
 
     // Quality Control Routes

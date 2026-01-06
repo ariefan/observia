@@ -6,7 +6,12 @@ import SecondSidebar from '@/components/SecondSidebar.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Milk, Search, TrendingUp, TrendingDown } from 'lucide-vue-next';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus, Milk, Search, TrendingUp, TrendingDown, Truck, Package } from 'lucide-vue-next';
 
 const debounce = (func: Function, delay: number) => {
   let timeoutId: NodeJS.Timeout;
@@ -19,7 +24,12 @@ const debounce = (func: Function, delay: number) => {
 interface MilkBatch {
   id: number;
   batch_code: string;
+  tracking_number?: string;
   farm: {
+    id: string;
+    name: string;
+  };
+  destination_farm?: {
     id: string;
     name: string;
   };
@@ -28,10 +38,28 @@ interface MilkBatch {
   total_volume: number;
   quality_grade?: string;
   status: string;
+  transport_status?: string;
   collected_by?: {
     id: string;
     name: string;
   };
+  courier?: {
+    id: string;
+    name: string;
+  };
+  courier_name?: string;
+}
+
+interface Farm {
+  id: string;
+  name: string;
+  address?: string;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
 }
 
 interface Props {
@@ -56,6 +84,8 @@ interface Props {
     grade_c_percentage: number;
     rejected_percentage: number;
   };
+  destinationFarms?: Farm[];
+  availableCouriers?: User[];
 }
 
 const props = defineProps<Props>();
@@ -152,6 +182,91 @@ const formatSession = (session: string) => {
     evening: 'Sore'
   };
   return sessions[session] || session;
+};
+
+// Dispatch dialog state
+const showDispatchDialog = ref(false);
+const selectedBatch = ref<MilkBatch | null>(null);
+const dispatchForm = ref({
+  destination_farm_id: '',
+  courier_user_id: '',
+  courier_name: '',
+  courier_phone: '',
+  vehicle_number: '',
+  expected_delivery_at: '',
+  transport_notes: '',
+});
+const isSubmittingDispatch = ref(false);
+const useCourierUser = ref(true);
+
+const openDispatchDialog = (batch: MilkBatch) => {
+  selectedBatch.value = batch;
+  showDispatchDialog.value = true;
+  // Reset form
+  dispatchForm.value = {
+    destination_farm_id: '',
+    courier_user_id: '',
+    courier_name: '',
+    courier_phone: '',
+    vehicle_number: '',
+    expected_delivery_at: '',
+    transport_notes: '',
+  };
+  useCourierUser.value = true;
+};
+
+const closeDispatchDialog = () => {
+  showDispatchDialog.value = false;
+  selectedBatch.value = null;
+};
+
+const submitDispatch = () => {
+  if (!selectedBatch.value) return;
+
+  isSubmittingDispatch.value = true;
+
+  const formData: any = {
+    destination_farm_id: dispatchForm.value.destination_farm_id,
+    vehicle_number: dispatchForm.value.vehicle_number,
+    expected_delivery_at: dispatchForm.value.expected_delivery_at,
+    transport_notes: dispatchForm.value.transport_notes,
+  };
+
+  if (useCourierUser.value) {
+    formData.courier_user_id = dispatchForm.value.courier_user_id;
+  } else {
+    formData.courier_name = dispatchForm.value.courier_name;
+    formData.courier_phone = dispatchForm.value.courier_phone;
+  }
+
+  router.post(
+    route('milk-batches.dispatch', { milkBatch: selectedBatch.value.id }),
+    formData,
+    {
+      onSuccess: () => {
+        closeDispatchDialog();
+      },
+      onFinish: () => {
+        isSubmittingDispatch.value = false;
+      },
+    }
+  );
+};
+
+const getTransportStatusBadge = (transportStatus?: string) => {
+  if (!transportStatus) return null;
+  const badges: Record<string, { variant: string; text: string }> = {
+    pending: { variant: 'secondary', text: 'Menunggu' },
+    dispatched: { variant: 'default', text: 'Dikirim' },
+    in_transit: { variant: 'default', text: 'Dalam Perjalanan' },
+    delivered: { variant: 'default', text: 'Terkirim' },
+    returned: { variant: 'destructive', text: 'Dikembalikan' },
+  };
+  return badges[transportStatus] || { variant: 'default', text: transportStatus };
+};
+
+const canDispatch = (batch: MilkBatch) => {
+  return batch.status === 'collected' && !batch.tracking_number;
 };
 </script>
 
@@ -298,18 +413,20 @@ const formatSession = (session: string) => {
                 <thead class="bg-muted/50">
                   <tr>
                     <th class="p-3 text-left text-xs font-medium">Kode Batch</th>
+                    <th class="p-3 text-left text-xs font-medium">Tracking</th>
                     <th class="p-3 text-left text-xs font-medium">Tanggal</th>
                     <th class="p-3 text-left text-xs font-medium">Sesi</th>
                     <th class="p-3 text-left text-xs font-medium">Volume (L)</th>
                     <th class="p-3 text-left text-xs font-medium">Grade</th>
                     <th class="p-3 text-left text-xs font-medium">Status</th>
-                    <th class="p-3 text-left text-xs font-medium">Dikumpulkan Oleh</th>
+                    <th class="p-3 text-left text-xs font-medium">Transport</th>
+                    <th class="p-3 text-left text-xs font-medium">Tujuan</th>
                     <th class="p-3 text-left text-xs font-medium">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-if="batches.data.length === 0">
-                    <td colspan="8" class="p-8 text-center text-muted-foreground">
+                    <td colspan="10" class="p-8 text-center text-muted-foreground">
                       <Milk class="w-12 h-12 mx-auto mb-2 opacity-30" />
                       <p>Belum ada batch susu.</p>
                       <Link :href="route('milk-batches.create')">
@@ -323,6 +440,13 @@ const formatSession = (session: string) => {
                     class="border-b hover:bg-muted/30 transition-colors"
                   >
                     <td class="p-3 text-sm font-mono">{{ batch.batch_code }}</td>
+                    <td class="p-3">
+                      <div v-if="batch.tracking_number" class="flex items-center gap-1">
+                        <Package class="w-3 h-3 text-muted-foreground" />
+                        <span class="text-xs font-mono">{{ batch.tracking_number }}</span>
+                      </div>
+                      <span v-else class="text-xs text-muted-foreground">-</span>
+                    </td>
                     <td class="p-3 text-sm">{{ formatDate(batch.collection_date) }}</td>
                     <td class="p-3 text-sm">{{ formatSession(batch.session) }}</td>
                     <td class="p-3 text-sm font-semibold">{{ batch.total_volume }}</td>
@@ -337,11 +461,30 @@ const formatSession = (session: string) => {
                         {{ getStatusBadge(batch.status).text }}
                       </Badge>
                     </td>
-                    <td class="p-3 text-sm">{{ batch.collected_by?.name || '-' }}</td>
                     <td class="p-3">
-                      <Link :href="route('milk-batches.show', batch.id)">
-                        <Button variant="ghost" size="sm">Lihat Detail</Button>
-                      </Link>
+                      <Badge v-if="batch.transport_status" :variant="getTransportStatusBadge(batch.transport_status)?.variant">
+                        {{ getTransportStatusBadge(batch.transport_status)?.text }}
+                      </Badge>
+                      <span v-else class="text-xs text-muted-foreground">-</span>
+                    </td>
+                    <td class="p-3 text-sm">
+                      {{ batch.destination_farm?.name || '-' }}
+                    </td>
+                    <td class="p-3">
+                      <div class="flex items-center gap-2">
+                        <Button
+                          v-if="canDispatch(batch)"
+                          variant="outline"
+                          size="sm"
+                          @click="openDispatchDialog(batch)"
+                        >
+                          <Truck class="w-3 h-3 mr-1" />
+                          Kirim
+                        </Button>
+                        <Link :href="route('milk-batches.show', batch.id)">
+                          <Button variant="ghost" size="sm">Detail</Button>
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -364,5 +507,156 @@ const formatSession = (session: string) => {
         </Card>
       </div>
     </div>
+
+    <!-- Dispatch Dialog -->
+    <Dialog :open="showDispatchDialog" @update:open="closeDispatchDialog">
+      <DialogContent class="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Kirim Batch ke Pabrik</DialogTitle>
+          <DialogDescription>
+            Batch: {{ selectedBatch?.batch_code }} - Volume: {{ selectedBatch?.total_volume }} L
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-4 py-4">
+          <!-- Destination Farm -->
+          <div class="space-y-2">
+            <Label for="destination_farm_id">Tujuan Pabrik <span class="text-red-500">*</span></Label>
+            <select
+              id="destination_farm_id"
+              v-model="dispatchForm.destination_farm_id"
+              class="w-full h-9 border rounded-md px-3 py-1 text-sm"
+              required
+            >
+              <option value="">Pilih pabrik tujuan</option>
+              <option
+                v-for="farm in destinationFarms"
+                :key="farm.id"
+                :value="farm.id"
+              >
+                {{ farm.name }}{{ farm.address ? ` - ${farm.address}` : '' }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Courier Selection Type -->
+          <div class="space-y-2">
+            <Label>Jenis Kurir</Label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2">
+                <input
+                  v-model="useCourierUser"
+                  type="radio"
+                  :value="true"
+                  class="text-primary"
+                />
+                <span class="text-sm">Pengguna Sistem</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input
+                  v-model="useCourierUser"
+                  type="radio"
+                  :value="false"
+                  class="text-primary"
+                />
+                <span class="text-sm">Kurir Eksternal</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- System User Courier -->
+          <div v-if="useCourierUser" class="space-y-2">
+            <Label for="courier_user_id">Pilih Kurir <span class="text-red-500">*</span></Label>
+            <select
+              id="courier_user_id"
+              v-model="dispatchForm.courier_user_id"
+              class="w-full h-9 border rounded-md px-3 py-1 text-sm"
+              :required="useCourierUser"
+            >
+              <option value="">Pilih kurir</option>
+              <option
+                v-for="courier in availableCouriers"
+                :key="courier.id"
+                :value="courier.id"
+              >
+                {{ courier.name }} ({{ courier.email }})
+              </option>
+            </select>
+          </div>
+
+          <!-- External Courier -->
+          <div v-else class="space-y-4">
+            <div class="space-y-2">
+              <Label for="courier_name">Nama Kurir <span class="text-red-500">*</span></Label>
+              <Input
+                id="courier_name"
+                v-model="dispatchForm.courier_name"
+                type="text"
+                placeholder="Nama lengkap kurir"
+                :required="!useCourierUser"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <Label for="courier_phone">Nomor Telepon</Label>
+              <Input
+                id="courier_phone"
+                v-model="dispatchForm.courier_phone"
+                type="tel"
+                placeholder="08xx-xxxx-xxxx"
+              />
+            </div>
+          </div>
+
+          <!-- Vehicle Number -->
+          <div class="space-y-2">
+            <Label for="vehicle_number">Nomor Kendaraan</Label>
+            <Input
+              id="vehicle_number"
+              v-model="dispatchForm.vehicle_number"
+              type="text"
+              placeholder="B 1234 XYZ"
+            />
+          </div>
+
+          <!-- Expected Delivery -->
+          <div class="space-y-2">
+            <Label for="expected_delivery_at">Estimasi Waktu Tiba</Label>
+            <Input
+              id="expected_delivery_at"
+              v-model="dispatchForm.expected_delivery_at"
+              type="datetime-local"
+            />
+          </div>
+
+          <!-- Transport Notes -->
+          <div class="space-y-2">
+            <Label for="transport_notes">Catatan Transportasi</Label>
+            <Textarea
+              id="transport_notes"
+              v-model="dispatchForm.transport_notes"
+              placeholder="Catatan tambahan untuk pengiriman..."
+              rows="3"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            @click="closeDispatchDialog"
+            :disabled="isSubmittingDispatch"
+          >
+            Batal
+          </Button>
+          <Button
+            @click="submitDispatch"
+            :disabled="isSubmittingDispatch || !dispatchForm.destination_farm_id || (useCourierUser && !dispatchForm.courier_user_id) || (!useCourierUser && !dispatchForm.courier_name)"
+          >
+            {{ isSubmittingDispatch ? 'Mengirim...' : 'Kirim Batch' }}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   </AppLayout>
 </template>
