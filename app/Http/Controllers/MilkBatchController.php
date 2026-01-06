@@ -94,7 +94,7 @@ class MilkBatchController extends Controller
         // Get users for courier selection (from current farm)
         $availableCouriers = Farm::find($currentFarmId)
             ->users()
-            ->get(['id', 'name', 'email']);
+            ->get(['users.id', 'users.name', 'users.email']);
 
         return Inertia::render('MilkCollection/Index', [
             'batches' => $batches,
