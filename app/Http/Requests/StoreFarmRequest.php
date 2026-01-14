@@ -27,6 +27,7 @@ class StoreFarmRequest extends FormRequest
             'owner' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'required|email|max:255',
+            'farm_type' => 'nullable|string|in:standard,processing,both',
             'picture' => 'nullable|string',
             'picture_blob' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'province_id' => 'required|integer',

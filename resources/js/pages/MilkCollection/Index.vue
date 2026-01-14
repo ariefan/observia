@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SecondSidebar from '@/components/SecondSidebar.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,14 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Milk, Search, TrendingUp, TrendingDown, Truck, Package } from 'lucide-vue-next';
+import {
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from '@headlessui/vue';
+import { Plus, Milk, Search, TrendingUp, TrendingDown, Truck, Package, Check, ChevronsUpDown } from 'lucide-vue-next';
 
 const debounce = (func: Function, delay: number) => {
   let timeoutId: NodeJS.Timeout;
@@ -199,6 +206,44 @@ const dispatchForm = ref({
 const isSubmittingDispatch = ref(false);
 const useCourierUser = ref(true);
 
+// Combobox state for destination farm
+const selectedDestinationFarm = ref<Farm | null>(null);
+const destinationFarmSearchQuery = ref('');
+
+// Combobox state for courier
+const selectedCourier = ref<User | null>(null);
+const courierSearchQuery = ref('');
+
+// Computed filtered lists for combobox
+const filteredDestinationFarms = computed(() => {
+  const query = destinationFarmSearchQuery.value.toLowerCase();
+  if (!query) return props.destinationFarms || [];
+  return (props.destinationFarms || []).filter(farm => 
+    farm.name.toLowerCase().includes(query) || 
+    (farm.address && farm.address.toLowerCase().includes(query))
+  );
+});
+
+const filteredCouriers = computed(() => {
+  const query = courierSearchQuery.value.toLowerCase();
+  if (!query) return props.availableCouriers || [];
+  return (props.availableCouriers || []).filter(courier => 
+    courier.name.toLowerCase().includes(query) || 
+    courier.email.toLowerCase().includes(query)
+  );
+});
+
+// Display value functions
+const getDestinationFarmDisplayValue = (farm: Farm | null) => {
+  if (!farm) return '';
+  return farm.address ? `${farm.name} - ${farm.address}` : farm.name;
+};
+
+const getCourierDisplayValue = (courier: User | null) => {
+  if (!courier) return '';
+  return `${courier.name} (${courier.email})`;
+};
+
 const openDispatchDialog = (batch: MilkBatch) => {
   selectedBatch.value = batch;
   showDispatchDialog.value = true;
@@ -212,12 +257,19 @@ const openDispatchDialog = (batch: MilkBatch) => {
     expected_delivery_at: '',
     transport_notes: '',
   };
+  // Reset combobox state
+  selectedDestinationFarm.value = null;
+  destinationFarmSearchQuery.value = '';
+  selectedCourier.value = null;
+  courierSearchQuery.value = '';
   useCourierUser.value = true;
 };
 
 const closeDispatchDialog = () => {
   showDispatchDialog.value = false;
   selectedBatch.value = null;
+  selectedDestinationFarm.value = null;
+  selectedCourier.value = null;
 };
 
 const submitDispatch = () => {
@@ -226,14 +278,14 @@ const submitDispatch = () => {
   isSubmittingDispatch.value = true;
 
   const formData: any = {
-    destination_farm_id: dispatchForm.value.destination_farm_id,
+    destination_farm_id: selectedDestinationFarm.value?.id || dispatchForm.value.destination_farm_id,
     vehicle_number: dispatchForm.value.vehicle_number,
     expected_delivery_at: dispatchForm.value.expected_delivery_at,
     transport_notes: dispatchForm.value.transport_notes,
   };
 
   if (useCourierUser.value) {
-    formData.courier_user_id = dispatchForm.value.courier_user_id;
+    formData.courier_user_id = selectedCourier.value?.id || dispatchForm.value.courier_user_id;
   } else {
     formData.courier_name = dispatchForm.value.courier_name;
     formData.courier_phone = dispatchForm.value.courier_phone;
@@ -522,21 +574,51 @@ const canDispatch = (batch: MilkBatch) => {
           <!-- Destination Farm -->
           <div class="space-y-2">
             <Label for="destination_farm_id">Tujuan Pabrik <span class="text-red-500">*</span></Label>
-            <select
-              id="destination_farm_id"
-              v-model="dispatchForm.destination_farm_id"
-              class="w-full h-9 border rounded-md px-3 py-1 text-sm"
-              required
-            >
-              <option value="">Pilih pabrik tujuan</option>
-              <option
-                v-for="farm in destinationFarms"
-                :key="farm.id"
-                :value="farm.id"
-              >
-                {{ farm.name }}{{ farm.address ? ` - ${farm.address}` : '' }}
-              </option>
-            </select>
+            <Combobox v-model="selectedDestinationFarm">
+              <div class="relative">
+                <ComboboxButton
+                  class="relative w-full cursor-default rounded-lg bg-background border border-input py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:text-sm">
+                  <span class="block truncate text-foreground">{{ selectedDestinationFarm ? getDestinationFarmDisplayValue(selectedDestinationFarm) : 'Pilih pabrik tujuan' }}</span>
+                  <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <ChevronsUpDown class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  </span>
+                </ComboboxButton>
+                <ComboboxOptions
+                  class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover border border-border py-1 text-base shadow-lg focus:outline-none sm:text-sm">
+                  <div class="relative">
+                    <ComboboxInput
+                      class="w-full border-none bg-transparent py-2 pl-3 pr-10 text-sm leading-5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+                      :display-value="() => ''" @change="destinationFarmSearchQuery = $event.target.value"
+                      placeholder="Cari pabrik..." />
+                  </div>
+                  <div v-if="filteredDestinationFarms.length === 0 && destinationFarmSearchQuery !== ''"
+                    class="relative cursor-default select-none px-4 py-2 text-muted-foreground">
+                    Pabrik tidak ditemukan.
+                  </div>
+                  <ComboboxOption v-for="farm in filteredDestinationFarms" :key="farm.id" v-slot="{ selected, active }"
+                    :value="farm" as="template">
+                    <li :class="[
+                      active ? 'bg-accent text-accent-foreground' : 'text-foreground',
+                      'relative cursor-default select-none py-2 pl-10 pr-4',
+                    ]">
+                      <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
+                        {{ farm.name }}
+                      </span>
+                      <span v-if="farm.address"
+                        :class="[active ? 'text-accent-foreground/70' : 'text-muted-foreground', 'block text-xs truncate']">
+                        {{ farm.address }}
+                      </span>
+                      <span v-if="selected" :class="[
+                        active ? 'text-accent-foreground' : 'text-primary',
+                        'absolute inset-y-0 left-0 flex items-center pl-3',
+                      ]">
+                        <Check class="h-4 w-4" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ComboboxOption>
+                </ComboboxOptions>
+              </div>
+            </Combobox>
           </div>
 
           <!-- Courier Selection Type -->
@@ -567,21 +649,51 @@ const canDispatch = (batch: MilkBatch) => {
           <!-- System User Courier -->
           <div v-if="useCourierUser" class="space-y-2">
             <Label for="courier_user_id">Pilih Kurir <span class="text-red-500">*</span></Label>
-            <select
-              id="courier_user_id"
-              v-model="dispatchForm.courier_user_id"
-              class="w-full h-9 border rounded-md px-3 py-1 text-sm"
-              :required="useCourierUser"
-            >
-              <option value="">Pilih kurir</option>
-              <option
-                v-for="courier in availableCouriers"
-                :key="courier.id"
-                :value="courier.id"
-              >
-                {{ courier.name }} ({{ courier.email }})
-              </option>
-            </select>
+            <Combobox v-model="selectedCourier">
+              <div class="relative">
+                <ComboboxButton
+                  class="relative w-full cursor-default rounded-lg bg-background border border-input py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:text-sm">
+                  <span class="block truncate text-foreground">{{ selectedCourier ? getCourierDisplayValue(selectedCourier) : 'Pilih kurir' }}</span>
+                  <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <ChevronsUpDown class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  </span>
+                </ComboboxButton>
+                <ComboboxOptions
+                  class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover border border-border py-1 text-base shadow-lg focus:outline-none sm:text-sm">
+                  <div class="relative">
+                    <ComboboxInput
+                      class="w-full border-none bg-transparent py-2 pl-3 pr-10 text-sm leading-5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+                      :display-value="() => ''" @change="courierSearchQuery = $event.target.value"
+                      placeholder="Cari kurir..." />
+                  </div>
+                  <div v-if="filteredCouriers.length === 0 && courierSearchQuery !== ''"
+                    class="relative cursor-default select-none px-4 py-2 text-muted-foreground">
+                    Kurir tidak ditemukan.
+                  </div>
+                  <ComboboxOption v-for="courier in filteredCouriers" :key="courier.id" v-slot="{ selected, active }"
+                    :value="courier" as="template">
+                    <li :class="[
+                      active ? 'bg-accent text-accent-foreground' : 'text-foreground',
+                      'relative cursor-default select-none py-2 pl-10 pr-4',
+                    ]">
+                      <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
+                        {{ courier.name }}
+                      </span>
+                      <span
+                        :class="[active ? 'text-accent-foreground/70' : 'text-muted-foreground', 'block text-xs truncate']">
+                        {{ courier.email }}
+                      </span>
+                      <span v-if="selected" :class="[
+                        active ? 'text-accent-foreground' : 'text-primary',
+                        'absolute inset-y-0 left-0 flex items-center pl-3',
+                      ]">
+                        <Check class="h-4 w-4" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ComboboxOption>
+                </ComboboxOptions>
+              </div>
+            </Combobox>
           </div>
 
           <!-- External Courier -->
@@ -651,7 +763,7 @@ const canDispatch = (batch: MilkBatch) => {
           </Button>
           <Button
             @click="submitDispatch"
-            :disabled="isSubmittingDispatch || !dispatchForm.destination_farm_id || (useCourierUser && !dispatchForm.courier_user_id) || (!useCourierUser && !dispatchForm.courier_name)"
+            :disabled="isSubmittingDispatch || !selectedDestinationFarm || (useCourierUser && !selectedCourier) || (!useCourierUser && !dispatchForm.courier_name)"
           >
             {{ isSubmittingDispatch ? 'Mengirim...' : 'Kirim Batch' }}
           </Button>

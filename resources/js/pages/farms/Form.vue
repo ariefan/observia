@@ -37,6 +37,7 @@ const props = defineProps<{
         owner: string;
         phone: string;
         email: string;
+        farm_type?: string;
         picture: string | null;
         picture_blob: Blob | null;
         city: {
@@ -57,9 +58,10 @@ const form = useForm({
     owner: props.farm?.owner || '',
     phone: props.farm?.phone || '',
     email: props.farm?.email || '',
+    farm_type: props.farm?.farm_type || 'standard',
     picture: props.farm?.picture || '',
     picture_blob: null,
-    province_id: props.farm?.city.province_id || '',
+    province_id: props.farm?.city?.province_id || '',
     city_id: props.farm?.city_id || '',
     latlong: { latitude: 0, longitude: 0 },
 });
@@ -75,12 +77,12 @@ function submit() {
             preserveScroll: true,
             onSuccess: () => {
                 toast.success("Berhasil", {
-                    description: page.props.flash?.success,
+                    description: page.props.flash?.success || "Data peternakan berhasil diperbarui",
                 })
             },
             onError: () => {
-                toast("Gagal", {
-                    description: page.props.flash?.error,
+                toast.error("Gagal", {
+                    description: page.props.flash?.error || "Terjadi kesalahan saat menyimpan data",
                 })
             },
         });
@@ -162,6 +164,23 @@ const back = () => window.history.back();
                                     <Label for="email">Email peternakan</Label>
                                     <Input id="email" type="email" required v-model="form.email" />
                                     <InputError :message="form.errors.email" />
+                                </div>
+
+                                <div>
+                                    <Label for="farm_type">Jenis Usaha</Label>
+                                    <Select v-model="form.farm_type">
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Pilih Jenis Usaha" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="standard">Peternakan</SelectItem>
+                                                <SelectItem value="processing">Pabrik Pengolahan</SelectItem>
+                                                <SelectItem value="both">Peternakan & Pabrik</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError :message="form.errors.farm_type" />
                                 </div>
 
                                 <div>
